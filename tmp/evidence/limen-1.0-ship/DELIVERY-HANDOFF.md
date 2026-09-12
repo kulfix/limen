@@ -1,6 +1,6 @@
 # Narrow Limen 1.0 delivery handback
 
-**NO-GO.** The VPS has a clean native-verification result and the ready Johnny-only export-hold helper, but not the accepted release's route refusal or actual held/released receiver evidence. Current verdict and skim list: `RELEASE-READINESS.md`. No tag, release, publish, remote push or Adam review verdict is claimed.
+**NO-GO.** The VPS has a clean native-verification result, the Johnny-only export-hold helper, and a CLOSED Johnny F091 held/released proof. Route refusal (F081) and Adam's review still block the accepted release. Current verdict and skim list: `RELEASE-READINESS.md`. No tag, release, publish, remote push or Adam review verdict is claimed.
 
 ## What landed
 
@@ -9,27 +9,26 @@
 - Watch-only recovery of lost hosted supervisors (F049), merge `6662bac`.
 - One home for owner choices and handoff policy on resume (F087), merge `ec65dc2`.
 - Safe hosted continuation file transport (F081 partial), commit `a3872a6`.
-- Per-target finish transport and receiver-export inspection (F091 partial), merges `2dabae7` and `87dd357`.
-- VPS-first Johnny-only proof runbook, documentation candidate `5a9ef82`, and checked export-hold helper `c9f2625`; 11 synthetic checks passed, with no sender or receiver runtime changes.
+- Per-target finish transport and receiver-export inspection (F091), merges `2dabae7` and `87dd357`, plus CLOSED held/released proof at `/home/overment/limen-evidence/johnny-finish-go-20260912` (job `2026-09-12-f091-johnny-export-hold-proof-03388067` done; finishEvent `limen-finish-e646cbfda774d367b3f34859517489d94f52c9f16cc256af22199c0e40b3fe19`; control transport-accepted/unobserved → observed bot-turn for johnny; HTTP receipts unchanged; export in `receiver-source`; attestations present).
+- VPS-first Johnny-only proof runbook, documentation candidate `5a9ef82`, and checked export-hold helper `c9f2625`; 11 synthetic checks passed, with no sender or receiver runtime changes beyond the closed live proof above.
 - Repeatable native-check fixtures (F709), merge `2181d35`: registry stress retains every operation with fewer Node launches, and the fake Herdr delays only pre-start probes. TypeScript, Biome and all 370 native tests passed at repaired candidate `aaf2e944`.
 
-Adam's 2026-09-12 instruction supersedes the former Alice Mac / Johnny + Tony prerequisite. No Tony coordination occurred. Johnny holds processing or the genuine receiver export while ingress accepts HTTP, captures the mode-specific control, then releases that same event/export. Export hold proves unobserved inspection, not absence of a real turn; disabling ingress into 4xx fails either control.
+Adam's 2026-09-12 instruction supersedes the former Alice Mac / Johnny + Tony prerequisite. No Tony coordination occurred. Export hold proves unobserved inspection, not absence of a real turn; the closed proof then released the same genuine export into `receiver-source`.
 
 ## What still needs action
 
-Receiver proof (F091) returns to planned until Johnny supplies accessible actual history and an authorized v1 export with controlled release; the documented file-based export hold needs no processing API. Use `JOHNNY-PROOF-OPERATOR-NOTE.md` and the VPS-first procedure in `docs/finish-webhooks.md`; no live send was attempted without those prerequisites. The previous worker's HTTP acceptance remains transport-only evidence, not reused as proof.
+Route refusal (F081) remains planned, waiting on a supported non-generating Pi check. Local interface comparison confirms installed 0.84.2 is unchanged; no generated probe, auth call or provider request was used to investigate refusal. Its failing counterexample stays locked at `b14b5fe`. Interface decision: `spec/features/planned/F081-spawn-refuses-an-unusable-route/interface-question.md`.
 
-Route refusal (F081) returns to planned, waiting on a supported non-generating Pi check. Local interface comparison confirms installed 0.84.2 is unchanged; no generated probe, auth call or provider request was used to investigate refusal. Its failing counterexample stays locked at `b14b5fe`. Interface decision: `spec/features/planned/F081-spawn-refuses-an-unusable-route/interface-question.md`.
+Johnny F091 is CLOSED with cited held/released evidence; do not re-send or widen that slice. Native verification is closed by F709.
 
-Native verification is closed by F709. The first full lane retained 369 passes and one reproduced hosted-continuation fixture failure; the repaired committed candidate passed all 370 tests with no failures or cancellations. Original failures remain under `/home/overment/limen-evidence/f709-ffbfa542/`; the clean lane is under `/home/overment/limen-evidence/f709-repair-ccfc0bd3/`. The coordinator inspected the complete test-only diff and verified that the landed executable/native-check tree matches the proven candidate. Filing: `spec/features/done/2026-09/F709-native-checks-give-a-repeatable-verdict/checks-2.md`.
-
-Wake-ceiling candidate F090 stays parked, unchanged and locked at `0fa48fa` for Adam's later review. Author routing F708 stays spec-only after narrow 1.0, not a blocker. Adam retains review; there was no independent review job.
+Wake-ceiling candidate F090 stays parked, unchanged and locked at `0fa48fa` for Adam's later review. Author routing F708 stays spec-only after narrow 1.0, not a blocker. Adam retains review of the cut and the closed Johnny proof; there was no independent review job.
 
 ## Checks and evidence
 
+- Johnny F091 closed proof: `/home/overment/limen-evidence/johnny-finish-go-20260912/` — control vs observed, `inspection.diff` exit 1, attestations `mapping-owner.txt` / `control-owner.txt` / `receiver-history.txt` / `release-owner.txt`, export in `receiver-source`, held empty of `.1.json`.
 - Johnny-only documentation worker: 117 focused checks passed; six shell blocks parsed; v1 contract and historical result bullets retained. Coordinator inspected the complete patch and synthetic before/after CLI views, then reran static runbook checks after its small correction. `/home/overment/limen-evidence/f091-johnny-only-552a2b2d/`.
 - Coordinator: `npm run typecheck` passed; Biome over tracked files passed (81 files). Broad `biome check .` failed with 37 errors while scanning untracked historical evidence. That evidence was preserved, not reformatted; this is not a full native pass. `/home/overment/limen-evidence/release-readiness-2026-09-12/`.
 - Prior receiver inspection: 121 coordinator focused checks passed; full-native failures and offline exports retained at `/home/overment/limen-evidence/f091-51bb62b9/`.
 - Local no-generation interface check: `route-interface-refresh.log`.
 
-No implementation jobs remain running; the native fixture fixes are landed. This coordinator retains landing ownership. The Johnny export helper and one-screen `ASK-JOHNNY.md` are committed at `c9f2625`, with 11 synthetic checks passed again after landing and no live send. Protected proof directories are ready, but the dedicated route and actual receiver history/export are missing. The route's current fake-Pi counterexample remains red and generated probes remain unauthorized. This wave needs no runtime reload. Existing coordinators that never reloaded after supervisor recovery still need `/reload`; that is prior landed hook work. Tracked checkout changes are committed; pre-existing untracked evidence is left untouched. Johnny supplies live receiver evidence, Adam skims the cut and open gaps, and Limen remains unreleased meanwhile.
+No implementation jobs remain running for the closed gaps; F081 is wait-only. This coordinator retains landing ownership for evidence docs. Protected proof directories retain the closed Johnny artifacts. The route's current fake-Pi counterexample remains red and generated probes remain unauthorized. This wave needs no runtime reload. Existing coordinators that never reloaded after supervisor recovery still need `/reload`; that is prior landed hook work. Tracked evidence-doc updates may be committed; pre-existing untracked evidence is left untouched. Remaining blockers: F081 (Pi wait) and Adam cut review. Limen remains unreleased meanwhile.
