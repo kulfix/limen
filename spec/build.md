@@ -2,16 +2,16 @@
 
 ## TRACK
 
-- **Ops remediation lock 2026-09-10 (Adam):** (1) two unsuccessful automatic wake attempts then deliberate recovery; park-and-preserve on quota — no silent model substitution. (2) First finish→bot proof on **alice** (Mac); intended receivers Johnny + Tony; HTTP ≠ bot turn. (3) Landing/board writer = the feature coordinator **or** the coordinator-manager (Johnny/Tony); Adam reviews these slices; named-job `limen watch <id>` for takeovers — not `watch --running`. Adam's continuation parks F090 for later review; the remaining sequence is F092 neutral webhook names → F091 finish receipts → F081 unusable route → F048 hosted runtime start → F049 running-owner truth → F087 policy-on-resume.
+- **Ops remediation lock 2026-09-10 (Adam):** (1) two unsuccessful automatic wake attempts then deliberate recovery; park-and-preserve on quota — no silent model substitution. (2) HTTP ≠ bot turn; the original Alice Mac / Johnny + Tony requirement is superseded by the VPS-first Johnny-only instruction below. (3) Landing/board writer = the feature coordinator **or** the coordinator-manager (Johnny/Tony); Adam reviews these slices; named-job `limen watch <id>` for takeovers — not `watch --running`. Adam's continuation parks F090 for later review; the remaining sequence is F092 neutral webhook names → F091 finish receipts → F081 unusable route → F048 hosted runtime start → F049 running-owner truth → F087 policy-on-resume.
 
 - **Narrow 1.0 authorized 2026-09-11 (Adam):** Phase 0 PASS recorded in `tmp/evidence/limen-1.0-ship/GATE-RESULT.md`; dependable core only, with no new control plane, silent fallback, unsolicited ownership, or blanket review gates.
-- **Narrow 1.0 landing owner:** this `dependable core` coordinator (session `01a09092-4a87-7e2a-ad1a-05cfb253b364`) is the sole landing/board writer; one hosted worker per ticket runs sequentially in an isolated worktree with `--provider openai-codex --model gpt-6-astra --thinking high`.
+- **Narrow 1.0 landing owner (Adam via Johnny, 2026-09-12):** this `release readiness` coordinator (session `01a094c4-f303-7016-a3ce-df7879c1b745`) is the sole landing/board writer; hosted workers run sequentially in isolated worktrees with `--provider openai-codex --model gpt-6-astra --thinking high`; Adam reviews, with no independent review lane.
 - **Narrow 1.0 continuation (Adam):** deliver the remaining six tickets without the parked wake candidate; no F090 merge, rebase, third repair, or widening, and its unchanged checkout is Git-locked against automatic pruning.
-- **Narrow 1.0 proof boundary:** Alice Mac → Johnny/Tony correlated bot turns remain required; VPS transport acceptance is not receiver proof, and parking the wake ceiling is not a claim that it shipped.
+- **Narrow 1.0 proof boundary (Adam via Johnny, 2026-09-12):** VPS-first, Johnny-only automatic finish proof is sufficient; Johnny controls HTTP-accepted/no-completed-turn hold and release on the same event, then exports the real completed turn; no Tony coordination, no endpoint pause that rejects HTTP, no synthetic or export-delay-only absence claim.
 - **Narrow 1.0 deferrals:** field guide, Claude perspective, closing overview, history retention, remote rollout, GitHub doorbell, and expanded job automation wait beyond this wave; landed explicit-model work is not reopened.
-- **Narrow 1.0 checkpoint:** four tickets are proven and receiver-export inspection is landed, while Alice Mac proof, route refusal and native-check failures remain open; handback is `tmp/evidence/limen-1.0-ship/DELIVERY-HANDOFF.md`, with no tag or release claim.
-- **Narrow 1.0 final continuation (Adam):** define receiver-owned file evidence and finish honest CLI inspection plus exact Mac proof steps; refusal waits for Pi-supported non-generating validation or explicit spend authorization, never inferred from auth/catalog or guessed zero-cost generation.
-- **Actively managed finish delivery (Adam):** Johnny shepherds without relying on finish webhooks; fresh workers select the new VPS project opt-in, this coordinator alone lands/edits the board, and VPS acceptance never substitutes for Alice Mac completed-turn proof.
+- **Narrow 1.0 checkpoint:** four tickets are proven and receiver-export inspection is landed; Johnny-only live proof, route refusal and native-check failures remain open, with no tag or release claim.
+- **Narrow 1.0 final continuation (Adam):** receiver-owned file evidence and honest CLI inspection are landed; refusal waits for Pi-supported non-generating validation or explicit spend authorization, never inferred from auth/catalog or guessed zero-cost generation.
+- **Actively managed finish delivery (Adam):** Johnny self-plays receiver proof without relying on a webhook wake; this wave's documentation workers opt out of sending, and only the authorized proof job selects a privately verified Johnny-only route.
 - Reliable in-flight control on one seat; a laptop is a window; GitHub may ring the doorbell later.
 - Settled Herdr panes keep RUNNING jobs and stall warnings visible; external finish delivery remains per-project opt-in.
 - Coordinator CPU is repaired without deleting history; job-history retention remains a separate operator decision.
@@ -26,7 +26,7 @@
 
 ## NOW
 
-- `F091-finish-job-shows-bot-turn-receipt` (🟠 ACTIVE): receiver-export inspection landed `87dd357`, coordinator 121 checks passed and Mac runbook is ready; Johnny must obtain actual Alice Mac → Johnny/Tony turns plus accepted/no-turn control before PROVEN, with operator-designated trust and no guessed API, polling or signing infrastructure.
+- `F091-finish-job-shows-bot-turn-receipt` (🟠 ACTIVE): receiver-export inspection landed `87dd357`; update the runbook for VPS-first Johnny-only proof, retaining a real accepted/no-turn hold and same-event release before PROVEN, with no guessed receiver API, polling or signing infrastructure.
 - `F081-spawn-refuses-an-unusable-route` (🟠 ACTIVE): safe transport already landed `a3872a6`; installed Pi 0.84.2 still offers no supported non-generating route probe (`checks-2.md`), so refusal waits on that interface or Adam spend authorization; failing candidate `b14b5fe` retained, no generated probe, auth/catalog proof, retries, model substitution or PROVEN claim.
 
 ## NEXT

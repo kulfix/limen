@@ -5,8 +5,8 @@
 `limen jobs <id>` answers three separate questions for external finish
 delivery: configured or not; transport accepted/rejected/unknown per target;
 completed bot turn observed or unobserved. HTTP success is never shown as a
-completed bot turn. First operational proof uses the **alice** project on Mac
-with Johnny and Tony as intended receivers.
+completed bot turn. Operational proof uses this VPS plant with Johnny alone;
+a Mac sender is optional, not a prerequisite.
 
 ## Scope
 
@@ -20,7 +20,7 @@ with Johnny and Tony as intended receivers.
 - Define a bounded on-disk contract for receiver-exported completed turns from
   an operator-designated trusted source; correlate event, target and receiver
   with a completed-turn reference, not a local observed flag.
-- `docs/finish-webhooks.md`: exact Alice Mac → Johnny/Tony operator steps and
+- `docs/finish-webhooks.md`: exact VPS-first Johnny-only operator steps and
   an offline harness, with the evidence import's trust boundary stated plainly.
 - Preserve job-derived finish-event identity in receiver evidence; no invented
   receiver API, polling, signing infrastructure or completion claim from HTTP.
@@ -30,8 +30,8 @@ with Johnny and Tony as intended receivers.
 - Implicit opt-in or home-default destinations.
 - Blind whole-list retry after partial failure.
 - Waiting for bot completion inside the finalizer budget.
-- Editing alice product code; only private finish env + limen presentation.
-- VPS proof (Mac proof first).
+- Editing receiver/product code or inventing a receiver control API.
+- Coordinating with Tony or expanding the remote-seat rollout.
 
 ## Acceptance
 
@@ -43,8 +43,11 @@ with Johnny and Tony as intended receivers.
   legacy local flags, raw bodies and secrets cannot promote or leak into output.
 - An offline harness proves accepted HTTP without completed-turn evidence stays
   unobserved and a correlated completed-turn export becomes observed.
-- One authorized new Alice Mac job sends automatically only; Johnny and Tony's
-  actual completed turns preserve its finish event, with no-turn control retained.
+- One authorized new VPS job sends automatically to Johnny alone; his actual
+  completed turn preserves its finish event.
+- Johnny retains accepted-HTTP/no-completed-turn evidence while holding processing,
+  then releases that same event without a second send; a paused endpoint returning
+  4xx or merely delaying an export does not prove this control.
 - Focused helper/lifecycle checks pass. Adam reviews.
 
 ## Notes
