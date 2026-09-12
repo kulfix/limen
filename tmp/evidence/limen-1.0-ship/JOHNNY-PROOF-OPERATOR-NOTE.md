@@ -9,6 +9,12 @@ Adam's 2026-09-12 instruction supersedes the Alice Mac / Johnny + Tony requireme
 - This session has local shell/filesystem tools but no supplied authorized Johnny completed-history export interface. A file-based export hold needs no processing API, but still needs Johnny's actual receiver history/export. No endpoint/API was guessed, no webhook sent, and no real receiver turn was claimed.
 - The documentation job explicitly opts out of automatic sending. Its normal Pi work is not a receiver proof and must not be exported as Johnny's turn.
 
+## Prepared handoff on this plant
+
+`ASK-JOHNNY.md` now gives the one-screen launch/capture/release commands. The protected directory `/home/overment/limen-evidence/johnny-finish-go-20260912/` exists with separate mode-700 held/source directories; neither contains a receiver map or real turn yet. The dedicated `.limen/finish-webhook-johnny.env` is absent, and no authorized history/export was supplied. `preflight.txt` retains those observations without opening the existing private project config.
+
+The committed `johnny-export-proof.sh` helper never sends or creates exports. It captures both views, validates the supplied v1 export, performs the atomic release and checks unchanged automatic receipts. Eleven synthetic checks pass; their artifacts and limitations are in `JOHNNY-HARNESS-CHECKS.md`. This is ready tooling, not F091 proof. No live send or finish-ping retry was attempted; Johnny must establish his mapping/history channel before the single authorized proof launch.
+
 ## The required control
 
 Johnny verifies a separate private single-target configuration selecting his authorized webhook. Choose one control before starting the job: hold processing through a supported receiver workflow, or let the actual turn complete and hold its genuine export outside Limen's inspected source. In both cases ingress stays enabled and acknowledges within Limen's three-second finalizer budget. No processing API is needed for the export-hold option Adam suggested.

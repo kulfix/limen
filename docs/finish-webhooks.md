@@ -657,6 +657,13 @@ actual completed-turn evidence and Adam's review. Export hold satisfies the
 inspection control, not a no-actual-turn claim. Synthetic records do not satisfy
 live proof. The documentation correction itself earns no PROVEN claim.
 
+The current VPS handoff is `tmp/evidence/limen-1.0-ship/ASK-JOHNNY.md`.
+Its `johnny-export-proof.sh capture|release JOB_ID` helper retains the two CLI
+views and atomically releases Johnny's supplied export; it never sends, retries,
+creates a completed-turn export or authenticates history. Johnny still owns the
+single-route mapping, genuine history and capture/release attestations. Missing
+prerequisites leave the protected proof directory prepared, not proven.
+
 ## Offline positive/negative harness
 
 From the Limen checkout, choose an absolute retained directory outside the
