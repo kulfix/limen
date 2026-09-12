@@ -26,7 +26,7 @@
 
 ## NOW
 
-- `F709-native-checks-give-a-repeatable-verdict` (🟠 ACTIVE): reproduce registry-lock and warm-sweep failures once, land only a demonstrated local correction and retain one full native lane; no wake-ceiling changes, disabled assertions or blanket timeout increases.
+- `F709-native-checks-give-a-repeatable-verdict` (🟠 ACTIVE): registry correction passes focused checks, full native has 369 passes and one reproduced fake-Herdr continuation failure; correct its repeated post-start fixture delay and run one lane at the changed candidate, with no runtime/wake-ceiling changes, disabled assertions or timeout increases.
 
 ## NEXT
 

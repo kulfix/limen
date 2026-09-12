@@ -9,7 +9,8 @@ The dependable-core cut has a trustworthy native-check result on the VPS. A fail
 - Start at the retained registry-lock timeout in `test/sweep-command.test.ts`; distinguish lock failure from the cost of its multiprocess stress fixture.
 - Inspect the warm-sweep timing failure in `test/wake-sweep.test.ts` while preserving its zero-settled-record-read assertion and live-job visibility checks.
 - Make only a demonstrated, local correction; retain before/after evidence at the exact candidate commit.
-- Run the corrected focused lanes and one full `npm run check`, preserving raw output and any remaining failures.
+- Correct only a demonstrated test-fixture defect exposed by the retained full lane; the fake Herdr startup delay must not recur during post-start disappearance probes.
+- Run corrected focused lanes and one full `npm run check` per changed candidate, preserving earlier failures rather than replacing them.
 
 ## Out of scope
 
