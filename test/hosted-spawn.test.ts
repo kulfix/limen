@@ -1082,6 +1082,7 @@ console.log(JSON.stringify({ type: "message_end", message: { role: "assistant", 
 	await assert.rejects(readFile(join(herdr.dir, "prompt-read")), "caller must be gone before Herdr reads the continuation");
 	const prompt = JSON.parse(await waitForFile(join(herdr.dir, "prompt-read"), /refine the seam/)) as { file: string; text: string };
 	assert.deepEqual(prompt, { file: join(job, "continue"), text: "now refine the seam\n" });
+	const shellBusyPid = await readFile(join(herdr.dir, "shell-busy"), "utf8");
 	context.diagnostic(`continue caller printed ID and was killed in ${returnedMs}ms; supervisor ${pid} then passed the durable continuation to Herdr`);
 	const calls = await waitForFile(herdr.calls, /agent start /);
 	assert.match(calls, /agent start /);
@@ -1089,6 +1090,7 @@ console.log(JSON.stringify({ type: "message_end", message: { role: "assistant", 
 	assert.match(calls, /--model openai-codex\/gpt-6-astra:high(?: |$)/);
 	assert.doesNotMatch(calls, /@\S+\/task\.md/);
 	await waitForState(scratch.root, id, "done");
+	assert.equal(await readFile(join(herdr.dir, "shell-busy"), "utf8"), shellBusyPid, "post-start missing-agent probes must not repeat the startup delay");
 });
 
 test("makeJobId hoists a feature number from anywhere in the label", () => {
@@ -1450,7 +1452,7 @@ if (args[0] === "workspace" && args[1] === "list") {
   ok({ type: "pane_ran" });
 } else if (args[0] === "pane" && args[1] === "process-info") {
   const shellBusyMs = Number(process.env.FAKE_HERDR_SHELL_BUSY_MS || 0);
-  if (shellBusyMs > 0) {
+  if (shellBusyMs > 0 && !state.startAttempts) {
     writeFileSync(dir + "/shell-busy", String(process.pid));
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, shellBusyMs);
   }
