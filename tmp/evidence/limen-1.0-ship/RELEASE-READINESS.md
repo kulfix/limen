@@ -12,7 +12,7 @@ Earlier dependable-core landings remain intact: neutral finish keys, killed-call
 
 ## Quality
 
-**ALIGNED WITH NITS** — see `QUALITY-ALIGN.md` for the vision/styleguide review, independent finish-evidence check and non-blocking follow-ups. No must-fix-before-tag violation was found in the authorized cut. F081 remains skipped by Adam; F090 and F708 remain deferred. **GO for Adam review is unchanged**; no tag, push or publish is authorized by this quality report.
+**ALIGNED WITH NITS** — see `QUALITY-ALIGN.md` for the vision/styleguide review, independent finish-evidence check and non-blocking follow-ups. No must-fix-before-tag violation was found in the authorized cut. A fresh full native lane passed TypeScript, Biome and all 370 tests; retained logs are at `/home/overment/limen-evidence/quality-align-e624b598/`. F081 remains skipped by Adam; F090 and F708 remain deferred. **GO for Adam review is unchanged**; no tag, push or publish is authorized by this quality report.
 
 ## Remaining before tag
 
