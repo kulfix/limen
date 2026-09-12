@@ -1,6 +1,6 @@
 # Finish routing for a shared plant
 
-**Proposal, not installed behavior. Recommend after narrow 1.0:** Alice Mac → Johnny/Tony completed-turn proof remains outstanding. Ticket: `spec/features/planned/F708-ticket-finishes-wake-the-authors-bots/ticket.md`.
+**Proposal, not installed behavior. Recommend after narrow 1.0:** author filtering is not a release blocker; the separate Johnny-only receiver proof remains outstanding under Adam's VPS-first instruction. Ticket: `spec/features/planned/F708-ticket-finishes-wake-the-authors-bots/ticket.md`.
 
 ## What changes
 

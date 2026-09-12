@@ -1,0 +1,9 @@
+# Native verification needs diagnosis, not a green claim
+
+The latest retained full lane at receiver-inspection candidate `ab33fd170500844e93e0999db12ffdf82cb329a8` passed TypeScript/Biome and 368 tests, failed the warm sweep (28.217 ms against 20 ms), and cancelled registry locking at 60000 ms. Raw evidence: `/home/overment/limen-evidence/f091-51bb62b9/native.log`. Earlier slices also retained registry timeouts; that recurrence does not establish their cause.
+
+The readiness coordinator read both test files, but did not rerun or repair them. Registry stress starts 80 registering and 12 pruning Node processes per round for eight rounds (736 processes total); resource cost is a lead, not a diagnosis. The warm-sweep test reports zero settled-record reads independently of its elapsed-time assertion; scheduling is a lead, not an excuse to remove the performance requirement.
+
+These failures block a clean native-verification claim and remain a release-verification gap. Neither log proves a production deadlock or lost wake. Route refusal and live receiver evidence separately prevent release, so this wave does not buy a broad repair just to turn the suite green.
+
+Next worker: retain output from `node --test --test-concurrency=1 --test-timeout=60000 test/sweep-command.test.ts test/wake-sweep.test.ts` once in an isolated worktree, then use the smallest falsifier supported by that result. Bound child cleanup; do not raise all timeouts, disable assertions, or infer environment blame. Preserve the unchanged parked wake candidate and its worktree lock.

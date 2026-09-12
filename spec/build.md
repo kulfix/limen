@@ -27,9 +27,11 @@
 ## NOW
 
 - `F091-finish-job-shows-bot-turn-receipt` (🟠 ACTIVE): receiver-export inspection landed `87dd357`; update the runbook for VPS-first Johnny-only proof, retaining a real accepted/no-turn hold and same-event release before PROVEN, with no guessed receiver API, polling or signing infrastructure.
-- `F081-spawn-refuses-an-unusable-route` (🟠 ACTIVE): safe transport already landed `a3872a6`; installed Pi 0.84.2 still offers no supported non-generating route probe (`checks-2.md`), so refusal waits on that interface or Adam spend authorization; failing candidate `b14b5fe` retained, no generated probe, auth/catalog proof, retries, model substitution or PROVEN claim.
 
 ## NEXT
+
+- `F081-spawn-refuses-an-unusable-route` (🔴 PLANNED): safe transport landed `a3872a6`, but refusal blocks narrow 1.0 pending a supported non-generating Pi probe; 0.84.2 interfaces are unchanged, failing candidate `b14b5fe` stays locked, with no generated probe or auth/catalog substitute.
+- `F709-native-checks-give-a-repeatable-verdict` (🔴 PLANNED): diagnose retained registry-lock and warm-sweep failures in a bounded lane before claiming clean native verification; no wake-ceiling changes or blanket timeout increases.
 
 - Ticket finishes wake the author's bots (`F708-ticket-finishes-wake-the-authors-bots`, 🔴 PLANNED): private author-to-target map with explicit fallback or visible no-send; recommended after narrow 1.0, spec only, with no identity service or ownership transfer.
 - `F090-wake-errors-count-toward-attempt-ceiling` (🔴 PLANNED): parked unchanged at `0fa48fa` for Adam's later review, outside the remaining wave; refusal and installed proof passed, full lane timed out with four failures (`checks-2.md`); no merge, third repair, or widening.

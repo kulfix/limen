@@ -11,7 +11,7 @@ Inspected Pi 0.84.2 at `/home/overment/.nvm/versions/node/v24.19.0/lib/node_modu
 - `docs/sdk.md` defines `getAvailable()` as models with authentication configured. `PromptOptions.preflightResult(true)` means accepted/queued/handled; later provider failures are events, not preflight rejection. Calling `prompt()` runs a generated turn, including Pi-owned retries.
 - `dist/core/model-runtime.d.ts` exposes catalog/auth operations and generated `stream`/`complete` operations, but no non-generating model-route validation method.
 
-Question for the owner: should this wait for a Pi-supported non-generating probe that validates the exact resolved model/provider/API endpoint and returns its refusal reason, or is one generated preflight turn per spawn authorized? Recommend waiting for that interface. If generation is authorized, specify token/spend and latency limits and how Pi-owned retries count against them; no such spend was authorized or performed here. Catalog/auth readiness must not be represented as route proof.
+Owner decision (Adam via Johnny, 2026-09-12): keep waiting for a Pi-supported non-generating probe that validates the exact resolved model/provider/API endpoint and returns its refusal reason. No generated probe is authorized. The readiness check found the installed 0.84.2 auth implementation and model interface byte-identical to the retained inspected copies; it made no provider request. Evidence: `tmp/evidence/limen-1.0-ship/route-interface-refresh.log`. A future change of spend policy must explicitly bound tokens/spend, latency and Pi-owned retries; catalog/auth readiness must never be represented as route proof.
 
 ## Safe transport seam
 

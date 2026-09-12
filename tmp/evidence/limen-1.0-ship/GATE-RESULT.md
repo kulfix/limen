@@ -1,5 +1,7 @@
 # PASS
 
+Historical plan gate, not a release verdict. Later owner instructions park the wake-ceiling candidate and permit VPS-first Johnny-only receiver proof; current readiness is in `RELEASE-READINESS.md` and `spec/build.md`.
+
 The narrow Limen 1.0 plan fits the dependable-core boundary authorized by Adam in this conversation. It bounds existing notification attempts, removes bot-specific configuration, separates transport from receiver evidence, repairs startup and supervision, and subtracts duplicated prompt policy. It does not require a workflow engine, silent model fallback, automatic coordinator ownership, blanket review gates, or a new control plane. Running-owner recovery (F049) restores the existing supervisor for an already authorized job; it neither starts another worker nor adopts an unwatched job into this conversation. Its filesystem claim prevents competing supervisors, not human decisions. The overlapping wake, finish, and hosted-process seams will run sequentially in isolated worktrees, with this coordinator as the sole landing and board writer. This is a plan gate, not a release or runtime-proof claim.
 
 ## Exact implementation spawn order
