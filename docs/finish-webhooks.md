@@ -496,15 +496,16 @@ API, queue, polling or finalizer wait for this proof.
    not run either manual setup-check. The route must preserve `finishEvent` in
    Johnny's actual completed turn.
 
-   Johnny must have a **supported receiver-side processing hold**: ingress still
-   accepts HTTP 2xx, but actual processing of that event cannot start until he
-   releases it. He enables and verifies that hold before spawn, outside the
-   worker, and confirms access to receiver history and an authorized v1 export
-   channel. Stop before sending if the hold, same-event release, history access
-   or trusted export channel is unavailable; report the missing capability to
-   Adam rather than inventing an API. A paused endpoint returning 4xx fails this
-   control. Delaying only export while processing runs proves unobserved Limen
-   inspection, **not absence of a completed turn**.
+   Johnny chooses and records one **receiver-owned control** before spawn:
+   a supported processing hold, or a hold on exporting the genuine completed
+   turn into Limen's inspected source. Both keep ingress accepting HTTP 2xx.
+   Processing hold prevents the actual turn until release; export hold lets
+   Johnny complete the turn but stage its authorized export outside the source.
+   The latter needs no processing-control API: Johnny controls the file release.
+   Confirm real history access and an authorized v1 export channel before sending;
+   stop if either is unavailable, rather than inventing an API. A paused endpoint
+   returning 4xx fails the control. Export hold proves unobserved inspection,
+   **not absence of a completed turn**, and must be labelled accordingly.
 2. Use Node 24+ and the reviewed checkout on this VPS. Run these commands in the
    operator's shell, retaining the variables through step 5. Tracked package
    source must be clean; existing untracked evidence is not a package change.
@@ -520,7 +521,7 @@ API, queue, polling or finalizer wait for this proof.
    test -z "$(git -C "$LIMEN_ROOT" status --porcelain --untracked-files=no)" || { echo 'Dirty tracked source; stop'; exit 1; }
    test -r "$CONFIG" || { echo 'Selected config unavailable; stop'; exit 1; }
    PROOF="$HOME/limen-evidence/johnny-finish-$(date -u +%Y%m%dT%H%M%SZ)"
-   (umask 077; mkdir -p "$PROOF/receiver-source")
+   (umask 077; mkdir -p "$PROOF/receiver-source" "$PROOF/receiver-held")
    git -C "$LIMEN_ROOT" rev-parse HEAD > "$PROOF/source-revision.txt"
    printf '%s\n' "$PROJECT" "$LIMEN_ROOT" > "$PROOF/source-paths.txt"
    node --version > "$PROOF/node-version.txt"
@@ -547,7 +548,7 @@ API, queue, polling or finalizer wait for this proof.
    case "$LIMEN_ROOT" in /*) ;; *) echo 'Absolute path required'; exit 1;; esac
    ```
 
-   With Johnny's processing hold confirmed, start exactly one hosted job:
+   With Johnny's chosen hold confirmed, start exactly one hosted job:
 
    ```sh
    LIMEN_FINISH_WEBHOOK_ENV="$CONFIG" "$LIMEN" spawn --tab --engine pi \
@@ -571,8 +572,10 @@ API, queue, polling or finalizer wait for this proof.
    use `watch --running`. The selection check reads no private env values.
    Do not send manually, clear a claim, retry, or spawn a replacement to turn a
    failed proof into success without fresh authorization.
-3. After finalization, **while processing remains held**, capture safe records
-   and both views against the designated source, still without a turn export:
+3. After finalization, **while the chosen control remains held**, capture safe
+   records and both views against the source, still without a turn export.
+   For export hold, Johnny may already have completed the actual turn; retain
+   its authorized export in `$PROOF/receiver-held`, not `receiver-source`.
 
    ```sh
    for name in state finished-at finish-webhook-attempt finish-webhook finish-webhook-targets; do
@@ -589,26 +592,41 @@ API, queue, polling or finalizer wait for this proof.
 
    Match that exact event to Johnny's accepted incoming event. Read both views:
    exactly target 1 must show `transport accepted` and `bot-turn unobserved`.
-   Johnny separately retains sanitized receiver history/control evidence in
-   `control-owner.txt`: event, target 1, receiver identity, hold active before
-   arrival, acceptance time, capture time in UTC, and **no completed turn at that
-   capture time**. Include supported control/history references for Adam to
-   follow. An absent export or an operator assertion without accessible history
-   is insufficient. If HTTP is not accepted, an extra target appears, a turn
-   already completed, or the event/history cannot be verified, retain failure
-   evidence and stop; do not claim the control passed or blindly retry.
-4. Only after retaining that control evidence, Johnny releases **the same
-   already accepted event** through the supported receiver workflow, outside
-   the worker. Record release time and control reference as `release-owner.txt`.
-   No second HTTP send occurs. Johnny follows his actual turn to completion and
-   supplies the unchanged v1 `<finishEvent>.1.json` export, with separate
-   sanitized history excerpts preserving the exact incoming `finishEvent`.
+   Johnny retains sanitized receiver history/control evidence in
+   `control-owner.txt`: mode (`processing` or `export`), event, target 1, identity,
+   acceptance and capture times, and how he held the control. For processing
+   hold, attest **no completed turn at capture time** with accessible history.
+   For export hold, attest **no released export at capture time** and state
+   separately whether the real turn already completed; retain its actual history.
+   An absent file alone is not receiver evidence. Stop if HTTP is not accepted,
+   an extra target appears, processing completed despite a processing hold, or
+   the event/history cannot be verified. Do not blindly retry.
+4. Only after retaining that control evidence, Johnny releases the same accepted
+   event through the supported processing workflow, or releases its genuine held
+   export using the file step below. Record the mode, release time and reference
+   as `release-owner.txt`. No second HTTP send occurs. Johnny follows his actual
+   turn to completion and supplies the unchanged v1 `<finishEvent>.1.json` export,
+   with sanitized history excerpts preserving the exact incoming `finishEvent`.
    Johnny/Adam follow the session/turn references; aliases require a durable
    private lookup. Stop without a completed-turn claim if processing fails,
    history is inaccessible, or correlation cannot be verified. Never import
    queued, running or failed history as completed, or fabricate a template turn.
-   Transfer the authorized export through the trusted channel, then atomically
-   rename it into `$PROOF/receiver-source` under its contract filename.
+   Transfer the authorized export through the trusted channel. For export hold,
+   use the staging directory created above; it must contain a genuine authorized
+   completed-turn export, never a locally invented template. After the control
+   capture, this is the entire release operation (the directories share a filesystem):
+
+   ```sh
+   printf 'Exact event from the control view: '; IFS= read -r event
+   printf '%s\n' "$event" | grep -Eq '^limen-finish-[0-9a-f]{64}$' || exit 1
+   test -f "$PROOF/receiver-held/$event.1.json" || exit 1
+   test ! -e "$PROOF/receiver-source/$event.1.json" || exit 1
+   mv "$PROOF/receiver-held/$event.1.json" "$PROOF/receiver-source/$event.1.json"
+   date -u +%Y-%m-%dT%H:%M:%SZ > "$PROOF/export-released-at.txt"
+   ```
+
+   Processing-hold exports also enter the source through an atomic rename after
+   the actual turn completes. Neither release sends another webhook.
 5. Inspect the same designated source and retain both views:
 
    ```sh
@@ -633,10 +651,11 @@ API, queue, polling or finalizer wait for this proof.
    revision, mapping attestation, held control, release record, authorized export
    and sanitized history together. Report transport and completed turn separately.
 
-Outstanding: one authorized VPS automatic delivery to Johnny, verified real
-accepted/no-completed-turn hold and same-event release, completed-turn export and
-Adam's review. Synthetic records and export-delay-only controls do not satisfy
-this proof. The documentation correction itself earns no PROVEN claim.
+Outstanding: one authorized VPS automatic delivery to Johnny, verified
+accepted/unobserved control with same-event processing or genuine-export release,
+actual completed-turn evidence and Adam's review. Export hold satisfies the
+inspection control, not a no-actual-turn claim. Synthetic records do not satisfy
+live proof. The documentation correction itself earns no PROVEN claim.
 
 ## Offline positive/negative harness
 

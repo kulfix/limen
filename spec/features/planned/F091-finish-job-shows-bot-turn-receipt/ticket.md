@@ -45,9 +45,10 @@ a Mac sender is optional, not a prerequisite.
   unobserved and a correlated completed-turn export becomes observed.
 - One authorized new VPS job sends automatically to Johnny alone; his actual
   completed turn preserves its finish event.
-- Johnny retains accepted-HTTP/no-completed-turn evidence while holding processing,
-  then releases that same event without a second send; a paused endpoint returning
-  4xx or merely delaying an export does not prove this control.
+- Johnny retains accepted-HTTP/unobserved inspection while holding processing or
+  the genuine receiver export, then releases that same event/export without resending.
+- An export hold is labelled missing inspected evidence, not absence of a real
+  turn; a paused endpoint returning 4xx never counts as accepted transport.
 - Focused helper/lifecycle checks pass. Adam reviews.
 
 ## Notes

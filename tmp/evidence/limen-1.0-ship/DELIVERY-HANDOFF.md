@@ -10,13 +10,13 @@
 - One home for owner choices and handoff policy on resume (F087), merge `ec65dc2`.
 - Safe hosted continuation file transport (F081 partial), commit `a3872a6`.
 - Per-target finish transport and receiver-export inspection (F091 partial), merges `2dabae7` and `87dd357`.
-- This readiness wave corrects the proof contract and runbook for VPS-first Johnny-only operation; documentation candidate `5a9ef82` plus the coordinator's tracked-source-cleanliness correction. No sender, receiver or other runtime code changed.
+- This readiness wave corrects the proof contract and runbook for VPS-first Johnny-only operation; documentation candidate `5a9ef82` plus the coordinator's tracked-source-cleanliness correction and explicit genuine-export-hold option. No sender, receiver or other runtime code changed.
 
-Adam's 2026-09-12 instruction supersedes the former Alice Mac / Johnny + Tony prerequisite. No Tony coordination occurred. Johnny holds actual receiver processing while ingress continues to accept HTTP, captures a real no-completed-turn control, then releases that same event and exports the actual turn. Withholding only an export cannot prove absence of a turn; disabling ingress into 4xx fails the control.
+Adam's 2026-09-12 instruction supersedes the former Alice Mac / Johnny + Tony prerequisite. No Tony coordination occurred. Johnny holds processing or the genuine receiver export while ingress accepts HTTP, captures the mode-specific control, then releases that same event/export. Export hold proves unobserved inspection, not absence of a real turn; disabling ingress into 4xx fails either control.
 
 ## What still needs action
 
-Receiver proof (F091) returns to planned until Johnny supplies a supported hold/release workflow, accessible history and an authorized v1 export. Use `JOHNNY-PROOF-OPERATOR-NOTE.md` and the VPS-first procedure in `docs/finish-webhooks.md`; no live send was attempted without those prerequisites. The previous worker's HTTP acceptance remains transport-only evidence, not reused as proof.
+Receiver proof (F091) returns to planned until Johnny supplies accessible actual history and an authorized v1 export with controlled release; the documented file-based export hold needs no processing API. Use `JOHNNY-PROOF-OPERATOR-NOTE.md` and the VPS-first procedure in `docs/finish-webhooks.md`; no live send was attempted without those prerequisites. The previous worker's HTTP acceptance remains transport-only evidence, not reused as proof.
 
 Route refusal (F081) returns to planned, waiting on a supported non-generating Pi check. Local interface comparison confirms installed 0.84.2 is unchanged; no generated probe, auth call or provider request was used to investigate refusal. Its failing counterexample stays locked at `b14b5fe`. Interface decision: `spec/features/planned/F081-spawn-refuses-an-unusable-route/interface-question.md`.
 

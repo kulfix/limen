@@ -9,14 +9,14 @@ Current verdict: **NO-GO**. See `RELEASE-READINESS.md` for product reasons and e
 - [x] Watch-only recovery of a lost hosted supervisor (F049), landed `6662bac`.
 - [x] One home for owner-choice and handoff policy (F087), landed `ec65dc2`.
 - [ ] Real unusable-route refusal (F081): safe hosted task transport landed `a3872a6`, but an auth-ready batch-only route still plants a job; planned pending a supported non-generating Pi check, with no generated probe authorized.
-- [ ] Live finish-to-Johnny proof (F091): inspection landed `87dd357`; still needs an automatic event accepted while Johnny holds processing, a no-completed-turn attestation, then same-event release and actual correlated completed-turn export.
+- [ ] Live finish-to-Johnny proof (F091): inspection landed `87dd357`; still needs an automatic accepted event, controlled processing or genuine-export hold, then same-event release and actual correlated completed-turn evidence.
 - [ ] Clean native verification: the retained full lane has registry-lock cancellation and warm-sweep timing failure; bounded diagnosis is planned as F709, not treated as a proven production defect.
 - [ ] Adam's review of the cut and actual receiver evidence; no tag, publish or release claim.
 
 ## Operator boundaries
 
 - Use only Johnny's privately verified single-target route; do not contact Tony or infer receiver identity from a config path.
-- Keep the webhook accepting HTTP during the control; a disabled endpoint returning 4xx fails it, and delayed export alone does not establish absence of a completed turn.
+- Keep the webhook accepting HTTP during processing or export hold; 4xx fails it, and export hold proves unobserved inspection rather than absence of an actual completed turn.
 - Johnny actively follows the named job and receiver history; do not depend on the finish webhook to wake its observer.
 - Preserve one automatic send and existing claims. A timeout may have accepted; no blind retry or routine manual duplicate.
 - Use hosted workers with literal `--provider openai-codex --model gpt-6-astra --thinking high`; documentation workers opt out of finish sending.

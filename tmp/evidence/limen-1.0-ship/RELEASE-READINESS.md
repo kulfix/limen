@@ -17,15 +17,15 @@ Adam's Johnny-only, VPS-first instruction supersedes the older Mac/two-bot proof
 
 | Gap | Why it prevents the accepted release claim | Smallest next action |
 |---|---|---|
-| Johnny receiver proof (F091) | A 2xx receipt is not evidence that Johnny completed a matching turn. No actual hold/release/history export is supplied on this seat. | Runbook corrected; the proof returns to planned until Johnny runs one automatic-only VPS event, captures accepted/no-turn while processing is held, releases that event and exports the real turn. |
+| Johnny receiver proof (F091) | A 2xx receipt is not evidence that Johnny completed a matching turn. No authorized actual receiver history/export is supplied on this seat. | Runbook corrected; Johnny runs one automatic-only VPS event, holds processing or its genuine export, captures accepted/unobserved inspection, then releases that same event/export. |
 | Unusable-route refusal (F081) | An auth-ready batch-only route can still plant a job and fail at its first turn. Auth/catalog readiness cannot meet the promised refusal. | Planned ticket waits for a supported non-generating Pi interface; retain the failing candidate unchanged. No generated probe spend. |
 | Native verification (F709) | Repeated registry cancellation and a warm-sweep timing failure leave the full native lane without a clean verdict. They do not by themselves prove a production deadlock or lost wake. | Short planned diagnosis ticket and operator note; no broad repair, disabled test or blanket timeout increase in this wave. |
 
-The receiver capability remains incomplete until real evidence is supplied; documentation is not a proof landing. `JOHNNY-PROOF-OPERATOR-NOTE.md` states the missing operator capability and safe stop conditions. A paused endpoint returning 4xx is not a hold, and an export-only delay cannot establish that no turn occurred.
+The receiver capability remains incomplete until real evidence is supplied; documentation is not a proof landing. `JOHNNY-PROOF-OPERATOR-NOTE.md` states the missing authorized history/export access and safe stop conditions. A paused endpoint returning 4xx fails the control. Adam's export-hold option is supported through atomic file release: it proves unobserved inspection, not absence of an actual turn.
 
 ## What this readiness wave landed
 
-The VPS-first Johnny-only runbook (documentation candidate `5a9ef82`), revised acceptance, operator prerequisites and no-send stop conditions are filed. The coordinator also makes its cleanliness check ignore pre-existing untracked evidence. No runtime code, credentials, receiver API or queue was added. The remaining receiver and refusal work is planned rather than shown as active implementation; native diagnosis has its own planned ticket (F709).
+The VPS-first Johnny-only runbook (documentation candidate `5a9ef82`), revised acceptance, operator prerequisites and no-send stop conditions are filed. The coordinator also makes its cleanliness check ignore pre-existing untracked evidence and includes the exact file-release commands for Johnny's genuine-export-hold option. No runtime code, credentials, receiver API or queue was added. The remaining receiver and refusal work is planned rather than shown as active implementation; native diagnosis has its own planned ticket (F709).
 
 ## Evidence, not inferred success
 
@@ -34,7 +34,7 @@ The VPS-first Johnny-only runbook (documentation candidate `5a9ef82`), revised a
 - Before this wave, receiver inspection passed 121 coordinator focused checks at candidate `ab33fd1`; raw output and synthetic positive/negative exports are under `/home/overment/limen-evidence/f091-51bb62b9/`. Synthetic exports do not prove Johnny woke.
 - That candidate's full native lane passed TypeScript/Biome and 368 tests, failed warm sweep at 28.217 ms against 20 ms, and cancelled registry locking at 60000 ms. The full lane was not rerun in this readiness pass; no cause is asserted.
 - `route-interface-refresh.log` records a local byte comparison: installed Pi 0.84.2 auth/model interfaces are unchanged from the inspected copies. No auth call, catalog refresh, generated route probe or provider request was made by this check.
-- The readiness coordinator inspected config metadata only; no private webhook values were read or changed and no live proof send was attempted without Johnny's supported hold/history workflow.
+- The readiness coordinator inspected config metadata only; no private webhook values were read or changed and no live proof send was attempted without access to Johnny's authorized actual history/export.
 
 Wake-attempt ceiling work (F090) remains parked, unchanged and locked at `0fa48fa` for Adam's later review; it is not part of this release or a reason to resume it.
 
