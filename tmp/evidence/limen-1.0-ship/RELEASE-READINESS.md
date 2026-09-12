@@ -10,6 +10,10 @@
 
 Earlier dependable-core landings remain intact: neutral finish keys, killed-caller startup ownership, watch-only supervisor recovery, owner policy in one prompt home, safe hosted task transport, and transport versus receiver-export inspection. Addresses remain in `DELIVERY-HANDOFF.md`. Review note for the cut: `ADAM-REVIEW.md`.
 
+## Quality
+
+**ALIGNED WITH NITS** — see `QUALITY-ALIGN.md` for the vision/styleguide review, independent finish-evidence check and non-blocking follow-ups. No must-fix-before-tag violation was found in the authorized cut. F081 remains skipped by Adam; F090 and F708 remain deferred. **GO for Adam review is unchanged**; no tag, push or publish is authorized by this quality report.
+
 ## Remaining before tag
 
 | Owner | Required action |
