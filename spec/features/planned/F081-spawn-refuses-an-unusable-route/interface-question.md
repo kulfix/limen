@@ -17,6 +17,8 @@ Owner decision (Adam via Johnny, 2026-09-12): keep waiting for a Pi-supported no
 
 **Recommended: wait.** Pi must expose a supported non-generating check of the exact resolved provider/model/API route, returning its refusal reason before Limen plants a job. The GO-plan coordinator rechecked installed 0.84.2 locally: both previously inspected interfaces remain byte-identical (`tmp/evidence/limen-1.0-ship/route-interface-go-plan.log`). No provider request was made; no new zero-spend refusal capability was found in those interfaces.
 
+The retained fake-Pi counterexample was also rerun against an archived copy of main `c9f2625`, without touching either locked worktree: 1 test failed because spawn still returned 0 and planted a job after fake auth readiness. Evidence: `/home/overment/limen-evidence/route-refusal-go-20260912/` (`counterexample.log`, `counterexample.exit`, archived source and exact test). This is a synthetic regression, not a generated provider probe or evidence about the usability of Adam's actual model route.
+
 Adam's alternative is explicit authorization for a generated probe with a numeric total spend cap, input/output token caps, wall-time cap and Pi-owned retry budget, including what happens when a cap cannot be enforced. Authorization would permit investigation, not instantly prove refusal or guarantee cost. No such limits are currently authorized, and auth/catalog readiness remains insufficient under either choice. The failing route candidate stays locked at `b14b5fe`; waiting keeps the accepted cut NO-GO rather than dropping this requirement.
 
 ## Safe transport seam
