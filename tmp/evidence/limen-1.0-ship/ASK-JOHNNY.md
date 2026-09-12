@@ -1,6 +1,6 @@
 # Johnny: supply one genuine held/released finish export
 
-The VPS harness is prepared; **no live send has been attempted**. Prepare your receiver now, but launch after the native-check worker ends so hosted workers remain sequential. The dedicated config and authorized receiver history/export are missing. You own the receiver; no Tony, paused ingress, guessed API or manual ping. Keep HTTP enabled. This is export hold: the real turn may complete before capture; only its inspected export is withheld.
+The VPS harness is prepared; **no live send has been attempted**. Native verification is landed and no implementation worker is running; you can operate this proof now. The dedicated config and authorized receiver history/export are missing. You own the receiver; no Tony, paused ingress, guessed API or manual ping. Keep HTTP enabled. This is export hold: the real turn may complete before capture; only its inspected export is withheld.
 
 1. Privately create mode-600 `/home/overment/limen/.limen/finish-webhook-johnny.env`, excluded from Git, selecting **only your authorized route as target 1**. Verify history access and preservation of `finishEvent` before sending. Record that verification and the private lookup convention in `mapping-owner.txt` below, without URLs/credentials. Then run from the VPS's hosted Herdr shell (if unavailable, ask this coordinator to launch; do not silently switch modes):
 

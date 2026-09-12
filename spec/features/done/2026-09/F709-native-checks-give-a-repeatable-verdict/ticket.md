@@ -27,4 +27,4 @@ The dependable-core cut has a trustworthy native-check result on the VPS. A fail
 
 ## Notes
 
-Evidence and the bounded next command are in `operator-note.md`. This is release-verification follow-up, not permission to resume the parked wake-ceiling work.
+Evidence and fixture seams are in `notes.md`. This is release-verification follow-up, not permission to resume the parked wake-ceiling work.

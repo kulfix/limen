@@ -9,7 +9,7 @@
 - **Narrow 1.0 continuation (Adam):** deliver the remaining six tickets without the parked wake candidate; no F090 merge, rebase, third repair, or widening, and its unchanged checkout is Git-locked against automatic pruning.
 - **Narrow 1.0 proof boundary (Adam via Johnny, 2026-09-12):** VPS-first, Johnny-only automatic finish proof is sufficient; Johnny holds processing or the genuine receiver export while HTTP remains accepted, then releases the same event/export; label export hold as unobserved evidence, never absence of an actual turn; no Tony coordination, rejected-ingress hold or synthetic proof.
 - **Narrow 1.0 deferrals:** field guide, Claude perspective, closing overview, history retention, remote rollout, GitHub doorbell, and expanded job automation wait beyond this wave; landed explicit-model work is not reopened.
-- **Narrow 1.0 checkpoint:** NO-GO in `tmp/evidence/limen-1.0-ship/RELEASE-READINESS.md`; Johnny's checked export helper is landed, actual receiver proof and route refusal wait externally, and native verification has one bounded fixture repair running, with no tag or release claim.
+- **Narrow 1.0 checkpoint:** NO-GO in `tmp/evidence/limen-1.0-ship/RELEASE-READINESS.md`; native verification is green and Johnny's export helper is ready, while actual receiver proof, route refusal and Adam's review remain, with no tag or release claim.
 - **Narrow 1.0 final continuation (Adam):** receiver-owned file evidence and honest CLI inspection are landed; refusal waits for Pi-supported non-generating validation or explicit spend authorization, never inferred from auth/catalog or guessed zero-cost generation.
 - **Actively managed finish delivery (Adam):** Johnny self-plays receiver proof without relying on a webhook wake; this wave's documentation workers opt out of sending, and only the authorized proof job selects a privately verified Johnny-only route.
 - Reliable in-flight control on one seat; a laptop is a window; GitHub may ring the doorbell later.
@@ -26,7 +26,7 @@
 
 ## NOW
 
-- `F709-native-checks-give-a-repeatable-verdict` (🟠 ACTIVE): registry correction passes focused checks, full native has 369 passes and one reproduced fake-Herdr continuation failure; correct its repeated post-start fixture delay and run one lane at the changed candidate, with no runtime/wake-ceiling changes, disabled assertions or timeout increases.
+- No implementation running; Johnny can now operate the prepared receiver proof, while route refusal waits on the recorded Pi/spend decision.
 
 ## NEXT
 
@@ -44,6 +44,7 @@
 
 ## PROVEN
 
+- `F709-native-checks-give-a-repeatable-verdict` (🟢 PROVEN): test-only registry/startup fixtures landed `2181d35`; repaired native lane passed TypeScript, Biome and all 370 tests, with earlier failures retained and no runtime, wake-ceiling or timeout changes.
 - `F087-prompt-policy-has-one-home` (🟢 PROVEN): handoff rules and owner-choice precedence landed `ec65dc2` without runtime changes; focused 71 and coordinator 12 passed, packaged histories verified, full native 368 passed with one registry-lock cancellation retained.
 - `F049-running-owner-truth` (🟢 PROVEN): watch-only supervisor recovery landed `6662bac` after a test-only wake-fixture correction; focused 103 passed and corrected wake/recovery 50 passed, original full native 385 passed with wake failure plus registry timeout retained; open coordinators need reload.
 - `F048-hosted-runtime-start` (🟢 PROVEN): killed-caller startup ownership proof landed `c6d4d6c` without runtime changes; focused 87 passed, coordinator's three falsifiers passed, full native 381 passed with one registry-lock cancellation retained.
@@ -53,6 +54,5 @@
 - `F088-spawns-use-explicit-model-defaults` (🟢 PROVEN): coordinators use Codex/xhigh and Pi jobs default to Codex/high without inheriting global Grok. Landed `aa5382e`; focused checks passed, full native lane incomplete; Adam owns review.
 - `F085-sweep-skips-settled-jobs` (🟢 PROVEN): coordinators skip settled history while completion wakes remain observable. Landed `5a00065`; review PASS of `a482020`, with the full native lane incomplete.
 - `F083-spec-folder-says-one-thing-once` (🟢 PROVEN): specs keep one check and one constraint per line, and delete files when they stop being true. Landed `7d966e5`. Review PASS of `e386591`.
-- `F078-a-picture-is-evidence-when-seen` (🟢 PROVEN): visual evidence names what opened frames showed; identical frames that should differ fail the check. Landed `5067c69`. Review PASS of `5067c69`.
-- 2026-09: 39 landed. Hosted jobs end themselves; review loops stop at a ceiling; failed turns and changed-file counts are visible; titles name the change and identifiers carry their meaning; handoffs point at board-owned boundaries; one living picture follows system shape; authorized research compares named sources before judgment; workers falsify candidates and retain commit-bound proof beyond their worktrees; one correction reaches watched live jobs. spec/features/done/2026-09/
+- 2026-09: 40 landed. Hosted jobs end themselves; review loops stop at a ceiling; failed turns and changed-file counts are visible; titles name the change and identifiers carry their meaning; handoffs point at board-owned boundaries; one living picture follows system shape; authorized research compares named sources before judgment; workers falsify candidates and retain commit-bound proof beyond their worktrees; one correction reaches watched live jobs; visual evidence names what opened frames showed. spec/features/done/2026-09/
 - 2026-08: 44 landed. Hosted jobs run in a named tab; wakes retry; the process tree is contained. spec/features/done/2026-08/
