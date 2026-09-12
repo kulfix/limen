@@ -1,31 +1,34 @@
-# Narrow Limen 1.0: delivery handback
+# Narrow Limen 1.0 delivery handback
 
-The safe product work is landed on this VPS's main checkout, but the accepted narrow 1.0 cut cannot yet be called delivered. Real route refusal and the required Alice Mac receiver proof are missing; native verification is not green. No tag, publish, remote push or Adam review verdict is claimed.
+**NO-GO.** The VPS has the landed dependable-core improvements and a Johnny-only proof procedure, but not the accepted release's route refusal or actual held/released receiver evidence. Full native verification remains unresolved. Current verdict and skim list: `RELEASE-READINESS.md`. No tag, release, publish, remote push or Adam review verdict is claimed.
 
 ## What landed
 
-- Neutral finish configuration names (F092), merge `a76e0ae9b564d540d710189bb3815242d50c71bd`.
-- Hosted startup ownership proof (F048), merge `c6d4d6c271ca5648789423ae75f0e13c02d57792`.
-- Watch-only recovery of lost supervisors (F049), merge `6662bac4afad29c647f2d76ecf7e61247a892aeb`.
-- One home for handoff policy and owner choices across resume (F087), merge `ec65dc266410f7bbe46366a7997f8ae2dd0db21a`.
-- Safe hosted continuation file transport, the completed portion of route refusal (F081), commit `a3872a68ae1b408dabc6ef57d7f645971c08abfc`.
-- Per-target finish transport, merge `2dabae76b5b13747f3a5fd502ff2e8ea38f22095`, and receiver-export inspection, merge `87dd357cde8740cb5b129ee909cc42129eb88b0a` (F091). Both CLI views now distinguish HTTP results from matching completed-turn exports. F091 is not PROVEN.
+- Neutral finish configuration names (F092), merge `a76e0ae`.
+- Hosted startup ownership proof (F048), merge `c6d4d6c`.
+- Watch-only recovery of lost hosted supervisors (F049), merge `6662bac`.
+- One home for owner choices and handoff policy on resume (F087), merge `ec65dc2`.
+- Safe hosted continuation file transport (F081 partial), commit `a3872a6`.
+- Per-target finish transport and receiver-export inspection (F091 partial), merges `2dabae7` and `87dd357`.
+- This readiness wave corrects the proof contract and runbook for VPS-first Johnny-only operation; documentation candidate `5a9ef82` plus the coordinator's tracked-source-cleanliness correction. No sender, receiver or other runtime code changed.
 
-Receiver inspection uses an explicit absolute `LIMEN_FINISH_EVIDENCE_DIR`, an operator-controlled `receivers.json` target mapping and bounded per-event/per-target JSON exports. It authenticates neither origin nor history. The source writer is trusted explicitly; actual receiver history must be followed independently. No receiver API, network probe, polling or signing infrastructure was added.
+Adam's 2026-09-12 instruction supersedes the former Alice Mac / Johnny + Tony prerequisite. No Tony coordination occurred. Johnny holds actual receiver processing while ingress continues to accept HTTP, captures a real no-completed-turn control, then releases that same event and exports the actual turn. Withholding only an export cannot prove absence of a turn; disabling ingress into 4xx fails the control.
 
-## What needs Adam or Johnny
+## What still needs action
 
-1. **Alice Mac proof and review.** Adam reviews the cut; Johnny arranges the authorized Mac run using the exact procedure under “Alice Mac receiver-owned proof” in `docs/finish-webhooks.md`. Use an installation containing receiver-inspection merge `87dd357`; record its actual revision or package checksum in the proof bundle. Obtain the private Johnny/Tony ordinal mapping and a supported receiver hold before spawning. Capture one automatic event with HTTP accepted but processing held, plus the owner's no-completed-turn attestation; then release that same event, follow both real completed turns and import their authorized exports. Retain both CLI views, safe transport records, mapping attestation, history references/excerpts and control evidence. If a hold is unsupported, obtain an authorized alternative control before sending. Do not invent an API or use a second manual ping. Johnny outside Pi follows the named job and files directly; a Pi coordinator runs its own named `limen watch` command. This coordinator remains the sole landing/board writer.
-2. **Real route refusal.** Installed Pi 0.84.2's auth implementation and model interface are unchanged and expose no supported non-generating exact-route probe. Recommend waiting for that Pi interface. The alternative requires Adam's explicit generated-probe authorization, including spend/token, latency and retry limits. No generated probe was run and no zero-cost generation was assumed. The failing auth-ready batch-only counterexample remains unchanged and locked at `b14b5fedb5b9eefe150d569427cebe63c6c53ba6`; see the route feature's `checks-2.md` and `interface-question.md`.
+Receiver proof (F091) returns to planned until Johnny supplies a supported hold/release workflow, accessible history and an authorized v1 export. Use `JOHNNY-PROOF-OPERATOR-NOTE.md` and the VPS-first procedure in `docs/finish-webhooks.md`; no live send was attempted without those prerequisites. The previous worker's HTTP acceptance remains transport-only evidence, not reused as proof.
 
-Native failures still need technical investigation before claiming clean native verification. They are not attributed to the environment or repaired by this handback; no unrelated repair was folded into these slices.
+Route refusal (F081) returns to planned, waiting on a supported non-generating Pi check. Local interface comparison confirms installed 0.84.2 is unchanged; no generated probe, auth call or provider request was used to investigate refusal. Its failing counterexample stays locked at `b14b5fe`. Interface decision: `spec/features/planned/F081-spawn-refuses-an-unusable-route/interface-question.md`.
 
-## Evidence and actual finish delivery
+Native diagnosis is planned as F709. The latest retained full lane passed TypeScript/Biome and 368 tests, but registry locking cancelled after 60000 ms and warm sweep measured 28.217 ms against 20 ms. Causes remain unproven; no broad repair or full rerun was performed. See its `operator-note.md`.
 
-Receiver candidate `ab33fd170500844e93e0999db12ffdf82cb329a8` passed coordinator typecheck and 121 focused checks at the clean commit. The offline positive/negative harness retains both CLI views and confirms no additional send on repeat finalization. Its full native lane ran once: TypeScript/Biome passed, 368 tests passed, the registry-lock test exceeded 60000ms, and a warm-sweep test measured 28.217ms against a 20ms limit. Causes remain unproven; no full rerun was performed.
+Wake-ceiling candidate F090 stays parked, unchanged and locked at `0fa48fa` for Adam's later review. Author routing F708 stays spec-only after narrow 1.0, not a blocker. Adam retains review; there was no independent review job.
 
-Evidence: `/home/overment/limen-evidence/f091-51bb62b9/`, especially `coordinator-focused.log`, `coordinator-offline/`, `native.log` and `HANDOFF.md`. The feature's `checks-2.md` records the coordinator landing decision. The offline harness command and exact v1 contract are in `docs/finish-webhooks.md`.
+## Checks and evidence
 
-The implementation worker's automatic VPS send was accepted by one configured target at `2026-09-11T22:29:07.704Z`; no receiver completion was verified and no manual retry was sent. Its event is `limen-finish-dde63db51430f5a0115c02eed3e91d972d491bdfe6c920799a1f48172ef28b32`, filed under job `2026-09-11-f091-observed-bot-turns-round-2-51bb62b9`. This is transport evidence only, not the required Mac proof. Johnny actively shepherds rather than waiting for that webhook to wake him.
+- Johnny-only documentation worker: 117 focused checks passed; six shell blocks parsed; v1 contract and historical result bullets retained. Coordinator inspected the complete patch and synthetic before/after CLI views, then reran static runbook checks after its small correction. `/home/overment/limen-evidence/f091-johnny-only-552a2b2d/`.
+- Coordinator: `npm run typecheck` passed; Biome over tracked files passed (81 files). Broad `biome check .` failed with 37 errors while scanning untracked historical evidence. That evidence was preserved, not reformatted; this is not a full native pass. `/home/overment/limen-evidence/release-readiness-2026-09-12/`.
+- Prior receiver inspection: 121 coordinator focused checks passed; full-native failures and offline exports retained at `/home/overment/limen-evidence/f091-51bb62b9/`.
+- Local no-generation interface check: `route-interface-refresh.log`.
 
-The wake-ceiling candidate (F090) remains parked, unchanged and locked at `0fa48fabd0f8faa9b461292d9cba97a1708fa59a`; no merge, repair, rebase or widening was performed. No implementation jobs remain running at handback. If the coordinator has not reloaded since the supervisor-recovery landing, `/reload` loads that changed hook dependency; new CLI invocations already use main.
+No implementation jobs remain running. This wave needs no runtime reload. Existing coordinators that never reloaded after supervisor recovery still need `/reload`; that is prior landed hook work. Tracked checkout changes are committed; pre-existing untracked evidence is left untouched. Johnny supplies live receiver evidence, Adam skims the cut and open gaps, and Limen remains unreleased meanwhile.

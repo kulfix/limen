@@ -9,7 +9,7 @@
 - **Narrow 1.0 continuation (Adam):** deliver the remaining six tickets without the parked wake candidate; no F090 merge, rebase, third repair, or widening, and its unchanged checkout is Git-locked against automatic pruning.
 - **Narrow 1.0 proof boundary (Adam via Johnny, 2026-09-12):** VPS-first, Johnny-only automatic finish proof is sufficient; Johnny controls HTTP-accepted/no-completed-turn hold and release on the same event, then exports the real completed turn; no Tony coordination, no endpoint pause that rejects HTTP, no synthetic or export-delay-only absence claim.
 - **Narrow 1.0 deferrals:** field guide, Claude perspective, closing overview, history retention, remote rollout, GitHub doorbell, and expanded job automation wait beyond this wave; landed explicit-model work is not reopened.
-- **Narrow 1.0 checkpoint:** four tickets are proven and receiver-export inspection is landed; Johnny-only live proof, route refusal and native-check failures remain open, with no tag or release claim.
+- **Narrow 1.0 checkpoint:** NO-GO in `tmp/evidence/limen-1.0-ship/RELEASE-READINESS.md`; Johnny-only VPS proof docs are landed, while live receiver evidence, route refusal and native verification remain planned gaps, with no tag or release claim.
 - **Narrow 1.0 final continuation (Adam):** receiver-owned file evidence and honest CLI inspection are landed; refusal waits for Pi-supported non-generating validation or explicit spend authorization, never inferred from auth/catalog or guessed zero-cost generation.
 - **Actively managed finish delivery (Adam):** Johnny self-plays receiver proof without relying on a webhook wake; this wave's documentation workers opt out of sending, and only the authorized proof job selects a privately verified Johnny-only route.
 - Reliable in-flight control on one seat; a laptop is a window; GitHub may ring the doorbell later.
@@ -26,10 +26,11 @@
 
 ## NOW
 
-- `F091-finish-job-shows-bot-turn-receipt` (🟠 ACTIVE): receiver-export inspection landed `87dd357`; update the runbook for VPS-first Johnny-only proof, retaining a real accepted/no-turn hold and same-event release before PROVEN, with no guessed receiver API, polling or signing infrastructure.
+- No implementation running; the remaining release gaps are planned below.
 
 ## NEXT
 
+- `F091-finish-job-shows-bot-turn-receipt` (🔴 PLANNED): receiver inspection and Johnny-only VPS runbook are landed, with 117 focused checks passed; Johnny must supply supported processing hold/release and real history/export evidence before PROVEN, with no Tony coordination or guessed API.
 - `F081-spawn-refuses-an-unusable-route` (🔴 PLANNED): safe transport landed `a3872a6`, but refusal blocks narrow 1.0 pending a supported non-generating Pi probe; 0.84.2 interfaces are unchanged, failing candidate `b14b5fe` stays locked, with no generated probe or auth/catalog substitute.
 - `F709-native-checks-give-a-repeatable-verdict` (🔴 PLANNED): diagnose retained registry-lock and warm-sweep failures in a bounded lane before claiming clean native verification; no wake-ceiling changes or blanket timeout increases.
 

@@ -1,6 +1,6 @@
 # Finish inspection: transport and receiver-exported turns
 
-Receiver-export inspection landed as `87dd357`, superseding the transport-only constant-unobserved behavior recorded in `checks-1.md`. Johnny actively shepherds the outstanding Alice Mac proof independently of webhook acceptance; Adam reviews the result.
+Receiver-export inspection landed as `87dd357`, superseding the transport-only constant-unobserved behavior recorded in `checks-1.md`. Johnny actively shepherds the outstanding VPS-first, single-target proof independently of webhook acceptance; Adam reviews the result. The current proof boundary in `spec/build.md` supersedes the original Alice Mac / Johnny + Tony requirement; Mac is optional.
 
 ## Product seams
 
@@ -16,4 +16,8 @@ Receiver-export inspection landed as `87dd357`, superseding the transport-only c
 
 Retained round-two evidence: `/home/overment/limen-evidence/f091-51bb62b9/`. `checks-2.md` binds the landing to coordinator checks and records both full-native failures without inferring their cause. Earlier transport evidence remains at `/home/overment/limen-evidence/f091-5932f3a5/`.
 
-Next: Adam reviews the cut and Johnny shepherds the authorized Alice Mac procedure in `docs/finish-webhooks.md`. It uses one fresh automatic-only job, an owner-held HTTP-accepted/no-turn control on that same event, then Johnny/Tony completed-turn exports with externally followed history. If a supported hold is unavailable, obtain an authorized alternative control before sending; do not guess an API. Do not claim Mac proof from this VPS, synthetic exports or the implementation worker's automatic finish receipt. Route refusal and the native-check failures remain separate open items.
+Next: Johnny operates the VPS-first procedure in `docs/finish-webhooks.md` and Adam reviews. It uses `/home/overment/limen`, records the reviewed source revision, explicitly selects a privately verified Johnny-only config, and spawns one hosted job with literal `--provider openai-codex --model gpt-6-astra --thinking high`. The optional Mac adaptation replaces only the two checkout paths. The v1 export contract is unchanged; multi-target synthetic tests remain valid but do not require Tony for live proof.
+
+Before sending, Johnny must enable a supported processing hold that accepts HTTP 2xx yet prevents actual event processing until release. Retain accessible receiver history showing no completed turn while held, then release that same event without a second send and export the actual completed turn. Delaying an export alone proves only unobserved inspection. Stop if supported hold/release, authorized export access or verifiable history is unavailable; report the missing capability, never guess a receiver API or add sender/queue machinery. The runbook captures both CLI views before/after import, unchanged transport records, one-delivery ingress history, and operator control/release attestations outside the worktree.
+
+The Johnny-only documentation check and landing evidence are in `checks-3.md`. Operator prerequisites and safe stop conditions are in `tmp/evidence/limen-1.0-ship/JOHNNY-PROOF-OPERATOR-NOTE.md`. The outstanding receiver proof is planned rather than represented as running implementation; no terminal outcome is earned. Route refusal and native verification remain separate release gaps.

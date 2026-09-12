@@ -17,14 +17,20 @@ Adam's Johnny-only, VPS-first instruction supersedes the older Mac/two-bot proof
 
 | Gap | Why it prevents the accepted release claim | Smallest next action |
 |---|---|---|
-| Johnny receiver proof (F091) | A 2xx receipt is not evidence that Johnny completed a matching turn. No actual hold/release/history export is supplied on this seat. | Correct the runbook, then Johnny runs one automatic-only VPS event against his verified single-target route, captures accepted/no-turn while processing is held, releases the same event and exports the real turn. |
+| Johnny receiver proof (F091) | A 2xx receipt is not evidence that Johnny completed a matching turn. No actual hold/release/history export is supplied on this seat. | Runbook corrected; the proof returns to planned until Johnny runs one automatic-only VPS event, captures accepted/no-turn while processing is held, releases that event and exports the real turn. |
 | Unusable-route refusal (F081) | An auth-ready batch-only route can still plant a job and fail at its first turn. Auth/catalog readiness cannot meet the promised refusal. | Planned ticket waits for a supported non-generating Pi interface; retain the failing candidate unchanged. No generated probe spend. |
 | Native verification (F709) | Repeated registry cancellation and a warm-sweep timing failure leave the full native lane without a clean verdict. They do not by themselves prove a production deadlock or lost wake. | Short planned diagnosis ticket and operator note; no broad repair, disabled test or blanket timeout increase in this wave. |
 
 The receiver capability remains incomplete until real evidence is supplied; documentation is not a proof landing. `JOHNNY-PROOF-OPERATOR-NOTE.md` states the missing operator capability and safe stop conditions. A paused endpoint returning 4xx is not a hold, and an export-only delay cannot establish that no turn occurred.
 
+## What this readiness wave landed
+
+The VPS-first Johnny-only runbook (documentation candidate `5a9ef82`), revised acceptance, operator prerequisites and no-send stop conditions are filed. The coordinator also makes its cleanliness check ignore pre-existing untracked evidence. No runtime code, credentials, receiver API or queue was added. The remaining receiver and refusal work is planned rather than shown as active implementation; native diagnosis has its own planned ticket (F709).
+
 ## Evidence, not inferred success
 
+- This wave's documentation worker passed 117 focused checks once. Six proof shell blocks parse; the v1 contract and historical results are unchanged. Coordinator inspected the full patch and synthetic views and reran the static runbook checks after its correction. Evidence: `/home/overment/limen-evidence/f091-johnny-only-552a2b2d/`.
+- Coordinator `npm run typecheck` passed; tracked-file Biome passed (81 files) at main `0220f26`. Broad `biome check .` failed with 37 errors while scanning untracked historical evidence; that evidence remains untouched. This does not establish a full native pass. Raw logs: `/home/overment/limen-evidence/release-readiness-2026-09-12/`.
 - Before this wave, receiver inspection passed 121 coordinator focused checks at candidate `ab33fd1`; raw output and synthetic positive/negative exports are under `/home/overment/limen-evidence/f091-51bb62b9/`. Synthetic exports do not prove Johnny woke.
 - That candidate's full native lane passed TypeScript/Biome and 368 tests, failed warm sweep at 28.217 ms against 20 ms, and cancelled registry locking at 60000 ms. The full lane was not rerun in this readiness pass; no cause is asserted.
 - `route-interface-refresh.log` records a local byte comparison: installed Pi 0.84.2 auth/model interfaces are unchanged from the inspected copies. No auth call, catalog refresh, generated route probe or provider request was made by this check.
