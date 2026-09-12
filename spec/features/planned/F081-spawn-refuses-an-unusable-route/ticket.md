@@ -36,5 +36,7 @@ be presented as proof that the job's route works.
 ## Notes
 
 Wait for the supported Pi interface described in `interface-question.md`; no
-generated probe is authorized. Safe hosted file transport already exists and
-must remain intact.
+generated probe is authorized. Adam may instead explicitly bound total spend,
+input/output tokens, wall time and Pi-owned retries before changing this scope;
+waiting is recommended and keeps the accepted cut unreleased. Safe hosted
+file transport already exists and must remain intact.

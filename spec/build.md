@@ -30,8 +30,8 @@
 
 ## NEXT
 
-- `F091-finish-job-shows-bot-turn-receipt` (🔴 PLANNED): receiver inspection and Johnny-only VPS runbook are landed, with 117 focused checks passed; Johnny must supply real history/export evidence with controlled processing or export hold/release before PROVEN, with no Tony coordination or guessed API.
-- `F081-spawn-refuses-an-unusable-route` (🔴 PLANNED): safe transport landed `a3872a6`, but refusal blocks narrow 1.0 pending a supported non-generating Pi probe; 0.84.2 interfaces are unchanged, failing candidate `b14b5fe` stays locked, with no generated probe or auth/catalog substitute.
+- `F091-finish-job-shows-bot-turn-receipt` (🔴 PLANNED): Johnny's export-hold helper is ready with 11 synthetic checks passed; `ASK-JOHNNY.md` names the missing dedicated route and actual history/export, with no live send, Tony coordination or guessed API.
+- `F081-spawn-refuses-an-unusable-route` (🔴 PLANNED): safe transport landed `a3872a6`, but refusal blocks narrow 1.0; local 0.84.2 interface recheck is unchanged, waiting on Pi is recommended over Adam-authorized bounded probe spend, and failing candidate `b14b5fe` stays locked without auth/catalog substitution.
 
 - Ticket finishes wake the author's bots (`F708-ticket-finishes-wake-the-authors-bots`, 🔴 PLANNED): private author-to-target map with explicit fallback or visible no-send; recommended after narrow 1.0, spec only, with no identity service or ownership transfer.
 - `F090-wake-errors-count-toward-attempt-ceiling` (🔴 PLANNED): parked unchanged at `0fa48fa` for Adam's later review, outside the remaining wave; refusal and installed proof passed, full lane timed out with four failures (`checks-2.md`); no merge, third repair, or widening.

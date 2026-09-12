@@ -13,6 +13,12 @@ Inspected Pi 0.84.2 at `/home/overment/.nvm/versions/node/v24.19.0/lib/node_modu
 
 Owner decision (Adam via Johnny, 2026-09-12): keep waiting for a Pi-supported non-generating probe that validates the exact resolved model/provider/API endpoint and returns its refusal reason. No generated probe is authorized. The readiness check found the installed 0.84.2 auth implementation and model interface byte-identical to the retained inspected copies; it made no provider request. Evidence: `tmp/evidence/limen-1.0-ship/route-interface-refresh.log`. A future change of spend policy must explicitly bound tokens/spend, latency and Pi-owned retries; catalog/auth readiness must never be represented as route proof.
 
+## Decision needed to close narrow 1.0
+
+**Recommended: wait.** Pi must expose a supported non-generating check of the exact resolved provider/model/API route, returning its refusal reason before Limen plants a job. The GO-plan coordinator rechecked installed 0.84.2 locally: both previously inspected interfaces remain byte-identical (`tmp/evidence/limen-1.0-ship/route-interface-go-plan.log`). No provider request was made; no new zero-spend refusal capability was found in those interfaces.
+
+Adam's alternative is explicit authorization for a generated probe with a numeric total spend cap, input/output token caps, wall-time cap and Pi-owned retry budget, including what happens when a cap cannot be enforced. Authorization would permit investigation, not instantly prove refusal or guarantee cost. No such limits are currently authorized, and auth/catalog readiness remains insufficient under either choice. The failing route candidate stays locked at `b14b5fe`; waiting keeps the accepted cut NO-GO rather than dropping this requirement.
+
 ## Safe transport seam
 
 `src/supervisor.ts` already passes fresh hosted tasks as `@task.md` and the preamble as a file path. Continuations alone read the whole instruction into a shell argument. They now pass `--continue @<job>/continue`, using Pi's existing file-argument transport, without changing detached continuation.
