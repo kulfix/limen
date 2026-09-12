@@ -55,8 +55,9 @@ test("registry registration and pruning repeatedly reclaim dead locks across pro
 	await mkdir(dirname(registry), { recursive: true });
 	const seat = new URL("../hook/seat.ts", import.meta.url).href,
 		sweep = new URL("../src/commands/sweep.ts", import.meta.url).href,
-		registerSource = `import { registerProject } from ${JSON.stringify(seat)}; await registerProject(process.argv[1]);`,
-		pruneSource = `import { sweepCommand } from ${JSON.stringify(sweep)}; await sweepCommand([], process.cwd());`,
+		ready = `process.send("ready"); await new Promise(resolve => process.once("message", resolve)); process.disconnect();`,
+		registerSource = `import { registerProject } from ${JSON.stringify(seat)}; ${ready} for (const project of process.argv.slice(1)) await registerProject(project);`,
+		pruneSource = `import { sweepCommand } from ${JSON.stringify(sweep)}; ${ready} for (let pass = 0; pass < 4; pass++) await sweepCommand([], process.cwd());`,
 		environment = { ...process.env, LIMEN_HOME: home, LIMEN_HERDR: "0" };
 	for (let round = 0; round < 8; round++) {
 		const projects = Array.from({ length: 80 }, (_, index) => join(home, `project-${round}-${index}`));
@@ -64,10 +65,18 @@ test("registry registration and pruning repeatedly reclaim dead locks across pro
 		await writeFile(registry, `${join(home, "missing-one")}\n${join(home, "missing-two")}\n`);
 		await mkdir(`${registry}.lock`);
 		await writeFile(join(`${registry}.lock`, "owner"), "999999999\n");
-		const results = await Promise.all([
-			...projects.map((project) => runChild(registerSource, [project], environment)),
-			...Array.from({ length: 12 }, () => runChild(pruneSource, [], environment)),
-		]);
+		// Preserve 80 registrations and 12 prunes per round without 92 Node startups.
+		// All imports finish before release, so both roles contend for the dead lock.
+		const began = performance.now();
+		const results = await runChildren(
+			[
+				...Array.from({ length: 8 }, (_, index) => ({ source: registerSource, args: projects.slice(index * 10, (index + 1) * 10) })),
+				...Array.from({ length: 3 }, () => ({ source: pruneSource, args: [] })),
+			],
+			environment,
+			context.signal,
+		);
+		context.diagnostic(`round ${round + 1}: 80 registrations, 12 prunes, 11 ready children; ${(performance.now() - began).toFixed(3)} ms`);
 		assert.deepEqual(
 			results.filter((result) => result.status !== 0),
 			[],
@@ -122,14 +131,32 @@ test("sweep install writes a valid absolute launchd interval job and uninstall r
 	assert.equal(await readFile(kept, "utf8"), "keep\n");
 });
 
-function runChild(source: string, args: readonly string[], env: NodeJS.ProcessEnv): Promise<{ readonly status: number; readonly stderr: string }> {
-	return new Promise((done) => {
-		const child = spawn(process.execPath, ["--input-type=module", "--eval", source, ...args], { env, stdio: ["ignore", "ignore", "pipe"] });
-		let stderr = "";
-		child.stderr.setEncoding("utf8");
-		child.stderr.on("data", (chunk) => (stderr += chunk));
-		child.on("error", (error) => done({ status: 1, stderr: `${stderr}${error.message}` }));
-		child.on("exit", (status) => done({ status: status ?? 1, stderr }));
-	});
+function runChildren(tasks: readonly { readonly source: string; readonly args: readonly string[] }[], env: NodeJS.ProcessEnv, signal: AbortSignal) {
+	const children = tasks.map(({ source, args }) =>
+		spawn(process.execPath, ["--input-type=module", "--eval", source, ...args], {
+			env,
+			stdio: ["ignore", "ignore", "pipe", "ipc"],
+			signal,
+			killSignal: "SIGKILL",
+			timeout: 15_000,
+		}),
+	);
+	let ready = 0;
+	return Promise.all(
+		children.map(
+			(child) =>
+				new Promise<{ readonly status: number; readonly stderr: string }>((done) => {
+					let stderr = "";
+					child.stderr?.setEncoding("utf8");
+					child.stderr?.on("data", (chunk) => (stderr += chunk));
+					child.on("error", (error) => (stderr += error.message));
+					child.once("message", () => {
+						ready += 1;
+						if (ready === children.length) for (const waiting of children) waiting.send("go", (error) => error && waiting.kill("SIGKILL"));
+					});
+					child.on("close", (status, killed) => done({ status: status ?? 1, stderr: `${stderr}${killed ? `killed by ${killed}` : ""}` }));
+				}),
+		),
+	);
 }
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
