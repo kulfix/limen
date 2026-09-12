@@ -5,7 +5,7 @@
 - **Ops remediation lock 2026-09-10 (Adam):** (1) two unsuccessful automatic wake attempts then deliberate recovery; park-and-preserve on quota — no silent model substitution. (2) HTTP ≠ bot turn; the original Alice Mac / Johnny + Tony requirement is superseded by the VPS-first Johnny-only instruction below. (3) Landing/board writer = the feature coordinator **or** the coordinator-manager (Johnny/Tony); Adam reviews these slices; named-job `limen watch <id>` for takeovers — not `watch --running`. Adam's continuation parks F090 for later review; the remaining sequence is F092 neutral webhook names → F091 finish receipts → F081 unusable route → F048 hosted runtime start → F049 running-owner truth → F087 policy-on-resume.
 
 - **Narrow 1.0 authorized 2026-09-11 (Adam):** Phase 0 PASS recorded in `tmp/evidence/limen-1.0-ship/GATE-RESULT.md`; dependable core only, with no new control plane, silent fallback, unsolicited ownership, or blanket review gates.
-- **Narrow 1.0 landing owner (Adam via Johnny, 2026-09-12):** this `release readiness` coordinator (session `01a094c4-f303-7016-a3ce-df7879c1b745`) is the sole landing/board writer; hosted workers run sequentially in isolated worktrees with `--provider openai-codex --model gpt-6-astra --thinking high`; Adam reviews, with no independent review lane.
+- **Narrow 1.0 landing owner (Adam via Johnny, 2026-09-12):** this `release proof` coordinator (session `01a0951b-1b04-791a-bc69-84b8c2cde9c8`) is the sole landing/board writer; hosted workers run sequentially in isolated worktrees with `--provider openai-codex --model gpt-6-astra --thinking high`; Adam reviews, with no independent review lane.
 - **Narrow 1.0 continuation (Adam):** deliver the remaining six tickets without the parked wake candidate; no F090 merge, rebase, third repair, or widening, and its unchanged checkout is Git-locked against automatic pruning.
 - **Narrow 1.0 proof boundary (Adam via Johnny, 2026-09-12):** VPS-first, Johnny-only automatic finish proof is sufficient; Johnny holds processing or the genuine receiver export while HTTP remains accepted, then releases the same event/export; label export hold as unobserved evidence, never absence of an actual turn; no Tony coordination, rejected-ingress hold or synthetic proof.
 - **Narrow 1.0 deferrals:** field guide, Claude perspective, closing overview, history retention, remote rollout, GitHub doorbell, and expanded job automation wait beyond this wave; landed explicit-model work is not reopened.
@@ -26,13 +26,12 @@
 
 ## NOW
 
-- No implementation running; the remaining release gaps are planned below.
+- `F709-native-checks-give-a-repeatable-verdict` (🟠 ACTIVE): reproduce registry-lock and warm-sweep failures once, land only a demonstrated local correction and retain one full native lane; no wake-ceiling changes, disabled assertions or blanket timeout increases.
 
 ## NEXT
 
 - `F091-finish-job-shows-bot-turn-receipt` (🔴 PLANNED): receiver inspection and Johnny-only VPS runbook are landed, with 117 focused checks passed; Johnny must supply real history/export evidence with controlled processing or export hold/release before PROVEN, with no Tony coordination or guessed API.
 - `F081-spawn-refuses-an-unusable-route` (🔴 PLANNED): safe transport landed `a3872a6`, but refusal blocks narrow 1.0 pending a supported non-generating Pi probe; 0.84.2 interfaces are unchanged, failing candidate `b14b5fe` stays locked, with no generated probe or auth/catalog substitute.
-- `F709-native-checks-give-a-repeatable-verdict` (🔴 PLANNED): diagnose retained registry-lock and warm-sweep failures in a bounded lane before claiming clean native verification; no wake-ceiling changes or blanket timeout increases.
 
 - Ticket finishes wake the author's bots (`F708-ticket-finishes-wake-the-authors-bots`, 🔴 PLANNED): private author-to-target map with explicit fallback or visible no-send; recommended after narrow 1.0, spec only, with no identity service or ownership transfer.
 - `F090-wake-errors-count-toward-attempt-ceiling` (🔴 PLANNED): parked unchanged at `0fa48fa` for Adam's later review, outside the remaining wave; refusal and installed proof passed, full lane timed out with four failures (`checks-2.md`); no merge, third repair, or widening.
