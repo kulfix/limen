@@ -1,49 +1,33 @@
 # Narrow Limen 1.0 release readiness
 
-**NO-GO — 2026-09-12, VPS plant `/home/overment/limen`.** The core improvements are landed, but spawn still cannot refuse an authenticated unusable model route before creating a job, and the finish-to-Johnny loop lacks real held/released receiver evidence. Native verification also remains red. No release, tag, publish, push or Adam review verdict is claimed.
+**NO-GO — 2026-09-12, VPS plant `/home/overment/limen`.** Actual Johnny receiver proof and unusable-route refusal are still missing. The first corrected native lane terminated red; its one remaining fixture failure is under bounded repair, not waived. Adam has not reviewed the release. No tag, publish, push or release claim.
 
-Adam's Johnny-only, VPS-first instruction supersedes the older Mac/two-bot proof requirement. Mac is not a release dependency; Tony is not involved. This report and `spec/build.md` supersede that requirement in the older delivery/scenario material.
+`GO-PLAN.md` orders the remaining work. VPS-first, Johnny-only proof supersedes the historical Mac/two-bot requirement; Tony is not involved.
 
-## What works now
+## What landed in this task
 
-- Finish configuration uses neutral names rather than recipient-specific keys (F092, `a76e0ae`).
-- Hosted startup survives a killed spawning caller (F048, proof merge `c6d4d6c`).
-- A lost hosted supervisor can be recovered without restarting its worker (F049, `6662bac`).
-- Owner policy has one prompt home and survives continuation (F087, `ec65dc2`).
-- Hosted continuation carries task bytes through files rather than fragile shell arguments (F081 partial, `a3872a6`).
-- Finish inspection separates configuration, per-target HTTP transport and operator-trusted completed-turn exports (F091 partial, `87dd357`); export correlation is not authentication of receiver history.
+- A ready export-hold evidence helper and one-screen `ASK-JOHNNY.md` handoff (`c9f2625`), with protected held/source directories at `/home/overment/limen-evidence/johnny-finish-go-20260912/`. The helper captures both views, validates Johnny's supplied export, atomically releases it and checks unchanged automatic receipts. It never sends, retries, invents a turn or authenticates history. Eleven synthetic checks passed; this is tooling, not receiver proof.
+- The route decision is explicit: waiting on Pi is recommended; generated-probe spend is not authorized. Installed Pi 0.84.2 interfaces remain byte-identical. The retained fake-Pi counterexample also fails on archived main `c9f2625`: auth readiness still admits a job that fails at its first turn. No real provider request was used for either check.
 
-## Open gaps and disposition
+Earlier dependable-core landings remain intact: neutral finish keys (F092), killed-caller startup ownership (F048), watch-only supervisor recovery (F049), one prompt home for owner policy (F087), safe hosted task transport (F081 partial), and transport versus receiver-export inspection (F091 partial). Landing addresses are in `DELIVERY-HANDOFF.md`.
 
-| Gap | Why it prevents the accepted release claim | Smallest next action |
+## Remaining gates
+
+| Requirement | Current evidence | Next owner/action |
 |---|---|---|
-| Johnny receiver proof (F091) | A 2xx receipt is not evidence that Johnny completed a matching turn. No authorized actual receiver history/export is supplied on this seat. | Runbook corrected; Johnny runs one automatic-only VPS event, holds processing or its genuine export, captures accepted/unobserved inspection, then releases that same event/export. |
-| Unusable-route refusal (F081) | An auth-ready batch-only route can still plant a job and fail at its first turn. Auth/catalog readiness cannot meet the promised refusal. | Planned ticket waits for a supported non-generating Pi interface; retain the failing candidate unchanged. No generated probe spend. |
-| Native verification (F709) | Repeated registry cancellation and a warm-sweep timing failure leave the full native lane without a clean verdict. They do not by themselves prove a production deadlock or lost wake. | Short planned diagnosis ticket and operator note; no broad repair, disabled test or blanket timeout increase in this wave. |
+| Actual Johnny held/released finish (F091) | Dedicated Johnny config absent; authorized history/export not supplied. No live send or retry attempted. | Johnny establishes his single route and real history channel, then uses `ASK-JOHNNY.md` for one automatic event and same-export release. |
+| Unusable-route refusal (F081) | Supported non-generating validation is unavailable in the inspected Pi interfaces; the synthetic refusal test remains red. | Pi supplies exact-route refusal capability; alternatively Adam explicitly bounds probe spend/tokens, wall time and Pi retries. Prefer waiting; do not shrink the release claim. |
+| Clean native verification (F709) | Registry correction candidate `efda5ef` passes focused checks. First full lane: 369 passed, one hosted-continuation fixture failure, no cancellations. | Coordinator's sequential repair worker corrects only the reproduced post-start fake shell delay, then runs one full lane at its changed commit. A second red lane stops this bounded slice. |
+| Release review | Not supplied. | Adam reviews the landed cut and actual receiver evidence once the technical gaps close. |
 
-The receiver capability remains incomplete until real evidence is supplied; documentation is not a proof landing. `JOHNNY-PROOF-OPERATOR-NOTE.md` states the missing authorized history/export access and safe stop conditions. A paused endpoint returning 4xx fails the control. Adam's export-hold option is supported through atomic file release: it proves unobserved inspection, not absence of an actual turn.
+## Evidence and boundaries
 
-## What this readiness wave landed
+- Native first candidate: `/home/overment/limen-evidence/f709-ffbfa542/`. Baseline registry cancellation at 60 seconds; corrected focused lane 12/12; coordinator registry/warm-sweep falsifiers 2/2. Full `npm run check` passed TypeScript/Biome and 369 tests but failed hosted continuation; one diagnostic recheck reproduced that failure. Warm sweep passed with zero settled-record reads; its <20 ms assertion is unchanged. This candidate is not yet landed.
+- Helper mechanics: `JOHNNY-HARNESS-CHECKS.md`; 11 synthetic checks, shell syntax, targeted Biome and coordinator typecheck passed. No synthetic export enters the real proof source. Export hold proves unobserved inspection, not absence of a completed turn; rejected ingress is not a hold.
+- Route evidence: `route-interface-go-plan.log` and `/home/overment/limen-evidence/route-refusal-go-20260912/`. The latter's one expected failing test uses fake Pi only. Auth/catalog checks are not route proof, and no guessed zero-cost generation is permitted.
+- The coordinator alone lands; workers use literal `--provider openai-codex --model gpt-6-astra --thinking high`, with automatic finish sending disabled for implementation. Adam owns review; no independent reviewer or model fallback was started.
+- Wake ceiling (F090) stays locked and unchanged at `0fa48fa`; route candidate `b14b5fe` is also preserved. Author routing, field guide, Claude advisor, closing overview, history retirement, remote rollout and GitHub doorbell remain deferred.
 
-The VPS-first Johnny-only runbook (documentation candidate `5a9ef82`), revised acceptance, operator prerequisites and no-send stop conditions are filed. The coordinator also makes its cleanliness check ignore pre-existing untracked evidence and includes the exact file-release commands for Johnny's genuine-export-hold option. No runtime code, credentials, receiver API or queue was added. The remaining receiver and refusal work is planned rather than shown as active implementation; native diagnosis has its own planned ticket (F709).
+## Minimum remaining external actions
 
-## Evidence, not inferred success
-
-- This wave's documentation worker passed 117 focused checks once. Six proof shell blocks parse; the v1 contract and historical results are unchanged. Coordinator inspected the full patch and synthetic views and reran the static runbook checks after its correction. Evidence: `/home/overment/limen-evidence/f091-johnny-only-552a2b2d/`.
-- Coordinator `npm run typecheck` passed; tracked-file Biome passed (81 files) at main `0220f26`. Broad `biome check .` failed with 37 errors while scanning untracked historical evidence; that evidence remains untouched. This does not establish a full native pass. Raw logs: `/home/overment/limen-evidence/release-readiness-2026-09-12/`.
-- Before this wave, receiver inspection passed 121 coordinator focused checks at candidate `ab33fd1`; raw output and synthetic positive/negative exports are under `/home/overment/limen-evidence/f091-51bb62b9/`. Synthetic exports do not prove Johnny woke.
-- That candidate's full native lane passed TypeScript/Biome and 368 tests, failed warm sweep at 28.217 ms against 20 ms, and cancelled registry locking at 60000 ms. The full lane was not rerun in this readiness pass; no cause is asserted.
-- `route-interface-refresh.log` records a local byte comparison: installed Pi 0.84.2 auth/model interfaces are unchanged from the inspected copies. No auth call, catalog refresh, generated route probe or provider request was made by this check.
-- The readiness coordinator inspected config metadata only; no private webhook values were read or changed and no live proof send was attempted without access to Johnny's authorized actual history/export.
-
-Wake-attempt ceiling work (F090) remains parked, unchanged and locked at `0fa48fa` for Adam's later review; it is not part of this release or a reason to resume it.
-
-Author routing (F708) stays spec-only and planned after narrow 1.0; an explicitly configured Johnny-only project route does not need author filtering. The broader remote-seat rollout and other recorded deferrals remain outside this cut.
-
-## What Adam must skim
-
-1. The refusal gap and no-spend disposition in `spec/features/planned/F081-spawn-refuses-an-unusable-route/interface-question.md`; waiting leaves the accepted narrow cut unreleased, not silently reduced.
-2. The Johnny-only runbook in `docs/finish-webhooks.md` and `JOHNNY-PROOF-OPERATOR-NOTE.md`; Johnny supplies the actual control and completed-turn evidence, without Tony.
-3. The native-check diagnosis note at `spec/features/planned/F709-native-checks-give-a-repeatable-verdict/operator-note.md` and the landed cut's evidence in `DELIVERY-HANDOFF.md`.
-
-Adam owns review. The coordinator has not waived missing proof, expanded scope, changed the vision, or made a release on Adam's behalf.
+**Johnny:** prepare the dedicated private route and genuine history/export, then follow `ASK-JOHNNY.md` after the native worker ends; keep ingress enabled and release the same export without a second send. **Pi / Adam:** wait for supported non-generating exact-route validation (recommended), or Adam explicitly authorizes bounded generated-probe investigation. **Adam:** review the resulting cut and real proof. The coordinator still owns the running native repair and its landing; these external actions do not transfer that responsibility.
