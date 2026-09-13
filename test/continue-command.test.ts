@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { chmod, readdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { chmod, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 import test from "node:test";
+import { liveJob } from "../src/reap.ts";
 import { git, limen, limenWithEnv, onlyJobId, scratchRepo, scratchWorkspace, waitForState } from "./scratch.ts";
 
 const continuingFakePi = `#!/usr/bin/env node
@@ -149,6 +150,7 @@ test("continue restores a pruned finished checkout from its branch and saved ses
 	assert.equal(git(scratch.root, "rev-parse", branch), tip);
 	const launched = limen(scratch, "continue", parent, "refine committed work");
 	assert.equal(launched.status, 0, launched.stderr);
+	assert.match(launched.stdout, /restored .* from limen\/.*; only committed branch contents were recovered/);
 	const id = onlyJobId(launched.stdout);
 	await waitForState(scratch.root, id, "done");
 	const job = join(scratch.root, ".limen/jobs", id);
@@ -186,20 +188,107 @@ test("continue refuses a running job or missing transcript without writing recor
 	assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), before, "refusals must not create job records");
 });
 
-test("workspace continue copies repo so jobs diffs the child", async (context) => {
-	const workspace = await scratchWorkspace(continuingFakePi);
-	context.after(workspace.cleanup);
-	assert.equal(limen(workspace, "workspace", "init").status, 0);
-	const parent = onlyJobId(limen(workspace, "spawn", "--repo", "api", "--label", "F037 api", "first slice").stdout);
-	await waitForState(workspace.root, parent, "done");
-	const launched = limen(workspace, "continue", parent, "keep going");
+for (const pruned of [false, true]) {
+	test(`workspace continue copies repo and uses the child's branch (pruned: ${pruned})`, async (context) => {
+		const workspace = await scratchWorkspace(continuingFakePi);
+		context.after(workspace.cleanup);
+		assert.equal(limen(workspace, "workspace", "init").status, 0);
+		const parent = onlyJobId(limen(workspace, "spawn", "--repo", "api", "--label", "F037 api", "first slice").stdout);
+		await waitForState(workspace.root, parent, "done");
+		const parentDir = join(workspace.root, ".limen/jobs", parent);
+		const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
+		const branch = (await readFile(join(parentDir, "branch"), "utf8")).trim();
+		git(worktree, "commit", "--allow-empty", "-m", "api progress");
+		const tip = git(worktree, "rev-parse", "HEAD");
+		git(workspace.repositories.web, "branch", branch);
+		const webTip = git(workspace.repositories.web, "rev-parse", branch);
+		assert.notEqual(tip, webTip);
+		if (pruned) {
+			assert.equal(limen(workspace, "prune").status, 0);
+			assert.equal(existsSync(worktree), false);
+		}
+		const launched = limen(workspace, "continue", parent, "keep going");
+		assert.equal(launched.status, 0, launched.stderr);
+		const id = onlyJobId(launched.stdout);
+		await waitForState(workspace.root, id, "done");
+		const job = join(workspace.root, ".limen/jobs", id);
+		assert.equal(await readFile(join(job, "repo"), "utf8"), "api\n");
+		assert.equal(await readFile(join(job, "base"), "utf8"), `${tip}\n`);
+		assert.equal(git(worktree, "rev-parse", "HEAD"), tip);
+		assert.equal(git(workspace.repositories.web, "rev-parse", branch), webTip);
+		const detail = limen(workspace, "jobs", id);
+		assert.match(detail.stdout, /repo api/);
+		assert.doesNotMatch(detail.stdout, /unavailable/);
+	});
+}
+
+for (const unavailable of ["missing", "occupied"] as const) {
+	test(`continue refuses a pruned checkout when its branch is ${unavailable} without writing records`, async (context) => {
+		const scratch = await scratchRepo(continuingFakePi);
+		context.after(scratch.cleanup);
+		assert.equal(limen(scratch, "init").status, 0);
+		const parent = onlyJobId(limen(scratch, "spawn", "first slice").stdout);
+		await waitForState(scratch.root, parent, "done");
+		const parentDir = join(scratch.root, ".limen/jobs", parent);
+		const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
+		const branch = (await readFile(join(parentDir, "branch"), "utf8")).trim();
+		assert.equal(limen(scratch, "prune").status, 0);
+		const occupied = join(dirname(worktree), "occupied");
+		if (unavailable === "missing") git(scratch.root, "branch", "-D", branch);
+		else {
+			git(scratch.root, "worktree", "add", occupied, branch);
+			await writeFile(join(occupied, "in-progress.txt"), "do not replace\n");
+		}
+		const before = await readdir(join(scratch.root, ".limen/jobs"));
+		const refused = limen(scratch, "continue", parent, "keep going");
+		assert.equal(refused.status, 1);
+		if (unavailable === "missing") {
+			assert.ok(refused.stderr.includes(`branch ${branch} is missing in ${scratch.root}; restore that branch before continuing`));
+			assert.ok(!git(scratch.root, "branch", "--list", branch));
+		} else {
+			assert.match(refused.stderr, /already (?:checked out|used by worktree)/);
+			assert.equal(await readFile(join(occupied, "in-progress.txt"), "utf8"), "do not replace\n");
+			assert.ok(git(scratch.root, "worktree", "list", "--porcelain").includes(`worktree ${occupied}\n`));
+		}
+		assert.equal(existsSync(worktree), false);
+		assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), before);
+	});
+}
+
+test("continue after prune leaves a live nested child owned by another checkout untouched", async (context) => {
+	const scratch = await scratchRepo(continuingFakePi);
+	context.after(scratch.cleanup);
+	assert.equal(limen(scratch, "init").status, 0);
+	const parent = onlyJobId(limen(scratch, "spawn", "finished parent").stdout);
+	await waitForState(scratch.root, parent, "done");
+	const worktree = (await readFile(join(scratch.root, ".limen/jobs", parent, "worktree"), "utf8")).trim();
+	const worktreeRoot = dirname(worktree);
+	const outer = join(worktreeRoot, "outer");
+	const child = join(worktreeRoot, `.${basename(outer)}-limen-worktrees`, "child");
+	git(scratch.root, "worktree", "add", "--detach", outer, "HEAD");
+	git(outer, "worktree", "add", "--detach", child, "HEAD");
+	for (const [owner, id, path] of [
+		[scratch.root, "outer", outer],
+		[outer, "child", child],
+	] as const) {
+		const job = join(owner, ".limen/jobs", id);
+		await mkdir(job, { recursive: true });
+		await writeFile(join(job, "state"), "running\n");
+		await writeFile(join(job, "worktree"), `${path}\n`);
+		await writeFile(join(job, "started-at"), `${new Date().toISOString()}\n`);
+		assert.equal(await liveJob(job), true);
+	}
+	await writeFile(join(child, "in-progress.txt"), "live nested work\n");
+	const pruned = limen(scratch, "prune");
+	assert.equal(pruned.status, 0, pruned.stderr);
+	assert.equal(existsSync(worktree), false);
+	const launched = limen(scratch, "continue", parent, "keep going");
 	assert.equal(launched.status, 0, launched.stderr);
-	const id = onlyJobId(launched.stdout);
-	await waitForState(workspace.root, id, "done");
-	assert.equal(await readFile(join(workspace.root, ".limen/jobs", id, "repo"), "utf8"), "api\n");
-	const detail = limen(workspace, "jobs", id);
-	assert.match(detail.stdout, /repo api/);
-	assert.doesNotMatch(detail.stdout, /unavailable/);
+	await waitForState(scratch.root, onlyJobId(launched.stdout), "done");
+	assert.equal(existsSync(worktree), true);
+	assert.equal(await readFile(join(child, "in-progress.txt"), "utf8"), "live nested work\n");
+	assert.ok(git(scratch.root, "worktree", "list", "--porcelain").includes(`worktree ${child}\n`));
+	assert.equal(await liveJob(join(outer, ".limen/jobs/child")), true);
 });
 
 test("continue --detached stays a wrapper even in Herdr", async (context) => {

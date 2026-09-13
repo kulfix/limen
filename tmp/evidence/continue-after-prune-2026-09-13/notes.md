@@ -15,4 +15,11 @@ Logs outside the worktree: `/home/overment/limen/tmp/evidence/continue-after-pru
 - `before.log`: `node --test --test-concurrency=1 --test-timeout=60000 --test-name-pattern='restores a pruned finished' test/continue-command.test.ts` failed 1/1 at the expected exit-status assertion, with the original “parent worktree ... is gone — likely pruned” error.
 - `after-initial.log`: the same success test plus the running-job/missing-transcript refusal passed 2/2 after the edit. The success test verifies branch-tip contents, child base/branch/parent records, copied context, parent immutability, and the `--continue` argument.
 
-Remaining checks for the candidate: workspace recovery, missing branch, occupied branch, live nested child preservation, existing continuation/prune/spawn regressions, scoped static checks, then the full native lane once after committing.
+## Candidate checks
+
+- `npm-ci.log`: `npm ci` installed 6 packages from the lockfile; 0 vulnerabilities.
+- `focused.log`: scoped Biome formatted one test file and TypeScript passed. The continuation, workspace, refusal, nested-child, and existing prune tests passed; total 24 passed, 1 failed. The failure was the architecture size check: 4,016 source lines versus the 4,010 ceiling. `test/structure.test.ts` now allows 4,020 lines and names the added recovery capability; runtime source grew by 8 lines, with no dependencies or new files.
+- `focused-final.log`: `npm run typecheck`, scoped Biome over the three changed TypeScript files, and continuation/prune/spawn/diff/reaper/structure tests all passed: 63 tests, 0 failures. This includes the existing nested plant prune/spawn and locked-container regressions, plus recovery while a different checkout's nested child remains live with its uncommitted file and Git registration intact. Workspace tests deliberately put a different tip on the same branch name in the other repository. Missing and occupied branches refuse without new child records or checkout takeover.
+- `git diff --check` passed with no output.
+
+`README.md` documents the command and committed-only recovery boundary. The full native `npm run check` is the remaining check, to run once at the clean candidate commit. No installed-package rollout, real model generation, or production prune was performed; integration tests use real scratch Git repositories and fake Pi workers.

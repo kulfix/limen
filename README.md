@@ -95,6 +95,8 @@ The last line of `spawn` is the durable job ID. A running job picks up a steer b
 
 Finished jobs keep their files under `.limen/jobs/`. Extra checkouts do not stay: the next spawn drops finished worktrees, and `limen prune` does the same on demand. Resume with `--branch` keeps that checkout.
 
+To keep a finished Pi job's conversation, run `limen continue <job-id> "Follow-up instruction"`. If its checkout was pruned, Limen restores the recorded path from the surviving local branch and copies the saved session into a new linked job. Only committed branch contents return; pruned uncommitted files are lost. A missing branch or transcript prevents recovery, and a branch checked out elsewhere is not taken over.
+
 A job is bounded by 90 minutes (`--timeout 20m`) and 900 tool-start events (`LIMEN_MAX_TOOL_CALLS`). A bound records `failed`; it does not finish the ticket. Do not run `limen wait` in the coordinator conversation — it blocks you.
 
 ## Ticket authorship
