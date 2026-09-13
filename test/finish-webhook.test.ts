@@ -60,7 +60,7 @@ async function delivery(job: string): Promise<string> {
 	const deadline = Date.now() + 20_000;
 	while (Date.now() < deadline) {
 		const text = await readFile(join(job, "finish-webhook"), "utf8").catch(() => "");
-		if (/^(accepted|failed):/.test(text)) return text;
+		if (/^(accepted|failed|skipped):/.test(text)) return text;
 		await new Promise((resolve) => setTimeout(resolve, 25));
 	}
 	throw new Error(`no terminal webhook status in ${job}: ${await readFile(join(job, "log"), "utf8").catch(() => "no log")}`);
@@ -74,7 +74,8 @@ async function observe(path: string) {
 async function bareJob(root: string) {
 	const job = join(root, ".limen/jobs/direct");
 	await mkdir(job, { recursive: true });
-	for (const [name, value] of Object.entries({ state: "running", label: "finish label", branch: "main", pid: "1", log: "" })) await writeFile(join(job, name), `${value}\n`);
+	for (const [name, value] of Object.entries({ state: "running", label: "finish label", branch: "main", pid: "1", log: "", "task.md": "Synthetic finish test" }))
+		await writeFile(join(job, name), `${value}\n`);
 	return job;
 }
 async function runModule(pkg: string, env: NodeJS.ProcessEnv, code: string): Promise<void> {
@@ -85,6 +86,58 @@ async function runModule(pkg: string, env: NodeJS.ProcessEnv, code: string): Pro
 		child.once("error", reject);
 		child.once("close", (code) => (code === 0 ? resolve() : reject(new Error(stderr || `exit ${code}`))));
 	});
+}
+
+for (const state of ["failed", "stopped", "done"]) {
+	for (const result of [undefined, "", " \n\t", "Failure investigated; see committed repair.", "unreadable"] as const) {
+		test(`automatic finish decision: ${state} with ${result === undefined ? "missing" : JSON.stringify(result)} result`, async (context) => {
+			const f = await fixture(context);
+			const job = await bareJob(f.root);
+			const selected = await f.config(join(f.parent, "decision.env"));
+			await writeFile(join(job, "finish-webhook-env"), `${selected}\n`);
+			if (result === "unreadable") await mkdir(join(job, "result"));
+			else if (result !== undefined) await writeFile(join(job, "result"), result);
+			await mkdir(join(job, "notify/subscribers"), { recursive: true });
+			await writeFile(join(job, "notify/subscribers/owner"), "subscribed\n");
+			await writeFile(join(job, "notify/ready"), "1\n");
+			const code = `const { finalizeJob } = await import('./src/wrapper.ts'); await finalizeJob(${JSON.stringify(job)}, '${state}', 'synthetic terminal detail');`;
+			await runModule(f.pkg, { ...f.env, TEST_JOB_DIR: job }, code);
+			const skip = state !== "done" && !result?.trim();
+			const receipt = await readFile(join(job, "finish-webhook"), "utf8");
+			if (skip) {
+				await assert.rejects(readFile(f.observations), { code: "ENOENT" }, "empty failed/stopped jobs must not invoke the sender");
+				await assert.rejects(readFile(join(job, "finish-webhook-targets")), { code: "ENOENT" });
+				assert.match(receipt, new RegExp(`^skipped: ${state} with empty result; not sent`));
+				assert.doesNotMatch(receipt, /Manual finish-ping retry/);
+				assert.match(await readFile(join(job, "log"), "utf8"), /finish webhook: skipped:/);
+				for (const view of ["compact", "human"]) assert.match(f.command(["jobs", "direct"], { LIMEN_VIEW: view }), /skipped: .* with empty result; not sent/);
+			} else {
+				assert.match(receipt, /^accepted:/);
+				assert.deepEqual(await observe(f.observations), [{ args: ["finish label", state, "main"], config: selected, state, finished: true, pid: false }]);
+			}
+			assert.equal(await readFile(join(job, "state"), "utf8"), `${state}\n`);
+			assert.equal(await readFile(join(job, "notify/ready"), "utf8"), "1\n");
+			assert.equal(await readFile(join(job, "notify/subscribers/owner"), "utf8"), "subscribed\n");
+			const claim = await readFile(join(job, "finish-webhook-attempt"), "utf8");
+			// A late result cannot re-arm a skipped job; a removed handoff cannot replace an accepted receipt.
+			await rm(join(job, "result"), { recursive: true, force: true });
+			await writeFile(join(job, "result"), skip ? "Late handoff" : "");
+			await Promise.all(
+				Array.from({ length: 4 }, () =>
+					runModule(
+						f.pkg,
+						{ ...f.env, TEST_JOB_DIR: job },
+						`const { deliverFinishWebhook } = await import('./src/finish-webhook.ts'); await deliverFinishWebhook(${JSON.stringify(job)});`,
+					),
+				),
+			);
+			await runModule(f.pkg, { ...f.env, TEST_JOB_DIR: job }, code);
+			assert.equal(await readFile(join(job, "finish-webhook"), "utf8"), receipt);
+			assert.equal(await readFile(join(job, "finish-webhook-attempt"), "utf8"), claim);
+			if (skip) await assert.rejects(readFile(f.observations), { code: "ENOENT" });
+			else assert.equal((await observe(f.observations)).length, 1);
+		});
+	}
 }
 
 test("automatic delivery invokes the real canonical helper with synthetic dotenv and intercepted transport", async (context) => {
@@ -359,6 +412,7 @@ test("concurrent processes and repeated finalization make one automatic attempt;
 	await writeFile(join(job, "finish-webhook-env"), `${selected}\n`);
 	await mkdir(join(job, "notify/subscribers"), { recursive: true });
 	await writeFile(join(job, "notify/subscribers/owner"), "subscribed\n");
+	await writeFile(join(job, "result"), "Investigated worker failure; partial repair committed.\n");
 	const code = `const { finalizeJob } = await import('./src/wrapper.ts'); await finalizeJob(${JSON.stringify(job)}, 'failed', 'synthetic worker failure');`;
 	await Promise.all(Array.from({ length: 4 }, () => runModule(f.pkg, { ...f.env, TEST_JOB_DIR: job }, code)));
 	assert.match(await delivery(job), /^failed: sender exited 22/);
@@ -395,6 +449,7 @@ test("hanging sender and its descendant are killed within shutdown grace without
 	const descendant = join(f.parent, "descendant");
 	const selected = await f.config(join(f.parent, "hang.env"), { hang: true, descendant });
 	await writeFile(join(job, "finish-webhook-env"), `${selected}\n`);
+	await writeFile(join(job, "result"), "Stopped after committing partial work.\n");
 	const started = Date.now();
 	await runModule(
 		f.pkg,
@@ -414,6 +469,7 @@ test("an exhausted shutdown budget records not sent without launching the helper
 	const job = await bareJob(f.root);
 	const selected = await f.config(join(f.parent, "late.env"));
 	await writeFile(join(job, "finish-webhook-env"), `${selected}\n`);
+	await writeFile(join(job, "result"), "Stopped with a handoff but no delivery budget.\n");
 	await runModule(
 		f.pkg,
 		{ ...f.env, TEST_JOB_DIR: job },
@@ -444,16 +500,18 @@ test("missing config and unavailable sender fail safely, while an interrupted cl
 	await assert.rejects(readFile(f.observations));
 });
 
-test("detached exhaustion records a bounded delivery failure before its self-kill grace", async (context) => {
+test("detached exhaustion without a result skips delivery before its self-kill grace", async (context) => {
 	const f = await fixture(context, '#!/usr/bin/env node\nprocess.on("SIGTERM", () => {}); setInterval(() => {}, 1000);\n');
 	const selected = await f.config(join(f.parent, "exhaust.env"), { hang: true, descendant: join(f.parent, "descendant") });
 	const id = onlyJobId(f.command(["spawn", "--detached", "--timeout", "1s", "exhaust"], { LIMEN_FINISH_WEBHOOK_ENV: selected }));
 	const job = join(f.root, ".limen/jobs", id);
-	assert.match(await delivery(job), /^failed: (sender exceeded \d+ms; acceptance unknown|no shutdown time remains; not sent)/);
+	assert.match(await delivery(job), /^skipped: failed with empty result; not sent/);
 	assert.equal(await readFile(join(job, "state"), "utf8"), "failed\n");
+	await assert.rejects(readFile(f.observations), { code: "ENOENT" });
+	assert.equal(await readFile(join(job, "notify/ready"), "utf8"), "1\n");
 	const log = await readFile(join(job, "log"), "utf8");
 	assert.match(log, /failed: timeout after 1000ms/);
-	assert.match(log, /finish webhook: failed:/);
+	assert.match(log, /finish webhook: skipped:/);
 });
 
 test("continuation retains only its parent's config path even when the caller selects another destination", async (context) => {

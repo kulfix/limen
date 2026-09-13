@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { appendFileSync, existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { delimiter, dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { finishEvent, parseFinishReceipt } from "./finish-receipt.ts";
@@ -27,6 +27,19 @@ export async function deliverFinishWebhook(jobDir: string, shutdownDeadline = Nu
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === "EEXIST") return;
 		throw error;
+	}
+	// A skip consumes the same claim: later results cannot re-arm automatic delivery.
+	const emptyResult =
+		state !== "done" &&
+		(await readFile(`${jobDir}/result`, "utf8").then(
+			(result) => !result.trim(),
+			(error: NodeJS.ErrnoException) => error.code === "ENOENT",
+		));
+	if (emptyResult) {
+		const skipped = `skipped: ${state} with empty result; not sent`;
+		await atomicWrite(`${jobDir}/finish-webhook`, `${skipped} ${new Date().toISOString()}\n`);
+		await appendLimenLog(jobDir, `finish webhook: ${skipped}`);
+		return;
 	}
 	const retry =
 		"Manual finish-ping retry: inspect finish-webhook-attempt and finish-webhook; use bin/tony-finish-ping.sh with this job's finish-webhook-env, label, state and branch. Acceptance is not proof of owner wake; an interrupted attempt may already have sent.";
