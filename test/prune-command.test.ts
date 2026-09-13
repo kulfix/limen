@@ -62,6 +62,71 @@ test("leftover sweep leaves a worktree git still has registered", async (context
 	assert.match(git(scratch.root, "worktree", "list", "--porcelain"), new RegExp(id));
 });
 
+for (const command of ["prune", "spawn"] as const) {
+	test(`${command} keeps nested running jobs owned by another checkout`, async (context) => {
+		const scratch = await scratchRepo();
+		context.after(scratch.cleanup);
+		assert.equal(limen(scratch, "init").status, 0);
+		const worktreeRoot = join(dirname(scratch.root), `.${basename(scratch.root)}-limen-worktrees`);
+		const outer = join(worktreeRoot, "outer");
+		const nestedRoot = join(worktreeRoot, ".outer-limen-worktrees");
+		const child = join(nestedRoot, "child");
+		git(scratch.root, "worktree", "add", "--detach", outer, "HEAD");
+		git(outer, "worktree", "add", "--detach", child, "HEAD");
+		for (const [owner, id, worktree] of [
+			[scratch.root, "outer", outer],
+			[outer, "child", child],
+		] as const) {
+			const job = join(owner, ".limen/jobs", id);
+			await mkdir(job, { recursive: true });
+			await writeFile(join(job, "state"), "running\n");
+			await writeFile(join(job, "worktree"), `${worktree}\n`);
+			await writeFile(join(job, "started-at"), `${new Date().toISOString()}\n`);
+			assert.equal(await liveJob(job), true);
+		}
+		await writeFile(join(child, "in-progress.txt"), "nested work must survive\n");
+		const finished = join(worktreeRoot, "finished");
+		git(scratch.root, "worktree", "add", "--detach", finished, "HEAD");
+		const leftover = join(worktreeRoot, "ordinary-leftover");
+		await mkdir(leftover);
+		await writeFile(join(leftover, "stale.txt"), "remove me\n");
+
+		const result = command === "prune" ? limen(scratch, "prune") : limen(scratch, "spawn", "plant sibling");
+		assert.equal(result.status, 0, result.stderr);
+		if (command === "spawn") await waitForState(scratch.root, onlyJobId(result.stdout), "done");
+		assert.equal(await readFile(join(child, "in-progress.txt"), "utf8"), "nested work must survive\n");
+		assert.ok(git(scratch.root, "worktree", "list", "--porcelain").includes(`worktree ${child}\n`));
+		assert.equal(await liveJob(join(outer, ".limen/jobs/child")), true);
+		await assert.rejects(access(finished));
+		await assert.rejects(access(leftover));
+
+		const owner = { ...scratch, root: outer };
+		const livePrune = limen(owner, "prune");
+		assert.equal(livePrune.status, 0, livePrune.stderr);
+		await access(join(child, "in-progress.txt"));
+		await writeFile(join(outer, ".limen/jobs/child/state"), "done\n");
+		const finishedPrune = limen(owner, "prune");
+		assert.equal(finishedPrune.status, 0, finishedPrune.stderr);
+		await assert.rejects(access(child));
+		assert.ok(!git(scratch.root, "worktree", "list", "--porcelain").includes(`worktree ${child}\n`));
+	});
+}
+
+test("leftover sweep keeps a nested container with a locked registered child", async (context) => {
+	const scratch = await scratchRepo();
+	context.after(scratch.cleanup);
+	assert.equal(limen(scratch, "init").status, 0);
+	const worktreeRoot = join(dirname(scratch.root), `.${basename(scratch.root)}-limen-worktrees`);
+	const child = join(worktreeRoot, ".outer-limen-worktrees", "child");
+	git(scratch.root, "worktree", "add", "--detach", child, "HEAD");
+	git(scratch.root, "worktree", "lock", child);
+	await writeFile(join(child, "in-progress.txt"), "registered nested work\n");
+	const result = limen(scratch, "prune");
+	assert.equal(result.status, 0, result.stderr);
+	assert.equal(await readFile(join(child, "in-progress.txt"), "utf8"), "registered nested work\n");
+	assert.ok(git(scratch.root, "worktree", "list", "--porcelain").includes(`worktree ${child}\n`));
+});
+
 test("startup window is live; expired running-without-pid is not", async (context) => {
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);

@@ -42,6 +42,8 @@ export async function pruneFinishedWorktrees(root: string, keep: readonly string
 		for (const worktree of listWorktrees(repository)) {
 			const path = await resolved(worktree.path);
 			if (path === primary || !path.startsWith(`${worktreeRoot}/`) || keepPaths.has(path)) continue;
+			// Nested roots belong to another checkout, whose jobs this prune cannot see.
+			if (/^\.[^/]*-limen-worktrees(?:\/|$)/.test(path.slice(worktreeRoot.length + 1))) continue;
 			try {
 				removeWorktree(repository, path);
 				removed += 1;
@@ -53,6 +55,7 @@ export async function pruneFinishedWorktrees(root: string, keep: readonly string
 		const registered = new Set(await Promise.all(listWorktrees(repository).map((worktree) => resolved(worktree.path))));
 		const leftovers = await readdir(worktreeRoot, { withFileTypes: true }).catch(() => []);
 		for (const leftover of leftovers) {
+			if (/^\..*-limen-worktrees$/.test(leftover.name)) continue;
 			const path = await resolved(resolve(worktreeRoot, leftover.name));
 			if (keepPaths.has(path) || registered.has(path)) continue;
 			await rm(path, { recursive: true, force: true });
