@@ -22,7 +22,7 @@ All check logs are copied outside the worktree to `/home/overment/limen/tmp/evid
 - `typecheck.log`: initial TypeScript check failed because the new fixture's array elements inferred as possibly undefined. A readonly tuple annotation fixed it.
 - `focused.log`: subsequent TypeScript and scoped Biome checks passed; **54 tests passed, 0 failed** across prune, spawn, diff, continue, and reaper, including the owner-prune assertions.
 
-The full native `npm run check` will run once after the candidate commit; its result will be recorded here in an evidence-only follow-up.
+- `full-check.log`: full native `npm run check` ran once at clean candidate `11ae41d2c6e0e6a5dddd48db025dd904a381d2b2`. TypeScript passed; Biome checked 82 files with no fixes; **373 tests passed, 0 failed, 0 cancelled, 0 skipped** in 497.5 seconds. Exit status 0. No runtime or test changes followed this check; the follow-up commit only records evidence.
 
 ## Verify safely
 
@@ -35,4 +35,6 @@ node --test --test-concurrency=1 --test-timeout=60000 test/prune-command.test.ts
 npm run check
 ```
 
-No Alice product checkout, Claire/Rose/Tom, or Easytools was used for reproduction or pruning. No board, ticket, or outcome edits; no tag, push, publish, or installed-package rollout. Review and landing belong to the coordinator; the owning-checkout cleanup rule is the operational behavior to retain.
+No Alice product checkout, Claire/Rose/Tom, or Easytools was used for reproduction or pruning. No board, ticket, or outcome edits; no tag, push, publish, or installed-package rollout. Review and landing belong to the coordinator; the owning-checkout cleanup rule is the operational behavior to retain. No implementation slice remains for this repair.
+
+The implementation commit is `11ae41d2c6e0e6a5dddd48db025dd904a381d2b2` on `limen/2026-09-13-f710-nested-worktree-prune-fix-65baf235`. Worktree: `/home/overment/.limen-limen-worktrees/2026-09-13-f710-nested-worktree-prune-fix-65baf235`. Job session: `/home/overment/limen/.limen/jobs/2026-09-13-f710-nested-worktree-prune-fix-65baf235/session`. Automatic finish delivery has not yet been observed; no manual ping was sent.
