@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { headCommit, repoRoot, workspaceRoot } from "../git.ts";
+import { addBranchWorktree, branchExists, headCommit, repoRoot, workspaceRepository, workspaceRoot } from "../git.ts";
 import { herdrAvailable, openWatchTab } from "../herdr.ts";
 import { resolveJob } from "../lookup.ts";
 import { atomicWrite, finalizeJob, launchWrapper } from "../wrapper.ts";
@@ -17,7 +17,7 @@ import {
 	waitForHandshake,
 } from "./spawn.ts";
 
-/** F034/F037: resume a finished job's own pi session — full context, same worktree. */
+/** Resume a finished job's own pi session; restore a pruned checkout from its branch. */
 export async function continueCommand(args: readonly string[], cwd: string): Promise<void> {
 	let review = false;
 	let tab = false;
@@ -57,7 +57,7 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	const parentState = await text(`${parentDir}/state`);
 	if (!["done", "failed", "stopped"].includes(parentState)) throw new Error(`job ${parentId} is ${parentState || "stateless"}; continue needs a finished job`);
 	const worktree = await text(`${parentDir}/worktree`);
-	if (!worktree || !existsSync(worktree)) throw new Error(`the parent worktree (${parentId}) is gone — likely pruned; spawn a fresh job instead`);
+	if (!worktree) throw new Error(`parent record ${parentId} has no worktree path`);
 	const branch = await text(`${parentDir}/branch`);
 	if (!branch) throw new Error(`parent record ${parentId} has no branch`);
 	const repo = await text(`${parentDir}/repo`);
@@ -71,6 +71,13 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	const jobDir = `${root}/.limen/jobs/${id}`;
 	const role = review ? "reviewer" : (await text(`${parentDir}/role`)) || "worker";
 	const preamble = resolvePreamble(root, role);
+	if (!existsSync(worktree)) {
+		const repository = repo ? workspaceRepository(root, repo) : root;
+		if (!branchExists(repository, branch))
+			throw new Error(`parent worktree ${worktree} is gone and branch ${branch} is missing in ${repository}; restore that branch before continuing`);
+		addBranchWorktree(repository, worktree, branch);
+		console.log(`restored ${worktree} from ${branch}; only committed branch contents were recovered`);
+	}
 	await mkdir(jobDir, { recursive: false });
 	await mkdir(`${jobDir}/notify/subscribers`, { recursive: true });
 	const notificationSession = currentNotificationSession();

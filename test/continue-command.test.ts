@@ -129,7 +129,43 @@ test("continue without --review loads the parent role preamble", async (context)
 	assert.equal(argv[argv.indexOf("--append-system-prompt") + 1], "RESEARCH PREAMBLE\n");
 });
 
-test("continue refuses a running job and a pruned worktree without writing records", async (context) => {
+test("continue restores a pruned finished checkout from its branch and saved session", async (context) => {
+	const scratch = await scratchRepo(continuingFakePi);
+	context.after(scratch.cleanup);
+	assert.equal(limen(scratch, "init").status, 0);
+	const parent = onlyJobId(limen(scratch, "spawn", "--label", "pruned worker", "first slice").stdout);
+	await waitForState(scratch.root, parent, "done");
+	const parentDir = join(scratch.root, ".limen/jobs", parent);
+	const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
+	const branch = (await readFile(join(parentDir, "branch"), "utf8")).trim();
+	await writeFile(join(worktree, "earned.txt"), "committed work survives\n");
+	git(worktree, "add", "earned.txt");
+	git(worktree, "commit", "-m", "earned work");
+	const tip = git(worktree, "rev-parse", "HEAD");
+	const transcript = '{"type":"session","id":"saved-parent-context"}\n';
+	await writeFile(join(parentDir, "session/zz-parent.jsonl"), transcript);
+	assert.equal(limen(scratch, "prune").status, 0);
+	assert.equal(existsSync(worktree), false);
+	assert.equal(git(scratch.root, "rev-parse", branch), tip);
+	const launched = limen(scratch, "continue", parent, "refine committed work");
+	assert.equal(launched.status, 0, launched.stderr);
+	const id = onlyJobId(launched.stdout);
+	await waitForState(scratch.root, id, "done");
+	const job = join(scratch.root, ".limen/jobs", id);
+	assert.equal(await readFile(join(job, "worktree"), "utf8"), `${worktree}\n`);
+	assert.equal(await readFile(join(job, "base"), "utf8"), `${tip}\n`);
+	assert.equal(await readFile(join(job, "branch"), "utf8"), `${branch}\n`);
+	assert.equal(await readFile(join(job, "parent"), "utf8"), `${parent}\n`);
+	assert.equal(await readFile(join(job, "session/zz-parent.jsonl"), "utf8"), transcript);
+	assert.equal(await readFile(join(parentDir, "session/zz-parent.jsonl"), "utf8"), transcript);
+	assert.equal(await readFile(join(parentDir, "state"), "utf8"), "done\n");
+	assert.equal(await readFile(join(worktree, "earned.txt"), "utf8"), "committed work survives\n");
+	assert.equal(git(worktree, "rev-parse", "HEAD"), tip);
+	const argv = JSON.parse(await readFile(join(worktree, "pi-args.json"), "utf8")) as string[];
+	assert.equal(argv[argv.indexOf("--continue") + 1], "refine committed work");
+});
+
+test("continue refuses a running job or missing transcript without writing records", async (context) => {
 	const scratch = await scratchRepo(sleeperFakePi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
@@ -145,7 +181,8 @@ test("continue refuses a running job and a pruned worktree without writing recor
 	const before = await readdir(join(scratch.root, ".limen/jobs"));
 	const pruned = limen(scratch, "continue", parent, "worktree is gone");
 	assert.equal(pruned.status, 1);
-	assert.match(pruned.stderr, /gone .* pruned; spawn a fresh job instead/s);
+	assert.match(pruned.stderr, /has no session transcript to continue/);
+	assert.equal(existsSync((await readFile(join(scratch.root, ".limen/jobs", parent, "worktree"), "utf8")).trim()), false);
 	assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), before, "refusals must not create job records");
 });
 
