@@ -92,6 +92,22 @@ The automatic caller prepends the directory of Limen's running Node executable
 to the helper's `PATH`, so a noninteractive environment missing that directory
 can still launch the sender. Manual launchers still need Node.js 24+ on `PATH`.
 
+A configured `failed` or `stopped` job skips automatic delivery when its `result`
+file is missing, zero-byte, or whitespace-only. The existing `finish-webhook`
+receipt and job log record `skipped: <state> with empty result; not sent`, visible
+in both job detail views. Non-whitespace results still send, regardless of job
+runtime or whether the handoff describes success. An unreadable result is not
+assumed empty and still sends. A `done` job still sends even with no result;
+this preserves the completion contract without treating an empty success as
+proof of useful work. Native coordinator notifications and terminal state do
+not change. Logs, commits and transcript text are not substitutes for `result`.
+
+A skip consumes the existing one-automatic-decision claim and creates no target
+transport receipts. Later result edits or repeated finalization do not re-arm
+sending. It is an intentional no-send, not a sender failure or retry request.
+The standalone manual helper remains unchanged; an operator may deliberately
+send after inspecting the skip, but workers must not routinely bypass it.
+
 At `limen spawn`, selection is deliberately narrower than the standalone helper:
 
 - An explicit `LIMEN_FINISH_WEBHOOK_ENV` resolves relative to the spawn directory
@@ -310,8 +326,8 @@ must not hide a failed ping.
 | Job file | Meaning |
 |---|---|
 | `finish-webhook-env` | Selected absolute private env path only; absence means not opted in. |
-| `finish-webhook-attempt` | Flushed timestamp claiming the one automatic attempt. |
-| `finish-webhook` | Timestamped `attempting`, `accepted`, or `failed`, plus retry guidance. |
+| `finish-webhook-attempt` | Flushed timestamp claiming the one automatic delivery decision, including an intentional skip; not proof of a transport attempt. |
+| `finish-webhook` | Timestamped `skipped` with its no-send reason, or `attempting`, `accepted`, or `failed` with retry guidance. |
 | `finish-webhook-targets` | Mode-600 JSON lines: target ordinal, timestamp, transport (`pending`, `accepted`, `rejected`, `unknown`), HTTP category or `none`. |
 | `state` / `finished-at` | Job outcome and completion time, independent of delivery success. |
 
@@ -321,8 +337,10 @@ exit, launch failure, deadline, or invalid recorded path without exposing sender
 output. After the finalizer is gone, a remaining `attempting` or a claim without
 a result is ambiguous: the endpoint may already have accepted the request.
 Repeated or concurrent finalization never reclaims an attempt and never retries.
-A terminal job without a claim can also mean the finalizer died before sending;
-wait for finalization to settle before deciding it needs a manual fallback.
+A `skipped` aggregate means no sender ran for that decision, even though the
+claim exists. A terminal job without a claim can also mean the finalizer died
+before deciding delivery; wait for finalization to settle before deciding it
+needs a manual fallback.
 
 To inspect without printing config, set `job` to the absolute job directory:
 
@@ -703,7 +721,10 @@ and no home inheritance inside Git. The timeout fixture accelerates the timer
 while asserting the requested production deadline is exactly 10,000 ms.
 Lifecycle tests additionally exercise automatic hosted/detached finalization,
 worktree/workspace selection, continuation, one-send claims, safe failures and
-bounded shutdown with synthetic executables. A combined test invokes the actual
+bounded shutdown with synthetic executables. Empty-result checks cover missing,
+zero-byte and whitespace results in all three terminal states, non-empty
+failed/stopped handoffs, unreadable results, visible skip receipts, and immutable
+claims when results change after finalization. A combined test invokes the actual
 canonical helper through automatic finalization with intercepted transport.
 Migration checks reject retired-only URL/auth configuration before any request
 and show that the retired env-path override cannot select a file or opt in a job.
