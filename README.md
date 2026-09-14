@@ -1,5 +1,11 @@
 # limen
 
+<a href="https://mega.dev/autonomous-product-development"><img src="https://res.cloudinary.com/mega-dev/image/upload/c_limit,w_536/b_black,c_pad,w_568,h_157/f_jpg/v1/art/landing-logo" alt="MEGA.dev" width="160"></a>
+
+> **[Explore the full workflow → Towards Autonomous Product Development](https://mega.dev/autonomous-product-development)**
+>
+> This MEGA Drop explains the workflow behind limen, including a live video walkthrough with Pi, Herdr, and Grok Bot. [MEGA.dev](https://mega.dev) shares practical articles, repos, and tools for working with AI.
+
 You talk to one [Pi](https://pi.dev) coordinator. It starts workers and reviewers as real Pi processes in isolated Git worktrees. Each job leaves a branch, task, log, state, and session. You decide what to build and what to merge. The coordinator runs the harness.
 
 ![A coordinator starts workers and reviewers in isolated worktrees, then merges with ordinary Git](https://raw.githubusercontent.com/overment/limen/main/docs/limen.gif)
