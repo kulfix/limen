@@ -1,0 +1,74 @@
+Pawel “kulfi” Tykwinski [A\],  — 18:47
+@overment w grok bot jakos zarzadzasz kontekstem czatu? czy masz do kazdego temu osobnego bota? czy jak chcesz rozmawiac o 3 tematach to osobnego agenta otwierasz? jak to dziala? jak np omawiasz dwie funkcjonalnosci ?
+Pawel “kulfi” Tykwinski [A\],  — 18:48
+co to jest poteto i dr eggbot?
+Tomek Guściora — 18:48
+wszystko w 1 idzie
+1 chat master orchestrator
+rozdziela robote na project workerow
+Pawel “kulfi” Tykwinski [A\],  — 18:48
+i on sie jakos przelacza miedzy tematami ?
+ [A\], 
+Tomek Guściora — 18:48
+poteto to typiarka z cursor, która pracowała nad grok botem
+i teraz wybuchła
+jej popularność na tym czacie
+więc zna już ją 0,00000001% społeczeństwa
+;>
+https://x.com/poteto/status/2094457600259842065
+https://x.com/poteto/status/2097732320606507506
+lauren (@poteto)
+The Complete Guide to pstack Pt. 1
+Obraz
+
+X•31.08.2026, 18:09
+lauren (@poteto)
+The Complete Guide to pstack Pt. 2
+Obraz
+
+X•9.09.2026, 19:02
+self-healing loopsy
+i generalnie agent harnessy, dużo mocnego contentu do przemyślenia
+teraz będzie 3dniowy stream 
+jak SpaceX buduje firme przy wykorzystaniu grok bota
+https://luma.com/3ifrgttw
+Grok Bot Galaxy: Livestream · Luma
+Can three people build a company in three days? Join the Grok Bot Galaxy livestream to find out.
+Follow along as Matt Palmer (@mattyp), Lauren Tan (@poteto),…
+Grok Bot Galaxy: Livestream · Luma
+i bedzie tam miedzy innymi ona streamować
+ [A\], 
+Tomek Guściora — 18:52
+zerknij na https://github.com/overment/limen/tree/main/src -> grok bot to master orchestrator polaczony z vpsem lub innym hostem
+GitHub
+limen/src at main · overment/limen
+A minimal one-human-many-agents harness built from files, git, and one CLI. - overment/limen
+A minimal one-human-many-agents harness built from files, git, and one CLI. - overment/limen
+na którym jest pi obudowany  workflowami
+i sobie grok bot powoluje w ktorym workspace chce pi i zleca mu zadania, idea jest taka zeby ograniczyc zmeczenie poznawcze przelaczania sie miedzy okienkami
+tylko masz master coordinatora na ktorego zrzucasz wszystko, on ma dawac workerom autonomie w wykonaniou zadaan a do ciebie wracac tylko wtedy kiedy cos go blokuje albo jest jakis problem albo jest gotowy dalej jesc tokeny
+Pawel “kulfi” Tykwinski [A\],  — 18:56
+ok zapoznam sie. tzn wlasnie w kontekscie limen sie pytam, bo go narazie analizuje. ale nie uzywalem wieszcze wiec pewnie moje pytania sa z czapy 😉 i z przyzwyczajen z pracy z claude
+Tomek Guściora — 18:56
+i dr eggbot to jej grok bot
+udostepniony w grok bot marketplace (tam sporo sobie gotowych mozna zaciagnac)
+no ja to tez dopiero
+sie ze tak powiem adaptuje do tego sposobu pracy
+i wiecej mi nie dziala niz dziala na razie (chociaz ja przepisalem z limen na swoje, wiec to bylo skazane na wady wieku dzieciecego :P)
+Pawel “kulfi” Tykwinski [A\],  — 18:57
+te cale dobro w groku to jest od 100$ czy dopiero od 300$ ?
+Tomek Guściora — 18:58
+teoretycznie od 30$ 
+Tomek Guściora — 18:59
+ale widze mega potencjał i jestem zajarany
+bo dobrze obczajony to może być taki productivity unlock
+
+ [A\], 
+Tomek Guściora — 19:01
+ale była wrzucana dziś open-source alternatywa - z tym że nie testowałem
+Pawel “kulfi” Tykwinski [A\],  — 19:03
+kurde wszyscy chwala a ja mam jakis opor 😉 boje sie chyba ze zenowu bede musial moj sposob pracy wywrocic do gory nogami 😉 co zajmie mi tydzien 🙂
+ [A\], 
+Tomek Guściora — 19:04
+rozumiem Cie
+poniedziałek, jak poniedziałek w AI ;d
