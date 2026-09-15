@@ -12,14 +12,14 @@ test("workspace coordinates explicit child repositories while its specs stay out
 	assert.match(await readFile(join(workspace.root, "spec/workspace.md"), "utf8"), /never parses/i);
 	await access(join(workspace.root, ".limen/jobs"));
 	await assert.rejects(access(join(workspace.root, ".gitignore")));
-	const missing = limen(workspace, "spawn", "no target");
+	const missing = limen(workspace, "spawn", "--detached", "no target");
 	assert.equal(missing.status, 1);
 	assert.match(missing.stderr, /requires --repo/);
-	const traversal = limen(workspace, "spawn", "--repo", "../api", "bad target");
+	const traversal = limen(workspace, "spawn", "--detached", "--repo", "../api", "bad target");
 	assert.equal(traversal.status, 1);
 	assert.match(traversal.stderr, /immediate child/);
 	const worker = onlyJobId(
-		limen(workspace, "spawn", "--repo", "api", "--label", "F003 api slice", "make commit Ticket: spec/features/active/F003-workspace-coordinator/ticket.md").stdout,
+		limen(workspace, "spawn", "--detached", "--repo", "api", "--label", "F003 api slice", "make commit Ticket: spec/features/active/F003-workspace-coordinator/ticket.md").stdout,
 	);
 	await waitForState(workspace.root, worker, "done");
 	const job = join(workspace.root, ".limen/jobs", worker);
@@ -43,7 +43,7 @@ test("workspace coordinates explicit child repositories while its specs stay out
 	assert.equal(jobs.status, 0, jobs.stderr);
 	assert.match(jobs.stdout, /repo api/);
 	assert.match(jobs.stdout, /candidate.txt/);
-	const review = onlyJobId(limen(workspace, "spawn", "--repo", "api", "--review", "--branch", `limen/${worker}`, "review candidate").stdout);
+	const review = onlyJobId(limen(workspace, "spawn", "--detached", "--repo", "api", "--review", "--branch", `limen/${worker}`, "review candidate").stdout);
 	await waitForState(workspace.root, review, "done");
 	assert.equal(await readFile(join(workspace.root, ".limen/jobs", review, "repo"), "utf8"), "api\n");
 	assert.match(git(workspace.repositories.api, "worktree", "list", "--porcelain"), new RegExp(`worktree .*${review}[\\s\\S]*detached`));
@@ -58,9 +58,9 @@ setTimeout(() => console.log("done"), 500);
 `);
 	context.after(workspace.cleanup);
 	assert.equal(limen(workspace, "workspace", "init").status, 0);
-	const api = limen(workspace, "spawn", "--repo", "api", "--branch", "limen/shared", "api work");
+	const api = limen(workspace, "spawn", "--detached", "--repo", "api", "--branch", "limen/shared", "api work");
 	assert.equal(api.status, 0, api.stderr);
-	const web = limen(workspace, "spawn", "--repo", "web", "--branch", "limen/shared", "web work");
+	const web = limen(workspace, "spawn", "--detached", "--repo", "web", "--branch", "limen/shared", "web work");
 	assert.equal(web.status, 0, web.stderr);
 	await Promise.all([waitForState(workspace.root, onlyJobId(api.stdout), "done"), waitForState(workspace.root, onlyJobId(web.stdout), "done")]);
 });
@@ -73,7 +73,7 @@ setInterval(() => {}, 1000);
 `);
 	context.after(workspace.cleanup);
 	assert.equal(limen(workspace, "workspace", "init").status, 0);
-	const id = onlyJobId(limen(workspace, "spawn", "--repo", "api", "wait").stdout);
+	const id = onlyJobId(limen(workspace, "spawn", "--detached", "--repo", "api", "wait").stdout);
 	const stopped = limen(workspace, "stop", id, "workspace stop");
 	assert.equal(stopped.status, 0, stopped.stderr);
 	await waitForState(workspace.root, id, "stopped");

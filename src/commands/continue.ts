@@ -47,8 +47,9 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	if (!query || !instruction) throw new Error('continue requires <id|suffix|label> "follow-up instruction"');
 	if (tab && detached) throw new Error("--tab and --detached cannot be combined");
 	const herdr = herdrAvailable();
-	const hosted = detached ? false : tab || herdr;
-	if (tab && !herdr) throw new Error("hosted continue requires Herdr (HERDR_ENV=1); use --detached for an ordinary job");
+	// Patch 2: default is hosted in Herdr. Detached only with an explicit --detached — never a silent fallback.
+	const hosted = !detached;
+	if (hosted && !herdr) throw new Error("continue defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
 	const chosenModel = model ?? (process.env[review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
 	preflightPi(chosenModel, provider);
 

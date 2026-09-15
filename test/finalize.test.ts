@@ -99,7 +99,7 @@ test("a provider-error stream fails with its stop reason and preserves prior com
 	const scratch = await scratchRepo(errorPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "hit the limit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "hit the limit").stdout);
 	await waitForState(scratch.root, id, "failed");
 	const job = join(scratch.root, ".limen/jobs", id);
 	assert.equal(await readFile(join(job, "stop-reason"), "utf8"), "error: usage limit reached\n");
@@ -117,7 +117,7 @@ test("an aborted stream fails with its stop reason", async (context) => {
 	const scratch = await scratchRepo(abortedPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "abort now").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "abort now").stdout);
 	await waitForState(scratch.root, id, "failed");
 	const job = join(scratch.root, ".limen/jobs", id);
 	assert.equal(await readFile(join(job, "stop-reason"), "utf8"), "aborted\n");
@@ -128,7 +128,7 @@ test("a recovered provider error follows the clean final turn", async (context) 
 	const scratch = await scratchRepo(recoveredPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "recover").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "recover").stdout);
 	await waitForState(scratch.root, id, "done");
 	await assert.rejects(readFile(join(scratch.root, ".limen/jobs", id, "stop-reason")));
 });
@@ -137,7 +137,7 @@ test("a clean run writes no stop-reason", async (context) => {
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "make commit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	await assert.rejects(readFile(join(scratch.root, ".limen/jobs", id, "stop-reason")));
 });
@@ -146,7 +146,7 @@ test("an unseen steer is counted at finalize", async (context) => {
 	const scratch = await scratchRepo(lateSteerPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "almost done").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "almost done").stdout);
 	const job = join(scratch.root, ".limen/jobs", id);
 	await mkdir(join(job, "steer/inbox"), { recursive: true });
 	await writeFile(join(job, "steer/inbox/0001"), "turn left\n");
@@ -189,7 +189,7 @@ setInterval(() => {}, 1000);
 	const scratch = await scratchRepo(waiting);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "wait").stdout);
 	const job = join(scratch.root, ".limen/jobs", id);
 	const stopped = limen(scratch, "stop", id, "one writer");
 	assert.equal(stopped.status, 0, stopped.stderr);

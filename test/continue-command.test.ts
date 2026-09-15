@@ -35,9 +35,9 @@ test("continue resumes a finished job in its own session and links the record", 
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "F034 worker", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F034 worker", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
-	const launched = limen(scratch, "continue", parent, "now refine the seam");
+	const launched = limen(scratch, "continue", "--detached", parent, "now refine the seam");
 	assert.equal(launched.status, 0, launched.stderr);
 	assert.match(launched.stdout, /continued F034 worker · continue in /);
 	const id = onlyJobId(launched.stdout);
@@ -73,7 +73,7 @@ test("continue sends an explicit model rather than inheriting Pi settings or the
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--model", "xai/grok-4.6:xhigh", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--model", "xai/grok-4.6:xhigh", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const cases = [
 		{ worker: "", reviewer: "", flags: [], expected: "openai-codex/gpt-6-astra:high" },
@@ -85,7 +85,7 @@ test("continue sends an explicit model rather than inheriting Pi settings or the
 	];
 	for (const entry of cases) {
 		const env = { LIMEN_WORKER_MODEL: entry.worker, LIMEN_REVIEWER_MODEL: entry.reviewer };
-		const launched = limenWithEnv(scratch, env, "continue", ...entry.flags, parent, "refine the seam");
+		const launched = limenWithEnv(scratch, env, "continue", "--detached", ...entry.flags, parent, "refine the seam");
 		assert.equal(launched.status, 0, launched.stderr);
 		await waitForState(scratch.root, onlyJobId(launched.stdout), "done");
 		const argv = JSON.parse(await readFile(join(worktreeFor(scratch.root, parent), "pi-args.json"), "utf8")) as string[];
@@ -118,9 +118,9 @@ test("continue without --review loads the parent role preamble", async (context)
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
 	await writeFile(join(scratch.root, ".agents/limen/researcher.md"), "RESEARCH PREAMBLE\n");
-	const parent = onlyJobId(limen(scratch, "spawn", "--role", "researcher", "--label", "F069 research", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--role", "researcher", "--label", "F069 research", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
-	const launched = limen(scratch, "continue", parent, "keep looking");
+	const launched = limen(scratch, "continue", "--detached", parent, "keep looking");
 	assert.equal(launched.status, 0, launched.stderr);
 	const id = onlyJobId(launched.stdout);
 	await waitForState(scratch.root, id, "done");
@@ -134,7 +134,7 @@ test("continue restores a pruned finished checkout from its branch and saved ses
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "pruned worker", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "pruned worker", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const parentDir = join(scratch.root, ".limen/jobs", parent);
 	const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
@@ -148,7 +148,7 @@ test("continue restores a pruned finished checkout from its branch and saved ses
 	assert.equal(limen(scratch, "prune").status, 0);
 	assert.equal(existsSync(worktree), false);
 	assert.equal(git(scratch.root, "rev-parse", branch), tip);
-	const launched = limen(scratch, "continue", parent, "refine committed work");
+	const launched = limen(scratch, "continue", "--detached", parent, "refine committed work");
 	assert.equal(launched.status, 0, launched.stderr);
 	assert.match(launched.stdout, /restored .* from limen\/.*; only committed branch contents were recovered/);
 	const id = onlyJobId(launched.stdout);
@@ -171,17 +171,17 @@ test("continue refuses a running job or missing transcript without writing recor
 	const scratch = await scratchRepo(sleeperFakePi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "slow worker", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "slow worker", "first slice").stdout);
 	const pidPath = join(scratch.root, ".limen/jobs", parent, "pid");
 	const deadline = Date.now() + 5_000;
 	while (!(await readFile(pidPath, "utf8").catch(() => "")) && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 25));
-	const running = limen(scratch, "continue", parent, "too early");
+	const running = limen(scratch, "continue", "--detached", parent, "too early");
 	assert.equal(running.status, 1);
 	assert.match(running.stderr, /is running; continue needs a finished job/);
 	await waitForState(scratch.root, parent, "done");
 	assert.equal(limen(scratch, "prune").status, 0);
 	const before = await readdir(join(scratch.root, ".limen/jobs"));
-	const pruned = limen(scratch, "continue", parent, "worktree is gone");
+	const pruned = limen(scratch, "continue", "--detached", parent, "worktree is gone");
 	assert.equal(pruned.status, 1);
 	assert.match(pruned.stderr, /has no session transcript to continue/);
 	assert.equal(existsSync((await readFile(join(scratch.root, ".limen/jobs", parent, "worktree"), "utf8")).trim()), false);
@@ -193,7 +193,7 @@ for (const pruned of [false, true]) {
 		const workspace = await scratchWorkspace(continuingFakePi);
 		context.after(workspace.cleanup);
 		assert.equal(limen(workspace, "workspace", "init").status, 0);
-		const parent = onlyJobId(limen(workspace, "spawn", "--repo", "api", "--label", "F037 api", "first slice").stdout);
+		const parent = onlyJobId(limen(workspace, "spawn", "--detached", "--repo", "api", "--label", "F037 api", "first slice").stdout);
 		await waitForState(workspace.root, parent, "done");
 		const parentDir = join(workspace.root, ".limen/jobs", parent);
 		const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
@@ -207,7 +207,7 @@ for (const pruned of [false, true]) {
 			assert.equal(limen(workspace, "prune").status, 0);
 			assert.equal(existsSync(worktree), false);
 		}
-		const launched = limen(workspace, "continue", parent, "keep going");
+		const launched = limen(workspace, "continue", "--detached", parent, "keep going");
 		assert.equal(launched.status, 0, launched.stderr);
 		const id = onlyJobId(launched.stdout);
 		await waitForState(workspace.root, id, "done");
@@ -227,7 +227,7 @@ for (const unavailable of ["missing", "occupied"] as const) {
 		const scratch = await scratchRepo(continuingFakePi);
 		context.after(scratch.cleanup);
 		assert.equal(limen(scratch, "init").status, 0);
-		const parent = onlyJobId(limen(scratch, "spawn", "first slice").stdout);
+		const parent = onlyJobId(limen(scratch, "spawn", "--detached", "first slice").stdout);
 		await waitForState(scratch.root, parent, "done");
 		const parentDir = join(scratch.root, ".limen/jobs", parent);
 		const worktree = (await readFile(join(parentDir, "worktree"), "utf8")).trim();
@@ -240,7 +240,7 @@ for (const unavailable of ["missing", "occupied"] as const) {
 			await writeFile(join(occupied, "in-progress.txt"), "do not replace\n");
 		}
 		const before = await readdir(join(scratch.root, ".limen/jobs"));
-		const refused = limen(scratch, "continue", parent, "keep going");
+		const refused = limen(scratch, "continue", "--detached", parent, "keep going");
 		assert.equal(refused.status, 1);
 		if (unavailable === "missing") {
 			assert.ok(refused.stderr.includes(`branch ${branch} is missing in ${scratch.root}; restore that branch before continuing`));
@@ -259,7 +259,7 @@ test("continue after prune leaves a live nested child owned by another checkout 
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "finished parent").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "finished parent").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const worktree = (await readFile(join(scratch.root, ".limen/jobs", parent, "worktree"), "utf8")).trim();
 	const worktreeRoot = dirname(worktree);
@@ -282,7 +282,7 @@ test("continue after prune leaves a live nested child owned by another checkout 
 	const pruned = limen(scratch, "prune");
 	assert.equal(pruned.status, 0, pruned.stderr);
 	assert.equal(existsSync(worktree), false);
-	const launched = limen(scratch, "continue", parent, "keep going");
+	const launched = limen(scratch, "continue", "--detached", parent, "keep going");
 	assert.equal(launched.status, 0, launched.stderr);
 	await waitForState(scratch.root, onlyJobId(launched.stdout), "done");
 	assert.equal(existsSync(worktree), true);
@@ -295,7 +295,7 @@ test("continue --detached stays a wrapper even in Herdr", async (context) => {
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "F037 det", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F037 det", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const herdr = join(scratch.fakeBin, "herdr");
 	await writeFile(herdr, "#!/usr/bin/env node\nconsole.log(JSON.stringify({ result: {} }));\n");
@@ -316,10 +316,10 @@ test("LIMEN_PREFLIGHT=auth fails continue with no record", async (context) => {
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "F037 auth", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F037 auth", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const before = await readdir(join(scratch.root, ".limen/jobs"));
-	const refused = limenWithEnv(scratch, { LIMEN_PREFLIGHT: "auth" }, "continue", parent, "keep going");
+	const refused = limenWithEnv(scratch, { LIMEN_PREFLIGHT: "auth" }, "continue", "--detached", parent, "keep going");
 	assert.equal(refused.status, 1);
 	assert.match(refused.stderr, /auth/);
 	assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), before);
@@ -329,7 +329,7 @@ test("hosted continue start failure finalizes the child record", async (context)
 	const scratch = await scratchRepo(continuingFakePi);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const parent = onlyJobId(limen(scratch, "spawn", "--label", "F037 fail", "first slice").stdout);
+	const parent = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F037 fail", "first slice").stdout);
 	await waitForState(scratch.root, parent, "done");
 	const herdr = join(scratch.fakeBin, "herdr");
 	await writeFile(

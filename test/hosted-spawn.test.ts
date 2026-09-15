@@ -484,11 +484,11 @@ test("spawn --tab refuses without Herdr and leaves no job record", async (contex
 	assert.equal(limen(scratch, "init").status, 0);
 	const refused = limen(scratch, "spawn", "--tab", "--label", "F010 noherdr", "do work");
 	assert.equal(refused.status, 1);
-	assert.match(refused.stderr, /hosted spawn requires Herdr/);
+	assert.match(refused.stderr, /spawn defaults to hosted Herdr/);
 	assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), []);
 	const review = limen(scratch, "spawn", "--tab", "--review", "--branch", "limen/ghost", "inspect candidate");
 	assert.equal(review.status, 1);
-	assert.match(review.stderr, /hosted spawn requires Herdr/);
+	assert.match(review.stderr, /spawn defaults to hosted Herdr/);
 	assert.doesNotMatch(review.stderr, /does not support --review/);
 	assert.deepEqual(await readdir(join(scratch.root, ".limen/jobs")), []);
 });
@@ -896,7 +896,7 @@ test("spawn --review in Herdr is hosted; --detached keeps a watch tab", async (c
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const worker = onlyJobId(limen(scratch, "spawn", "make commit").stdout);
+	const worker = onlyJobId(limen(scratch, "spawn", "--detached", "make commit").stdout);
 	await waitForState(scratch.root, worker, "done");
 	const branch = `limen/${worker}`;
 	const herdr = await installHostedFakeHerdr(scratch.root, scratch.fakeBin);

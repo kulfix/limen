@@ -8,7 +8,7 @@ test("a coordinator can watch and unwatch any durable job", async (context) => {
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const id = onlyJobId(limen(scratch, "spawn", "ownerless work").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "ownerless work").stdout);
 	await waitForState(scratch.root, id, "done");
 	const job = join(scratch.root, ".limen/jobs", id);
 	await assert.rejects(access(join(job, "origin-session")));
@@ -30,7 +30,7 @@ setInterval(() => {}, 1000);
 `);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "long work").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "long work").stdout);
 	const watched = limenWithSession(scratch, "coordinator-c", "watch", "--running");
 	assert.equal(watched.status, 0, watched.stderr);
 	assert.match(watched.stdout, /watching 1 job/);

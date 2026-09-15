@@ -113,7 +113,7 @@ test("limen jobs reaps a dead record, then spawn and prune may use the branch", 
 	assert.equal(await text(join(scratch.root, ".limen/jobs", id, "state")), "failed");
 	assert.equal(limen(scratch, "prune").status, 0);
 	await assert.rejects(readFile(join(worktree, ".git")));
-	const spawned = limen(scratch, "spawn", "--branch", "limen/reaped", "continue");
+	const spawned = limen(scratch, "spawn", "--detached", "--branch", "limen/reaped", "continue");
 	assert.equal(spawned.status, 0, spawned.stderr);
 	await waitForState(scratch.root, onlyJobId(spawned.stdout), "done");
 });
@@ -195,7 +195,7 @@ test("handshake records wrapper birth on macOS", async (context) => {
 	context.after(() => {
 		if (id) limen(scratch, "stop", id);
 	});
-	const launched = limen(scratch, "spawn", "--label", "F025 live", "stay up");
+	const launched = limen(scratch, "spawn", "--detached", "--label", "F025 live", "stay up");
 	assert.equal(launched.status, 0, launched.stderr);
 	id = onlyJobId(launched.stdout);
 	const job = join(scratch.root, ".limen/jobs", id);

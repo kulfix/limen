@@ -16,7 +16,7 @@ test("prune and spawn keep a live reviewer's detached worktree", async (context)
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const worker = onlyJobId(limen(scratch, "spawn", "make commit").stdout);
+	const worker = onlyJobId(limen(scratch, "spawn", "--detached", "make commit").stdout);
 	await waitForState(scratch.root, worker, "done");
 	const branch = `limen/${worker}`;
 	await writeFakePi(scratch.fakeBin, livePi);
@@ -24,7 +24,7 @@ test("prune and spawn keep a live reviewer's detached worktree", async (context)
 	context.after(() => {
 		if (review) limen(scratch, "stop", review);
 	});
-	const launched = limen(scratch, "spawn", "--review", "--branch", branch, "inspect candidate");
+	const launched = limen(scratch, "spawn", "--detached", "--review", "--branch", branch, "inspect candidate");
 	assert.equal(launched.status, 0, launched.stderr);
 	review = onlyJobId(launched.stdout);
 	const reviewPath = (await readFile(join(scratch.root, ".limen/jobs", review, "worktree"), "utf8")).trim();
@@ -34,7 +34,7 @@ test("prune and spawn keep a live reviewer's detached worktree", async (context)
 	await access(reviewPath);
 	assert.match(git(scratch.root, "worktree", "list", "--porcelain"), new RegExp(review));
 	await writeFakePi(scratch.fakeBin, completingPi);
-	const other = limen(scratch, "spawn", "other work");
+	const other = limen(scratch, "spawn", "--detached", "other work");
 	assert.equal(other.status, 0, other.stderr);
 	await waitForState(scratch.root, onlyJobId(other.stdout), "done");
 	await access(reviewPath);
@@ -52,7 +52,7 @@ test("leftover sweep leaves a worktree git still has registered", async (context
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "make commit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	const worktree = (await readFile(join(scratch.root, ".limen/jobs", id, "worktree"), "utf8")).trim();
 	git(scratch.root, "worktree", "lock", worktree);
@@ -91,7 +91,7 @@ for (const command of ["prune", "spawn"] as const) {
 		await mkdir(leftover);
 		await writeFile(join(leftover, "stale.txt"), "remove me\n");
 
-		const result = command === "prune" ? limen(scratch, "prune") : limen(scratch, "spawn", "plant sibling");
+		const result = command === "prune" ? limen(scratch, "prune") : limen(scratch, "spawn", "--detached", "plant sibling");
 		assert.equal(result.status, 0, result.stderr);
 		if (command === "spawn") await waitForState(scratch.root, onlyJobId(result.stdout), "done");
 		assert.equal(await readFile(join(child, "in-progress.txt"), "utf8"), "nested work must survive\n");
@@ -149,14 +149,14 @@ test("startup window is live; expired running-without-pid is not", async (contex
 	assert.equal(await liveJob(job), true);
 	assert.equal(limen(scratch, "prune").status, 0);
 	await access(worktree);
-	const refused = limen(scratch, "spawn", "--branch", "limen/occupied", "continue");
+	const refused = limen(scratch, "spawn", "--detached", "--branch", "limen/occupied", "continue");
 	assert.equal(refused.status, 1, refused.stdout);
 	assert.match(refused.stderr, /already has a live job/);
 	await writeFile(join(job, "started-at"), `${new Date(Date.now() - 60 * 60_000).toISOString()}\n`);
 	assert.equal(await liveJob(job), false);
 	assert.equal(limen(scratch, "prune").status, 0);
 	await assert.rejects(access(worktree));
-	const allowed = limen(scratch, "spawn", "--branch", "limen/occupied", "continue");
+	const allowed = limen(scratch, "spawn", "--detached", "--branch", "limen/occupied", "continue");
 	assert.equal(allowed.status, 0, allowed.stderr);
 	await waitForState(scratch.root, onlyJobId(allowed.stdout), "done");
 });

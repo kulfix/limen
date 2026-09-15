@@ -87,7 +87,7 @@ test("stop terminates an escaped-group child or records it in a cleanup note", a
 	const scratch = await scratchRepo(escapingPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "escape").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "escape").stdout);
 	const escapee = await readEscapeePid(scratch, id);
 	context.after(async () => {
 		try {
@@ -108,7 +108,7 @@ test("timeout terminates an escaped-group child or records it in cleanup", async
 	const scratch = await scratchRepo(escapingPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--timeout", "2s", "escape").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--timeout", "2s", "escape").stdout);
 	const escapee = await readEscapeePid(scratch, id);
 	context.after(async () => {
 		try {
@@ -150,7 +150,7 @@ test("stop completes delayed discovery before a fast parent exit", async (contex
 	context.after(scratch.cleanup);
 	await delayProcessTable(scratch);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "escape").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "escape").stdout);
 	const escapee = await readEscapeePid(scratch, id);
 	context.after(() => {
 		try {
@@ -171,7 +171,7 @@ test("timeout completes delayed discovery before a fast parent exit", async (con
 	context.after(scratch.cleanup);
 	await delayProcessTable(scratch);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--timeout", "1s", "escape").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--timeout", "1s", "escape").stdout);
 	const escapee = await readEscapeePid(scratch, id);
 	context.after(() => {
 		try {
@@ -194,7 +194,7 @@ test("one deadline bounds delayed ps and all birth captures before TERM", async 
 	);
 	await chmod(join(scratch.fakeBin, "ps"), 0o755);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "escape").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "escape").stdout);
 	const escapee = await readEscapeePid(scratch, id);
 	context.after(() => {
 		try {
@@ -215,7 +215,7 @@ test("sleeping descendant discovery delays stop only through its short bound", a
 	await writeFile(join(scratch.fakeBin, "ps"), "#!/bin/sh\nexec sleep 10\n");
 	await chmod(join(scratch.fakeBin, "ps"), 0o755);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "wait").stdout);
 	const started = Date.now();
 	const stopped = limen(scratch, "stop", id, "ps sleeping");
 	assert.equal(stopped.status, 0, stopped.stderr);
@@ -231,7 +231,7 @@ test("sleeping descendant discovery delays timeout only through its short bound"
 	await writeFile(join(scratch.fakeBin, "ps"), `#!/bin/sh\n"${process.execPath}" -e 'require("node:fs").writeFileSync(".ps-started-at", String(Date.now()))'\nexec sleep 10\n`);
 	await chmod(join(scratch.fakeBin, "ps"), 0o755);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--timeout", "100ms", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--timeout", "100ms", "wait").stdout);
 	await waitForState(scratch.root, id, "failed", 2_000);
 	const queryStartedAt = Number(await readFile(join(scratch.root, ".ps-started-at"), "utf8"));
 	const finishedAt = Date.parse((await readFile(join(scratch.root, `.limen/jobs/${id}/finished-at`), "utf8")).trim());
@@ -339,7 +339,7 @@ test("stop with a done: reason records done and silences the stopping session", 
 	const scratch = await scratchRepo(stubbornPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "wait").stdout);
 	const job = join(scratch.root, `.limen/jobs/${id}`);
 	const stopped = limenWithSession(scratch, "coordinator-a", "stop", id, "done: merged as abc123");
 	assert.equal(stopped.status, 0, stopped.stderr);
@@ -412,7 +412,7 @@ setInterval(() => {}, 1000);
 	const scratch = await scratchRepo(talkThenWait);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "wait").stdout);
 	const jobDir = join(scratch.root, `.limen/jobs/${id}`);
 	const seenBy = Date.now() + 5_000;
 	while (Date.now() < seenBy) {
@@ -437,7 +437,7 @@ test("timeout is portable and leaves failed durable truth", async (context) => {
 	const scratch = await scratchRepo(stubbornPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--timeout", "100ms", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--timeout", "100ms", "wait").stdout);
 	await waitForState(scratch.root, id, "failed", 8_000);
 	const log = await readFile(join(scratch.root, `.limen/jobs/${id}/log`), "utf8");
 	assert.match(log, /timeout after 100ms/);
@@ -448,7 +448,7 @@ test("a runaway tool loop is bounded and says so", async (context) => {
 	const scratch = await scratchRepo(busyPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_MAX_TOOL_CALLS: "5" }, "spawn", "loop").stdout);
+	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_MAX_TOOL_CALLS: "5" }, "spawn", "--detached", "loop").stdout);
 	await waitForState(scratch.root, id, "failed", 15_000);
 	await new Promise((resolve) => setTimeout(resolve, 5_100));
 	const log = await readFile(join(scratch.root, `.limen/jobs/${id}/log`), "utf8");
