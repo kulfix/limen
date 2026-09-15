@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -58,12 +58,29 @@ export function limenWithEnv(
 export function limenWithInput(scratch: Scratch, input: string, ...args: readonly string[]): { readonly stdout: string; readonly stderr: string; readonly status: number } {
 	return runLimen(scratch, {}, args, input);
 }
-function runLimen(
+export function limenWithEnvAsync(
 	scratch: Scratch,
-	addedEnvironment: NodeJS.ProcessEnv,
-	args: readonly string[],
-	input?: string,
-): { readonly stdout: string; readonly stderr: string; readonly status: number } {
+	added: NodeJS.ProcessEnv,
+	...args: readonly string[]
+): Promise<{ readonly stdout: string; readonly stderr: string; readonly status: number }> {
+	return new Promise((resolve, reject) => {
+		const child = spawn(process.execPath, [LIMEN, ...args], { cwd: scratch.root, env: limenEnvironment(scratch, added) });
+		let stdout = "";
+		let stderr = "";
+		child.stdout.setEncoding("utf8");
+		child.stderr.setEncoding("utf8");
+		child.stdout.on("data", (chunk: string) => {
+			stdout += chunk;
+		});
+		child.stderr.on("data", (chunk: string) => {
+			stderr += chunk;
+		});
+		child.on("error", reject);
+		child.on("close", (status) => resolve({ stdout, stderr, status: status ?? 1 }));
+	});
+}
+
+function limenEnvironment(scratch: Scratch, addedEnvironment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 	const environment: NodeJS.ProcessEnv = {
 		...process.env,
 		PATH: `${scratch.fakeBin}:${process.env.PATH}`,
@@ -120,6 +137,16 @@ function runLimen(
 	environment.LIMEN_HUNK = "0";
 	environment.LIMEN_HOME = dirname(scratch.root);
 	Object.assign(environment, addedEnvironment);
+	return environment;
+}
+
+function runLimen(
+	scratch: Scratch,
+	addedEnvironment: NodeJS.ProcessEnv,
+	args: readonly string[],
+	input?: string,
+): { readonly stdout: string; readonly stderr: string; readonly status: number } {
+	const environment = limenEnvironment(scratch, addedEnvironment);
 	const result = spawnSync(process.execPath, [LIMEN, ...args], {
 		cwd: scratch.root,
 		encoding: "utf8",
