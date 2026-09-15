@@ -1,31 +1,57 @@
 # Modele — polityka New Bot / research
 
-Domyślnie **tanio**. Astra tylko gdy naprawdę potrzebna.
+Koordynator (i Router w handoffie) **wybierają model do zadania** — nie ślepe „zawsze DeepSeek” i nie „zawsze Astra”.
 
 ## Tabela
 
 | Rola | Provider / model | Thinking | Kiedy |
 | --- | --- | --- | --- |
-| **Research / tanie joby** | OpenRouter · DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash` lub aktualny flash z seat) | `low` | Odczyt docs, grep, krótkie ustalenia, smoke, większość `limen spawn` research-only |
-| **Koordynator / ciężkie** | OpenAI Codex · Astra (`openai-codex` / `gpt-6-astra`) | `high` | Tylko gdy handoff wymaga głębokiej syntezy, trudnej decyzji albo jawnego „użyj Astry” od Pawła |
-| **Advisor (Claude)** | `--engine claude` + jawne `--detached` | n/a | Perspektywa, nie merge; nigdy cichy detached (patrz [HERDR.md](./HERDR.md)) |
+| **Research / tanie / smoke / mechanika** | OpenRouter · DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash` lub aktualny flash na seat) | `low` | Factografia, grep, krótkie ustalenia, smoke, jasno wyspecyfikowane małe patche |
+| **Plan / architektura / trudna diagnoza** | OpenAI Codex · Astra (`openai-codex` / `gpt-6-astra`) | `high` | Plan, layout, diagnostyka blokerów, handoffy z decyzjami, review ryzyka — gdy trzeba ciężkiego reasoningu |
+| **Grok (subskrypcja seat)** | xAI · Grok (`xai` / `grok-4.6`; katalog Pi: też `grok-4.5`, `grok-4.3`) | wg zadania (`medium`–`high`) | Gdy pasuje do zadania; nie blokuj się na DeepSeek/Astra-only. Auth: `pi auth check --provider xai` (OAuth ready na seat) |
+| **Advisor (Claude)** | `--engine claude` + jawne `--detached` | n/a | Perspektywa, nie merge; CCS `LIMEN_CLAUDE=claude-aN` — [CCS.md](./CCS.md); nigdy cichy detached — [HERDR.md](./HERDR.md) |
 
-## Jak wołać tanio (New Bot)
+## Jak odpalać
 
-1. Handoff w `local/harnes/research/<slug>/to-limen.md` z granicą **research-only**.
-2. W prośbie do Pi: jawnie **DeepSeek flash + thinking low** dla jobów; nie proś o Astry „na zapas”.
-3. `limen inbound accept --wake …` na seatcie (Herdr). Koordynator Pi startuje z `@to-limen.md`.
-4. Gdy Pi robi `limen spawn`, ustawia np.  
-   `--provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low`  
-   (albo env `LIMEN_WORKER_MODEL` / flagi zgodne z seatem — sprawdź `pi`/OpenRouter na hoście).
-5. Astra: tylko w handoffie typu ciężka synteza / decyzja, albo gdy tani model utknie (`blocked`) i Paweł zatwierdzi eskalację.
+### DeepSeek (tanio)
+
+```bash
+limen spawn --provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low "…"
+```
+
+### Astra (ciężkie)
+
+```bash
+limen spawn --provider openai-codex --model gpt-6-astra --thinking high "…"
+```
+
+Pi default na seatcie bywa `openai-codex`/`gpt-6-astra` — nie traktuj defaultu jako „zawsze Astra na research”.
+
+### Grok (subskrypcja xAI na seatcie)
+
+```bash
+# preflight
+pi auth check --provider xai --model grok-4.6
+
+# limen hosted worker (Herdr-only default)
+limen spawn --provider xai --model grok-4.6 --thinking high "…"
+
+# albo bezpośrednio Pi
+pi --provider xai --model grok-4.6 --thinking high -p "…"
+```
+
+Limen przekazuje `LIMEN_PROVIDER` z `--provider`. OpenRouter ma też `x-ai/grok-*`, ale **preferuj native `xai`** (OAuth subskrypcji na seatcie).
+
+## Handoff / Router
+
+1. Router może narzucić model w `to-limen.md`.
+2. Brak narzucenia → koordynator wybiera z tabeli powyżej.
+3. `limen inbound accept --wake …` — treść w `@to-limen.md`, nie BRIDGE.
 
 ## Zakazy
 
 - Nie eskaluj do Astry milcząco „bo pewniej”.
-- Nie myl finish-webhook HTTP 2xx z dowodem, że bot „wstał”.
-- Praca idzie **seat + `gh`**, nie Cursor Cloud Agents.
-
-## Claude (Anthropic subscription)
-
-Gdy job wymaga Claude Code (advisor / `--engine claude`): użyj profili CCS na seatcie — `LIMEN_CLAUDE=claude-a1|a2|a3`, nigdy gołego `claude` jeśli chcesz rotacji kont. Szczegóły: [CCS.md](./CCS.md).
+- Nie trzymaj się DeepSeek, gdy zadanie to plan/architektura/decyzja.
+- Nie myl finish-webhook HTTP 2xx z dowodem wake.
+- Praca: **seat + `gh`**, nie Cursor Cloud Agents.
+- `.131` / prod rezavo poza scope mostu limen.
