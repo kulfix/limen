@@ -31,3 +31,4 @@ Odczytaj też: `notes.md` w tym samym katalogu tematu, [bridge/PROTOCOL.md](../b
 - Max jeden aktywny worker naraz.
 - Brak cichego `--detached`; bez Herdr spawn ma failować ([HERDR.md](../HERDR.md)).
 - Nie traktuj HTTP 2xx webhooka jako dowodu odbioru przez bota.
+- Claude (`--engine claude`): ustaw `LIMEN_CLAUDE=claude-a1` (lub a2/a3) — [CCS.md](../CCS.md); nadal jawne `--detached`.

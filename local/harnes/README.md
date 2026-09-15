@@ -22,6 +22,7 @@ Snapshot mostu z projektu badawczego harnes w forku silnika (`kulfix/limen`).
 | [WAKE.md](./WAKE.md) | End-to-end wake |
 | [HERDR.md](./HERDR.md) | Herdr-only default |
 | [MODELS.md](./MODELS.md) | Astra vs DeepSeek flash (tanio by default) |
+| [CCS.md](./CCS.md) | Multi-account Claude via CCS profiles (a1/a2/a3) |
 | [GROK.md](./GROK.md) | Wejście dla Grok Bota |
 | [procedures/research-start.md](./procedures/research-start.md) | Procedura koordynatora Pi |
 | [research/](./research/) | Tematy (`notes`, `to-limen`, `to-grok`) |
@@ -36,3 +37,5 @@ Snapshot mostu z projektu badawczego harnes w forku silnika (`kulfix/limen`).
 ## Seat
 
 Checkout: `/srv/limen/tools/limen`. Praca New Bota: SSH na seat + `gh` na `kulfix/limen`. Bez Cursor Cloud Agents jako ścieżki wykonawczej.
+
+Claude na seatcie: konta CCS **a1/a2/a3** — patrz [CCS.md](./CCS.md) (`LIMEN_CLAUDE=claude-a1`).

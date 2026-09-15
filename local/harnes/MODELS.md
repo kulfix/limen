@@ -25,3 +25,7 @@ Domyślnie **tanio**. Astra tylko gdy naprawdę potrzebna.
 - Nie eskaluj do Astry milcząco „bo pewniej”.
 - Nie myl finish-webhook HTTP 2xx z dowodem, że bot „wstał”.
 - Praca idzie **seat + `gh`**, nie Cursor Cloud Agents.
+
+## Claude (Anthropic subscription)
+
+Gdy job wymaga Claude Code (advisor / `--engine claude`): użyj profili CCS na seatcie — `LIMEN_CLAUDE=claude-a1|a2|a3`, nigdy gołego `claude` jeśli chcesz rotacji kont. Szczegóły: [CCS.md](./CCS.md).
