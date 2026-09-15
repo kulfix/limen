@@ -31,6 +31,10 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 
 Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub niezgodność rewizji zgłoś, nie zastępuj z pamięci. `--task-file` nie kopiuje ich automatycznie.
 
+## Brainstorm / design-write (gdy etap = brainstorm)
+
+Brief design joba musi wymagać `design.md` zgodnego z kontraktem w [issue-pipeline.md](issue-pipeline.md#kontrakt-designmd-day-one): problem, 2–3 opcje + rekomendacja, decyzje, elementy, GWT lub N/A, ops lub N/A, poza zakresem/odroczone (aim disposition), pytania product-only, źródła/SHA; opcjonalnie słabe miejsca zamiast ratingów. Aim day-one: skrót **15→10** (rr-codex) w tym samym jobie — najpierw szersze możliwości, potem luki w wybranym scope. Bez kodu, bez branchy produktu, bez layoutu seat.
+
 ## Zadanie
 
 - Outcome: `<jeden obserwowalny wynik tego etapu>`

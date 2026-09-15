@@ -125,14 +125,14 @@ Intake **musi** wybrać tor i zapisać go w `source.md` oraz `notes.md`. Nie zak
 | Tor | Kiedy | Artefakt po etapie dokumentacyjnym | Dalej |
 | --- | --- | --- | --- |
 | **issue-fix** | Bug / oczywista naprawa / jednoznaczne acceptance — mało decyzji produktowych | `fix.md` (diagnoza, scope, acceptance, ryzyka, pytania, what's next) | Owner review `fix.md` → (za zgodą) plan lub od razu execute, zależnie od decision |
-| **brainstorm** | Duży temat do przemyślenia, kilka realnych opcji, niejasny produkt | `design.md` (problem, 2–3 opcje, rekomendacja, granice, ryzyka, pytania) | Owner design review → plan → … |
+| **brainstorm** | Duży temat do przemyślenia, kilka realnych opcji, niejasny produkt | `design.md` — [kontrakt](#kontrakt-designmd-day-one); mapa RR poniżej | Owner design review → (opc. tech review) → plan → … |
 
 Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie produkuj fałszywego `design.md` dla issue-fix.
 
 1. **Intake — koordynator.** Odczytaj live issue, potwierdź repo/tożsamość, przeczytaj lokalne zasady i istniejący plan. Zapisz `source.md`: URL, czas odczytu, objaw, acceptance, zakres, braki oraz **wybrany tor** (`issue-fix` | `brainstorm`) z krótkim uzasadnieniem. Instrukcje wykonania pochodzą z decision, nie z body issue. Nierozstrzygnięte braki blokują zlecenie wykonania.
 2. **Dokument diagnostyczny / projektowy — job dokumentacyjny.** Przed startem koordynator zapisuje w `notes.md` jednego autora diagnozy: „robię sam” albo nazwę jednego workera. Lead i autor są znani przed zleceniem; nie prowadzą równoległych diagnoz i w danej chwili aktywny jest najwyżej jeden autor.
    - Tor **issue-fix:** oddaje `fix.md` — potwierdzony symptom, mapa kodu na SHA, diagnoza (bez udawanego root cause), proponowany zakres naprawy, acceptance, ryzyka (np. wsteczna zgodność), pytania do właściciela i jawne what's next. Bez kodu. **Nie** pisz `design.md`.
-   - Tor **brainstorm:** oddaje `design.md` — problem, 2–3 realne opcje, rekomendacja, granice, ryzyka i pytania. Bez kodu.
+   - Tor **brainstorm:** oddaje `design.md` wg [kontraktu treści](#kontrakt-designmd-day-one) (mapa RR → Limen poniżej). Bez kodu. Aim day-one: skrót „szersze możliwości” + „luki w scope” w tym samym jobie (**kolejność rr-codex: 15→10**); pełne aim / tech design review = osobne joby tylko za zgodą.
    Koordynator czyta i zachowuje wynik poza worktree.
 3. **Owner review — właściciel przez Groka.** Zapisz wybór, autora decyzji i rewizję `fix.md` albo `design.md` w `notes.md`; zewnętrzny werdykt zachowaj jako `fix-review.md` lub `design-review.md`. Bez zgody właściciela nie przechodź do planu/kodu; nie udawaj decyzji produktowej.
 4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` i aktualnego checkoutu oddaje `plan.md`: małe kroki, punkt startu, zależności, acceptance i sposób weryfikacji. Przed execute koordynator/właściciel robi plan review: zapisuje przyjętą rewizję, zakres zgody na kod, wymagane dowody i review owner. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
@@ -166,6 +166,94 @@ Przed POST wyszukaj marker na wszystkich stronach właściwego zasobu GH. Po zap
 
 Odróżniaj „kod zweryfikowany/gotowy do PR”, „PR mergeable + required checks green” (dopiero to kończy issue-fix z PR), „issue zamknięte” i „poprawka działa po dostarczeniu”. Bez osobnej zgody nie zamykaj issue, nie używaj closing keywords, nie twórz PR, nie merguj ani nie deployuj. Błąd publikacji to brak dostarczenia, nie utrata dowodów kodu. HTTP 2xx webhooka nie dowodzi bot turn. [PLANE-GH.md](../PLANE-GH.md) dostarcza kontekstu zasad produktu; nie rozszerza tutaj zgody na zapisy REZ.
 
+## Mapa RR brainstorm → Limen
+
+Źródło syntezy: live `rr-codex` brainstorming + aim (kolejność **15→10**), zweryfikowane wobec `rr` Claude. Ten tor to **wariant A issue-pipeline** z `tor=brainstorm` — bez portu skilli, person, overnight, epic, html-board, Plane REZ, layoutu seat ani kodu produktu.
+
+### Weź / uprość / pomiń
+
+| Komponent RR | Decyzja | Dlaczego (jedno zdanie) |
+| --- | --- | --- |
+| Hard-gate: zero kodu przed design approval | **Weź** | Już w procedurze (`zgoda design ≠ zgoda kod`); rdzeń bezpieczeństwa. |
+| Routing „za małe” → issue-fix | **Weź** | Intake wybiera tor; bez fałszywego `design.md` na oczywisty bug. |
+| „Za duże” → epic / overnight / epic handoff | **Pomiń** | Pipeline wraca do decyzji; nie odpala epic runnera ani overnight. |
+| Load context / facts | **Uprość** | Część joba design + `source.md`/SHA — bez skill `feature-context`. |
+| Feature file `.ai/features/…` | **Pomiń** (day-one) | Artefakty w research outbox run; feature file = konwencja Claude/PROD. |
+| Pytania 1×1 (intent) | **Uprość** | Między jobami: pytania produktowe → outbox → Paweł/Grok; worker nie udaje czatu. |
+| 2–3 approaches + rekomendacja | **Weź** | Wymagane w cienkim `design.md`; RR potwierdza realne alternatywy. |
+| Ratingi 1–10 w czacie / board | **Uprość** | Day-one: sekcja słabych miejsc / niepewności; bez kolumny Rating i boardu. |
+| Complete design (arch, data, errors, tenant, ops, GWT) | **Weź** (checklistę) | Dogęścić brief design joba — nadal plik, nie silnik. |
+| Challenge & refine (<7) | **Uprość** | Owner review + pytania; osobna pętla ratingów dopiero gdy bolało. |
+| Aim **15 → potem 10** (rr-codex) | **Uprość** day-one / **Weź** później | Day-one: obie warstwy skrótem w design jobie; pełne aim = osobny job za zgodą. **Nie** kolejność Claude 10→15. |
+| Aim disposition (domy pomysłów) | **Weź** (sekcja) | „Poza zakresem / odroczone” w `design.md` — bez osobnego skilla. |
+| Record design file | **Weź** | `outbox/<run>/design.md` (+ zachowanie poza worktree). |
+| Independent design review PASS | **Uprość** day-one → **Weź** później | Day-one = owner review Pawła; tech PASS = osobny job z własnym modelem gdy decision każe. |
+| Spec self-check (rr Claude) | **Pomiń** | Zastąpione owner/tech review w modelu jobów. |
+| User reviews spec | **Weź** | Bramka owner po `design.md` — już w procedurze. |
+| writing-plans + plan review PASS | **Weź** (jako job) | Osobny plan job po zgodzie na design; nie auto-chain z `done`. |
+| html-board / `/reply` / dossier / worktree PROD w design | **Pomiń** | Claude UX / deploy-gate; Limen = pliki + Grok; execute osobno. |
+| Plane work_item / ADR przed planem / persony / Fletcher | **Pomiń** lub ADR **uprość** | Bez zapisu REZ; ADR ręcznie później; person nie portujemy. |
+
+### Sekwencja jobów (worker nie spawnuje następnego)
+
+```text
+Decision (Router→Paweł: temat/URL, etapy, modele, budżet)
+  → wake koordynatora
+  → [0] Intake → source.md + tor=brainstorm
+  → [1] JOB design-write → design.md     ← RR-codex 1–5 (+ uproszczony aim)
+  → [2] BRAMKA owner review → design-review.md
+        (zgoda design ≠ zgoda kod)
+  → [3] opcjonalnie JOB design-review-tech → PASS   ← rr-codex §8; tylko za zgodą
+  → [4] JOB plan-write → plan.md         ← writing-plans
+  → [5] BRAMKA plan review + osobna zgoda na kod
+  → [6+] Execute / Verify / GH           ← poza „brainstorm”; jak reszta pipeline'u
+```
+
+| RR-codex # | Slot Limen |
+| --- | --- |
+| 1–5 (+ uproszczony 6) | Job **design-write** (jeden płatny job day-one) |
+| 6 pełne aim 15→10 | Później job **aim** *albo* sekcja w design |
+| 7 | Artefakt `design.md` |
+| 8 | Day-one: bramka owner; pełne: job tech-review |
+| 9 | Job **plan** + bramka |
+
+### Day-one vs później
+
+| | Day-one (dogfood procedury) | Później (za nową decision) |
+| --- | --- | --- |
+| Zakres | `Decision → wake → intake → 1× design → owner review → **STOP**` | + opc. tech review, plan, execute/verify/GH |
+| Aim | Skrót 15 (kierunek) + 10 (luki w wybranym scope) w design jobie | Pełny job aim; każdy punkt → scope / deferred / rejected |
+| Design review | Owner (Paweł/Grok) | + niezależny tech PASS osobnym modelem |
+| Plan / kod / PR produktu | Tylko po **nowej** decision | Jak etapy pipeline'u; nadal `zgoda design ≠ zgoda kod` |
+| Zero w tym torze | Layout seat, pytek product code, epic/overnight, Plane REZ | — |
+
+### Kontrakt `design.md` (day-one)
+
+1. Problem (nie rozwiązanie)
+2. 2–3 realne opcje + rekomendacja + świadomie przyjęty koszt
+3. Decyzje (decyzja / odrzucone / dlaczego)
+4. Elementy (architektura, dane, błędy, tenant/security — co dotyczy)
+5. Acceptance scenarios Given/When/Then lub `N/A` + uzasadnienie
+6. Zmiany operacyjne lub `N/A`
+7. Poza zakresem / odroczone (dom dla aim)
+8. Pytania do Pawła — tylko product/authority
+9. Źródła / SHA checkoutu
+10. (opc.) Słabe miejsca / niepewności — zamiast ratingów 1–10
+
+### Modele na slotach brainstorm
+
+Każdy slot = **nowe assignment** z jawnego `model_provider` / `model_id` / `model_thinking` ([MODELS.md](../MODELS.md)). Bez dziedziczenia między etapami.
+
+| Slot | Day-one (przykład) |
+| --- | --- |
+| Wake / design-write | Sol albo Astra **tylko gdy trudność wymaga**; docs/lekki design: Terra lub Grok OK |
+| Aim (gdy osobny job) | Własna trójka; nie dziedziczy design |
+| Tech design review | Osobna trójka (np. Sol/Terra) — nie dziedziczy Astry |
+| Plan | Astra **lub** Sol — nowe assignment |
+| Execute / verify | Luna/Terra/Grok typowo — nie Astra-only |
+
+Astra **nie** jest domyślnym modelem całego pipeline'u.
+
 ## Czego nie portować z RR
 
 - Skills Claude/Codex, hooków, SessionStart, `additionalContext`, marketplace, instalacji profili ani komend `rr:*`.
@@ -176,6 +264,8 @@ Odróżniaj „kod zweryfikowany/gotowy do PR”, „PR mergeable + required che
 
 ## Day-one: stop po dokumentach
 
-Decyzja `limen-issue-pipeline-002` autoryzuje wyłącznie tę procedurę i wzory. Po zapisaniu notes i wyniku **stop**: bez spawn, joba produktu, API trackerów, commit/PR i pilotażu. Grok recenzuje pliki, robi commit+PR. Czekaj na nowy `decision` z autoryzowanym URL issue; nie wybieraj issue sam. Pierwszy proponowany pilotaż to intake → wybór toru → jeden dokument (`fix.md` albo `design.md`) → wynik do Pawła, ale wymaga nowej zgody. Bug/oczywista naprawa = issue-fix/`fix.md`, nie brainstorm.
+Decyzja `limen-issue-pipeline-002` autoryzowała procedurę i wzory. **Mapa RR brainstorm** (sekcja wyżej) jest częścią tej procedury docs-only: nie spawnuje jobów produktu ani nie otwiera toru layout/pytek. Po zapisaniu notes i wyniku mapy **stop** na kodzie produktu. Czekaj na nowy `decision` z autoryzowanym URL tematu; nie wybieraj issue sam.
 
-Źródło zakresu i kontraktu: [zaakceptowany design, wariant A](../research/limen-issue-pipeline/outbox/limen-issue-pipeline.md).
+Pierwszy proponowany dogfood brainstorm: intake → `tor=brainstorm` → jeden job `design.md` (kontrakt + aim 15→10 skrót) → owner review → **STOP**. Plan/execute tylko po nowej decision. Bug/oczywista naprawa = issue-fix/`fix.md`, nie brainstorm.
+
+Źródło zakresu pipeline'u: [zaakceptowany design, wariant A](../research/limen-issue-pipeline/outbox/limen-issue-pipeline.md). Synteza RR: `local/harnes/research/limen-brainstorm/outbox/limen-brainstorm.md`.
