@@ -7,4 +7,4 @@
 - Escape hatch: pass **`--detached`** (documented; never a silent fallback).
 - `claude` / advisor engines are not hosted — they also require explicit `--detached`.
 
-Wake=@file automation is patch 3.
+Wake=@file: see [WAKE.md](./WAKE.md) (`limen inbound wake`).

@@ -85,6 +85,9 @@ Wzorzec jak Limen hosted worker (`herdr agent start … -- @taskFile`):
 
 Treść jest w pliku wstrzykniętym na starcie Pi. `herdr agent prompt` zostaje tylko na awaryjne UI (blocked), nie jako kanał handoffu.
 
+
+Operator / New Bot (patch 3): po zapisie `to-limen.md` uruchom `limen inbound accept` a potem `limen inbound wake` (albo `accept --wake`). Wake woła `herdr agent start … -- --session-id <id> @/abs/to-limen.md` — bez `herdr agent prompt` i bez `BRIDGE:`. HTTP 2xx webhooka nie jest dowodem odbioru.
+
 ## Odbiór
 
 1. Pi czyta `to-limen.md`, aktualizuje `notes.md`, wykonuje prośbę w granicach.

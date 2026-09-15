@@ -63,7 +63,7 @@ usage:
   limen init
   limen init --drop-leftovers
   limen workspace init
-  limen inbound <path-to-to-limen.md> | accept <path>   # validate Grok handoff under local/harnes/research/; write ack with in_reply_to
+  limen inbound <path-to-to-limen.md> | accept [--wake] <path> | wake <path>  # accept handoff; wake = fresh Herdr Pi with @/abs/to-limen.md
   limen spawn "Implement FNNN: <outcome>. Start by writing <slice>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X] [--branch B] [--role NAME] [--timeout 20m; default 90m] [--task-file F|-] [--prepare CMD]
   limen spawn --role advisor --engine claude --detached "…"   # claude/advisor: requires explicit --detached; never merges
   limen spawn "…" [--label L] [--provider P] [--model X] [--thinking T]  # Pi flags; default = hosted Herdr (no silent detached)
