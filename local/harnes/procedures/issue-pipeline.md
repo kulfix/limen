@@ -135,10 +135,12 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
    - Tor **brainstorm:** oddaje `design.md` wg [kontraktu treści](#kontrakt-designmd-day-one) (mapa RR → Limen poniżej). Bez kodu. Aim day-one: skrót „szersze możliwości” + „luki w scope” w tym samym jobie (**kolejność rr-codex: 15→10**); pełne aim / tech design review = osobne joby tylko za zgodą.
    Koordynator czyta i zachowuje wynik poza worktree.
 3. **Owner review — właściciel przez Groka.** Zapisz wybór, autora decyzji i rewizję `fix.md` albo `design.md` w `notes.md`; zewnętrzny werdykt zachowaj jako `fix-review.md` lub `design-review.md`. Bez zgody właściciela nie przechodź do planu/kodu; nie udawaj decyzji produktowej.
-4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` i aktualnego checkoutu oddaje `plan.md`: małe kroki, punkt startu, zależności, acceptance i sposób weryfikacji. Przed execute koordynator/właściciel robi plan review: zapisuje przyjętą rewizję, zakres zgody na kod, wymagane dowody i review owner. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
-5. **Execute — job implementacyjny.** Dostaje plan i bazowy SHA; oddaje commit oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr).
-6. **Verify — koordynator lub autoryzowany reviewer.** Bada dokładny SHA oraz zachowane dowody zgodnie z zasadami repo. Zapisz `verification.md`, a werdykt review osobno. Podaj wykonane komendy i wyniki, niewykonane checks oraz ograniczenia dowodu. Zmieniony SHA wymaga ponownego osądu; lokalna weryfikacja nie dowodzi produkcji. Defekt nie uruchamia automatycznej naprawy/re-review ponad zgodę i budżet.
-7. **GH write-back — koordynator, tylko za zgodą.** Publikuj wyłącznie dozwoloną operację i zachowaj read-back w `writeback.md`. Brak uprawnienia pozostawia issue otwarte i wynik gotowy do decyzji; nie odbiera dowodom kodu ważności. Po otwarciu PR: monitoruj CI, w razie RED Summary ze skip/braku full sami dodaj `ci:run-full` (lub równoważnik) i czekaj na zielone — nie wołaj Pawła o label ([Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr)). Zapisz `to-grok.md` z `in_reply_to` bieżącego handoffu dopiero gdy sukces (mergeable + required green) albo realny blocker; zakończ sesję na outboxie.
+4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` (rewizja + werdykt design-review) i aktualnego checkoutu oddaje `plan.md` wg [kontraktu](#kontrakt-planmd-day-one): self-contained jednostki (pliki/symbole, mechanizm, ordered steps, acceptance, komenda weryfikacji + oczekiwany wynik), **zero** TBD/placeholder, bez ciał funkcji. Mapa RR writing-plans poniżej. Bez kodu. Worker nie spawnuje execute.
+5. **Plan-review — bramka (osobno od zgody na kod).** Koordynator/właściciel (opc. tech job za zgodą) sprawdza plan względem zaakceptowanego designu: coverage acceptance→steps, ścieżki/symbole, założenia, ryzyka/rollback. Zapisuje przyjętą rewizję i werdykt w `notes.md` (oraz opc. `plan-review.md`). One-shot MUST fix — bez pętli recheck na ten sam tekst. Brak PASS ≠ execute.
+6. **Consent to code — osobna bramka.** Zgoda na design **i** PASS plan-review **nie** są zgodą na kod. W `notes.md` zapisz jawny zakres zgody na kod, wymagane dowody, review owner i limit. Dopiero potem execute. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
+7. **Execute — job implementacyjny.** Dostaje plan i bazowy SHA; oddaje commit oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr).
+8. **Verify — koordynator lub autoryzowany reviewer.** Bada dokładny SHA oraz zachowane dowody zgodnie z zasadami repo. Zapisz `verification.md`, a werdykt review osobno. Podaj wykonane komendy i wyniki, niewykonane checks oraz ograniczenia dowodu. Zmieniony SHA wymaga ponownego osądu; lokalna weryfikacja nie dowodzi produkcji. Defekt nie uruchamia automatycznej naprawy/re-review ponad zgodę i budżet.
+9. **GH write-back — koordynator, tylko za zgodą.** Publikuj wyłącznie dozwoloną operację i zachowaj read-back w `writeback.md`. Brak uprawnienia pozostawia issue otwarte i wynik gotowy do decyzji; nie odbiera dowodom kodu ważności. Po otwarciu PR: monitoruj CI, w razie RED Summary ze skip/braku full sami dodaj `ci:run-full` (lub równoważnik) i czekaj na zielone — nie wołaj Pawła o label ([Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr)). Zapisz `to-grok.md` z `in_reply_to` bieżącego handoffu dopiero gdy sukces (mergeable + required green) albo realny blocker; zakończ sesję na outboxie.
 
 
 ## Kryteria sukcesu (issue-fix → PR)
@@ -204,9 +206,10 @@ Decision (Router→Paweł: temat/URL, etapy, modele, budżet)
   → [2] BRAMKA owner review → design-review.md
         (zgoda design ≠ zgoda kod)
   → [3] opcjonalnie JOB design-review-tech → PASS   ← rr-codex §8; tylko za zgodą
-  → [4] JOB plan-write → plan.md         ← writing-plans
-  → [5] BRAMKA plan review + osobna zgoda na kod
-  → [6+] Execute / Verify / GH           ← poza „brainstorm”; jak reszta pipeline'u
+  → [4] JOB plan-write → plan.md         ← writing-plans (kontrakt poniżej)
+  → [5] BRAMKA plan-review (owner / opc. tech PASS)
+  → [6] BRAMKA consent to code           ← osobna; zapis w notes.md
+  → [7+] Execute / Verify / GH           ← poza „brainstorm”; jak reszta pipeline'u
 ```
 
 | RR-codex # | Slot Limen |
@@ -249,10 +252,69 @@ Każdy slot = **nowe assignment** z jawnego `model_provider` / `model_id` / `mod
 | Wake / design-write | Sol albo Astra **tylko gdy trudność wymaga**; docs/lekki design: Terra lub Grok OK |
 | Aim (gdy osobny job) | Własna trójka; nie dziedziczy design |
 | Tech design review | Osobna trójka (np. Sol/Terra) — nie dziedziczy Astry |
-| Plan | Astra **lub** Sol — nowe assignment |
+| Plan | **Terra lub Sol** (drabina OpenAI); Astra tylko gdy trudność naprawdę wymaga — nowe assignment |
 | Execute / verify | Luna/Terra/Grok typowo — nie Astra-only |
 
 Astra **nie** jest domyślnym modelem całego pipeline'u.
+
+## Mapa RR writing-plans → Limen
+
+Źródło syntezy: live `rr-codex` writing-plans + `plan-template.md` oraz checklista `rr` Claude writing-plans / conceptual-review (bez portu `review-gate.sh`). Kanon kolejności: **rr-codex** (design-review → plan → plan-review); z Claude bierzemy **treść** kontraktu planu i zakaz TBD — nie silnik pluginu. Ten odcinek dogęszcza etap plan po mapie brainstorm (PR #19); bez layoutu seat, bez kodu produktu, bez auto-chain.
+
+### Weź / uprość / pomiń (writing-plans + review)
+
+| Komponent RR (live) | Decyzja | Dlaczego (jedno zdanie) |
+| --- | --- | --- |
+| Hard-gate: zero kodu bez reviewed design + reviewed plan | **Weź** | Już w procedurze (`zgoda design ≠ zgoda kod`); executing-plans potwierdza warunek startu. |
+| Design review **przed** writing-plans (rr-codex §8) | **Uprość** day-one / **Weź** później | Day-one = owner; tech PASS = osobny job gdy decision każe — jak mapa brainstorm. |
+| Self-review zamiast independent review | **Pomiń** jako wystarczające | rr-codex: self-review nie zastępuje; day-one Limen = owner, nie „sam sobie zatwierdzam”. |
+| writing-plans jako osobny job po zgodzie design | **Weź** | Nie auto-chain z `done` design; osobny spawn + brief. |
+| Independent plan review PASS przed execute | **Uprość** day-one / **Weź** później | Day-one: owner/koordynator w `notes.md`; tech plan-review = za zgodą. |
+| Ten sam reviewer design→plan | **Uprość** | Limen może użyć innego modelu na review; nie wymuszamy tej samej osoby/modelu. |
+| Conceptual review design+plan **razem** (rr Claude ONE) | **Uprość** później | Day-one: **rozdzielone** bramki (design-review → plan → plan-review → consent to code). |
+| `plan-template.md` (Outcome, units, risks, plan-review, amendments) | **Weź** (szkielet) | Dogęścić cienki `plan.md` o baseline design+werdykt i sekcję review. |
+| Jednostki self-contained (pliki, kontrakt, kroki, expected result) | **Weź** (checklistę) | Plan = prompt dla implementera bez historii rozmowy. |
+| Zakaz TBD / „add validation” / „same as Task N” | **Weź** | Łapie puste plany przed execute. |
+| Contract bez ciał funkcji (tylko sygnatury/kształt) | **Weź** (zasada) | Plan = kontrakt behawioralny, nie transcript kodu. |
+| 4 pola weryfikacji w headerze (Local / Baseline / Allowed GH / Required GH Gate) | **Uprość** | Day-one: sekcja „Jak weryfikować + co wolno na GH”. |
+| Global Constraints skopiowane z designu | **Weź** | Jedna linia = mniej dryfu między taskami. |
+| Slices / `review_checkpoints:` / feature file / dossier / `review-gate.sh` | **Pomiń** (day-one) | Mechanika Rezavo/Claude; Limen: jeden mały `plan.md` + notes. |
+| Astra xhigh + Daybreak security lens routing | **Uprość** | Nie portujemy `review_route.py`; sensitive scope → osobny security review gdy decision każe. |
+| One-shot MUST fix, **bez** recheck pętli | **Weź** (zasada) | Druga opinia na ten sam tekst degeneruje; fix + zapis w notes. |
+| Gate task (pre-merge / finishing) **w planie** | **Pomiń** w plan jobie | To etapy execute/verify/GH — nie treść day-one `plan.md`. |
+| Ops / E2E gdy design ma Operational Changes / SC | **Uprość** | Jeśli design ma te sekcje ≠ N/A — plan musi je domknąć. |
+| Internal repair w scope bez ponownej zgody usera | **Uprość** | Koordynator może zlecić plan-amend w ramach już danej zgody na kod; product/scope nadal do Pawła. |
+| Execution handoff menu / persony / parallel fan-out | **Pomiń** | UX Claude; Limen = decision + spawn execute. |
+
+### Sekwencja (plan po zaakceptowanym designie)
+
+```text
+… → design accepted (owner / opc. tech PASS)
+  → [3] JOB plan-write → plan.md
+  → [4] BRAMKA plan-review (owner / opc. tech PASS)
+  → [5] BRAMKA consent to code          ← osobna od plan-review
+  → [6+] Execute / Verify / GH
+```
+
+Worker **nigdy** nie spawnuje następnego etapu. Brak plan-review PASS albo brak consent to code = stop.
+
+### Kontrakt `plan.md` (day-one)
+
+1. Outcome + scope (IN/OUT)
+2. Design baseline: absolutna ścieżka + rewizja/skrót + werdykt design-review
+3. Decyzje materialne (już zatwierdzone — bez rediscovery)
+4. Global Constraints (skrót z designu) albo `N/A`
+5. Jednostki / kroki — każda: pliki/symbole, co zmienia, zależności, acceptance, komenda weryfikacji + **oczekiwany wynik**; **zero** TBD / „jak Task N” / ciał funkcji
+6. Ryzyka / rollback (lub `N/A` + uzasadnienie)
+7. Jak weryfikować łącznie + co wolno na GH
+8. Plan-review: rewizja + werdykt (uzupełnia koordynator po bramce)
+9. Pytania tylko product/authority
+
+### Modele na slocie plan
+
+Nowe assignment: jawne `model_provider` / `model_id` / `model_thinking` ([MODELS.md](../MODELS.md)). Preferuj **Terra** lub **Sol** (drabina OpenAI). Astra tylko gdy trudność naprawdę wymaga — nie Astra-only „bo plan”. Tech plan-review (gdy decision każe) = osobna trójka, nie dziedziczona.
+
+Źródło syntezy: [limen-writing-plans.md](../research/limen-writing-plans/outbox/limen-writing-plans.md).
 
 ## Czego nie portować z RR
 
@@ -264,8 +326,8 @@ Astra **nie** jest domyślnym modelem całego pipeline'u.
 
 ## Day-one: stop po dokumentach
 
-Decyzja `limen-issue-pipeline-002` autoryzowała procedurę i wzory. **Mapa RR brainstorm** (sekcja wyżej) jest częścią tej procedury docs-only: nie spawnuje jobów produktu ani nie otwiera toru layout/pytek. Po zapisaniu notes i wyniku mapy **stop** na kodzie produktu. Czekaj na nowy `decision` z autoryzowanym URL tematu; nie wybieraj issue sam.
+Decyzja `limen-issue-pipeline-002` autoryzowała procedurę i wzory. **Mapa RR brainstorm** i **mapa RR writing-plans** (sekcje wyżej) są częścią tej procedury docs-only: nie spawnuje jobów produktu ani nie otwiera toru layout/pytek. Po zapisaniu notes i wyniku mapy **stop** na kodzie produktu. Czekaj na nowy `decision` z autoryzowanym URL tematu; nie wybieraj issue sam.
 
-Pierwszy proponowany dogfood brainstorm: intake → `tor=brainstorm` → jeden job `design.md` (kontrakt + aim 15→10 skrót) → owner review → **STOP**. Plan/execute tylko po nowej decision. Bug/oczywista naprawa = issue-fix/`fix.md`, nie brainstorm.
+Pierwszy proponowany dogfood brainstorm: intake → `tor=brainstorm` → jeden job `design.md` (kontrakt + aim 15→10 skrót) → owner review → **STOP**. Plan dopiero po nowej decision (kontrakt `plan.md` + plan-review → consent to code); execute dopiero po consent. Bug/oczywista naprawa = issue-fix/`fix.md`, nie brainstorm.
 
-Źródło zakresu pipeline'u: [zaakceptowany design, wariant A](../research/limen-issue-pipeline/outbox/limen-issue-pipeline.md). Synteza RR: `local/harnes/research/limen-brainstorm/outbox/limen-brainstorm.md`.
+Źródło zakresu pipeline'u: [zaakceptowany design, wariant A](../research/limen-issue-pipeline/outbox/limen-issue-pipeline.md). Synteza RR brainstorm: `local/harnes/research/limen-brainstorm/outbox/limen-brainstorm.md`. Synteza RR writing-plans: `local/harnes/research/limen-writing-plans/outbox/limen-writing-plans.md`.
