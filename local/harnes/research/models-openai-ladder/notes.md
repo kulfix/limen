@@ -5,4 +5,4 @@
 - Decyzje zapisane w dokumentach: OpenAI ladder Luna → Terra → Sol → Astra; Claude tylko advisor/perspektywa z jawnym detached; Grok dla seat OAuth; DeepSeek wyłącznie tani research/smoke/mechanika; assignment zawsze zawiera płaskie pola `model_provider`, `model_id`, `model_thinking`; spawn/continue/resume dziedziczą wybór bez cichej zamiany.
 - Dowód lokalny: `git diff --check` przechodzi. Zmiana REZ pozostaje poza tym repozytorium i poza commitem.
 - PR target: skonfigurowane origin wskazuje `kulfix/limen`; podany w handoffie `kulikov/limen` nie istnieje według `gh repo view`, więc publikacja może użyć tylko dostępnego forka `kulfix/limen`.
-- Następny krok: commit dokumentacji w branchu roboczym, push do origin i utworzenie PR względem `main`; wynik i URL zapisane w `to-grok.md`.
+- PR utworzony względem `main`: https://github.com/kulfix/limen/pull/15. Wynik zapisany w `to-grok.md`; odpowiedź wskazuje też, że `kulikov/limen` nie istnieje, a dostępny fork to `kulfix/limen`.
