@@ -4,11 +4,13 @@ import { readFile } from "node:fs/promises";
 import { limenRoot, workspaceRepository } from "../git.ts";
 import { herdrAvailable, openDiffTab } from "../herdr.ts";
 import { resolveJob } from "../lookup.ts";
+import { readRoutingRecord } from "../project-slot.ts";
 
 export async function diffCommand(args: readonly string[], cwd: string): Promise<void> {
 	const query = args[0];
 	if (!query || args.length !== 1) throw new Error("diff requires exactly one job id");
 	const { id, jobDir } = await resolveJob(cwd, query);
+	const routing = readRoutingRecord(jobDir);
 	const [base, branch, worktree, state, repo, label] = await Promise.all([
 		text(`${jobDir}/base`),
 		text(`${jobDir}/branch`),
@@ -27,7 +29,7 @@ export async function diffCommand(args: readonly string[], cwd: string): Promise
 		return;
 	}
 	const root = limenRoot(cwd);
-	const repository = repo ? workspaceRepository(root, repo) : root;
+	const repository = routing?.repository_root ?? (repo ? workspaceRepository(root, repo) : root);
 	const live = state === "running" && Boolean(worktree) && existsSync(worktree);
 	const reviewCwd = live ? worktree : repository;
 	const hunkArgs = live ? ["diff", base, "--watch"] : ["diff", range];

@@ -2,6 +2,7 @@ import { existsSync, realpathSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { limenRoot } from "./git.ts";
+import { activeProjectSlot, assertSlotPath } from "./project-slot.ts";
 
 export const INBOUND_ROOT = "local/harnes/research";
 
@@ -16,6 +17,7 @@ export type Handoff = {
 	readonly created: string;
 	readonly body: string;
 	readonly path: string;
+	readonly slot?: string;
 };
 
 export type AcceptResult = {
@@ -25,17 +27,20 @@ export type AcceptResult = {
 };
 
 export function researchRoot(cwd: string): string {
-	return resolve(limenRoot(cwd), INBOUND_ROOT);
+	return activeProjectSlot()?.inbound_root ?? resolve(limenRoot(cwd), INBOUND_ROOT);
 }
 
 export function inboundStateDir(cwd: string): string {
-	return resolve(limenRoot(cwd), ".limen/inbound");
+	const slot = activeProjectSlot();
+	return slot ? resolve(slot.cabinet_root, "inbound") : resolve(limenRoot(cwd), ".limen/inbound");
 }
 
 /** Resolve and enforce that `input` lands under local/harnes/research/. */
 export function resolveInboundPath(cwd: string, input: string): string {
 	const root = researchRoot(cwd);
 	const absolute = resolve(cwd, input);
+	const slot = activeProjectSlot();
+	if (slot) return assertSlotPath(slot, absolute, "inbound");
 	const logical = relative(root, absolute);
 	if (!logical || logical === ".." || logical.startsWith(`..${sep}`)) {
 		throw new Error(`inbound path must be under ${INBOUND_ROOT}/; got ${JSON.stringify(input)}`);
@@ -56,6 +61,8 @@ export async function acceptInbound(cwd: string, input: string): Promise<AcceptR
 	if (basename(path) !== "to-limen.md") throw new Error("inbound expects a to-limen.md file");
 	const text = await readFile(path, "utf8");
 	const handoff = parseHandoff(path, text);
+	const slot = activeProjectSlot();
+	if (slot && handoff.slot && handoff.slot !== slot.slot_id) throw new Error(`handoff is addressed to slot ${handoff.slot}, not ${slot.slot_id}`);
 	const topicSlug = basename(dirname(path));
 	if (topicSlug !== handoff.slug) {
 		throw new Error(`handoff slug ${JSON.stringify(handoff.slug)} does not match topic directory ${JSON.stringify(topicSlug)}`);
@@ -73,6 +80,7 @@ export async function acceptInbound(cwd: string, input: string): Promise<AcceptR
 		throw error;
 	}
 	const ackPath = resolve(dirname(path), "to-grok.md");
+	if (slot) assertSlotPath(slot, ackPath, "inbound", true);
 	await writeFile(ackPath, formatAck(handoff, created));
 	return { handoff, ackPath, statePath };
 }
@@ -90,7 +98,9 @@ export function parseHandoff(path: string, text: string): Handoff {
 	if (to !== "limen") throw new Error(`handoff to must be limen; got ${JSON.stringify(to)}`);
 	if (!HANDOFF_TYPES.has(type)) throw new Error(`handoff type must be handoff|decision|cancel; got ${JSON.stringify(type)}`);
 	if (Number.isNaN(Date.parse(created))) throw new Error(`handoff created must be ISO-8601; got ${JSON.stringify(created)}`);
-	return { id, slug, from: "grok", to: "limen", type: type as Handoff["type"], created, body, path };
+	const slot = meta.slot;
+	if (slot && !/^[a-z][a-z0-9-]*$/.test(slot)) throw new Error(`handoff slot is invalid: ${JSON.stringify(slot)}`);
+	return { id, slug, from: "grok", to: "limen", type: type as Handoff["type"], created, body, path, ...(slot ? { slot } : {}) };
 }
 
 export function parseFrontmatter(text: string): { meta: Record<string, string>; body: string } {

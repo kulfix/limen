@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { readRoutingRecord } from "../src/project-slot.ts";
 
 type PiApi = {
 	on(event: "session_start" | "session_shutdown" | "agent_settled", handler: (event: unknown, context: unknown) => void): void;
@@ -27,8 +28,11 @@ export default function limenHosted(pi: PiApi): void {
 	const root = process.env.LIMEN_CONTEXT_ROOT;
 	const id = process.env.LIMEN_JOB_ID;
 	if (!root || !id) return;
-	const jobDir = join(root, ".limen", "jobs", id);
+	const explicit = process.env.LIMEN_JOB_DIR?.trim();
+	if (process.env.LIMEN_PROJECTS_CONFIG && !explicit) throw new Error("hosted project-slot hook requires LIMEN_JOB_DIR");
+	const jobDir = explicit || join(root, ".limen", "jobs", id);
 	if (!existsSync(jobDir)) return;
+	if (process.env.LIMEN_PROJECTS_CONFIG) readRoutingRecord(jobDir);
 	let tools = 0;
 	let turnTools = 0;
 	let metadataTimer: NodeJS.Timeout | undefined;

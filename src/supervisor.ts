@@ -13,6 +13,7 @@ import {
 	startHostedPi,
 	stopHostedAgent,
 } from "./herdr.ts";
+import { activeProjectSlot, assertSlotPath, readRoutingRecord } from "./project-slot.ts";
 import { prepareRecoveredOwner } from "./recovery.ts";
 import { assistantStopReason, assistantText } from "./stream.ts";
 import { appendLimenLog, atomicWrite, finalizeJob, isFailedStopReason, recordCommits, requestedTerminal, textFile, writeHandshake } from "./wrapper.ts";
@@ -37,6 +38,19 @@ function hostedStartMs(): number {
 }
 export async function runHostedSupervisor(): Promise<void> {
 	const jobDir = requiredEnvironment("LIMEN_JOB_DIR");
+	const slot = activeProjectSlot();
+	if (slot) {
+		const routing = readRoutingRecord(jobDir, slot);
+		if (routing?.session_path !== requiredEnvironment("LIMEN_SESSION_PATH")) throw new Error("hosted session path does not match routing.json");
+		if (process.env.LIMEN_TASK_FILE) assertSlotPath(slot, process.env.LIMEN_TASK_FILE, "cabinet");
+		if (process.env.LIMEN_PREAMBLE) {
+			try {
+				assertSlotPath(slot, process.env.LIMEN_PREAMBLE, "app-template");
+			} catch {
+				assertSlotPath(slot, process.env.LIMEN_PREAMBLE, "context-input");
+			}
+		}
+	}
 	let interrupted = false;
 	process.on("SIGTERM", () => {
 		interrupted = true;

@@ -1,16 +1,18 @@
 import { readdir, readFile, realpath, rm } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 import { limenRoot, listWorktrees, pruneWorktrees, removeWorktree, workspaceRepository } from "../git.ts";
+import { activeProjectSlot, assertSlotPath, readRoutingRecord } from "../project-slot.ts";
 import { liveJob } from "../reap.ts";
 
 export async function pruneCommand(args: readonly string[], cwd: string): Promise<void> {
 	if (args.length) throw new Error("prune takes no arguments");
-	const removed = await pruneFinishedWorktrees(limenRoot(cwd));
+	const removed = await pruneFinishedWorktrees(activeProjectSlot()?.context_root ?? limenRoot(cwd));
 	console.log(removed === 0 ? "no finished worktrees" : `pruned ${removed} finished worktree${removed === 1 ? "" : "s"}`);
 }
 
 export async function pruneFinishedWorktrees(root: string, keep: readonly string[] = []): Promise<number> {
-	const jobsRoot = `${root}/.limen/jobs`;
+	const slot = activeProjectSlot();
+	const jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${root}/.limen/jobs`;
 	const keepPaths = new Set<string>();
 	for (const path of keep) keepPaths.add(await resolved(path));
 	const repositories = new Set<string>();
@@ -22,26 +24,33 @@ export async function pruneFinishedWorktrees(root: string, keep: readonly string
 	for (const entry of entries) {
 		if (!entry.isDirectory()) continue;
 		const jobDir = `${jobsRoot}/${entry.name}`;
+		let routing;
+		try {
+			routing = readRoutingRecord(jobDir, slot);
+		} catch {
+			continue;
+		}
 		if (!(await text(`${jobDir}/state`))) {
 			await rm(jobDir, { recursive: true, force: true });
 			removed += 1;
 			continue;
 		}
 		const repo = (await text(`${jobDir}/repo`)) || undefined;
-		const repository = repo ? workspaceRepository(root, repo) : root;
+		const repository = routing?.repository_root ?? (repo ? workspaceRepository(root, repo) : root);
 		repositories.add(repository);
 		if (await liveJob(jobDir)) {
 			const recorded = await text(`${jobDir}/worktree`);
 			if (recorded) keepPaths.add(await resolved(recorded));
 		}
 	}
-	if (repositories.size === 0) repositories.add(root);
+	if (repositories.size === 0 && !slot) repositories.add(root);
 	for (const repository of repositories) {
-		const worktreeRoot = await resolved(`${dirname(repository)}/.${basename(repository)}-limen-worktrees`);
+		const worktreeRoot = await resolved(slot?.worktrees_root ?? `${dirname(repository)}/.${basename(repository)}-limen-worktrees`);
 		const primary = await resolved(repository);
 		for (const worktree of listWorktrees(repository)) {
 			const path = await resolved(worktree.path);
 			if (path === primary || !path.startsWith(`${worktreeRoot}/`) || keepPaths.has(path)) continue;
+			if (slot) assertSlotPath(slot, path, "worktree");
 			// Nested roots belong to another checkout, whose jobs this prune cannot see.
 			if (/^\.[^/]*-limen-worktrees(?:\/|$)/.test(path.slice(worktreeRoot.length + 1))) continue;
 			try {

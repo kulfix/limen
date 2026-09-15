@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
-import { basename, dirname, resolve } from "node:path";
+import { basename, delimiter, dirname, resolve } from "node:path";
 import { limenRoot } from "./git.ts";
 import { type Handoff, inboundStateDir, parseFrontmatter, parseHandoff, resolveInboundPath } from "./handoff.ts";
 import { herdrAvailable, locateHostedAgent, openHostedTab, startHostedPi } from "./herdr.ts";
+import { activeProjectSlot, assertSlotPath, routingFingerprint } from "./project-slot.ts";
+import { sanitizedSlotEnvironment } from "./wrapper.ts";
 
 export type WakeResult = {
 	readonly handoff: Handoff;
@@ -15,13 +17,14 @@ export type WakeResult = {
 };
 
 const WAKE_INSTRUCTION =
-	"Follow local/harnes/procedures/research-start.md. Update notes.md. Reply only via to-grok.md with in_reply_to set to this handoff id. No TUI chat with Grok; handoff is this @file only.";
+	"Follow this project's research procedure. Update notes.md. Reply only via to-grok.md with in_reply_to set to this handoff id. No TUI chat with Grok; handoff is this @file only.";
 
 /** Start a fresh Herdr Pi session with absolute @to-limen.md (one session-id per handoff id). */
 export async function wakeInbound(cwd: string, input: string): Promise<WakeResult> {
 	if (!herdrAvailable()) {
 		throw new Error("inbound wake requires hosted Herdr (HERDR_ENV=1); accept without --wake, or set Herdr first");
 	}
+	const slot = activeProjectSlot();
 	const path = resolveInboundPath(cwd, input);
 	if (!existsSync(path)) throw new Error(`inbound file not found: ${input}`);
 	if (basename(path) !== "to-limen.md") throw new Error("inbound wake expects a to-limen.md file");
@@ -42,7 +45,8 @@ export async function wakeInbound(cwd: string, input: string): Promise<WakeResul
 		throw new Error(`handoff id ${JSON.stringify(handoff.id)} already has a result/blocked outbox; will not re-wake`);
 	}
 
-	const sessionDir = resolve(inboundStateDir(cwd), `${encodeStateId(handoff.id)}.session`);
+	const sessionDir = slot ? resolve(slot.sessions_root, `${encodeStateId(handoff.id)}.session`) : resolve(inboundStateDir(cwd), `${encodeStateId(handoff.id)}.session`);
+	if (slot) assertSlotPath(slot, sessionDir, "session", true);
 	const claimPath = `${statePath}.wake`;
 	const atFile = path;
 	// Claim the attempt atomically before any Herdr side effect. A concurrent or retried wake that loses the claim
@@ -51,21 +55,34 @@ export async function wakeInbound(cwd: string, input: string): Promise<WakeResul
 		return resumeRetainedWake({ handoff, statePath, claimPath, sessionDir, atFile });
 	}
 
-	const root = limenRoot(cwd);
+	const root = slot?.context_root ?? limenRoot(cwd);
 	await mkdir(sessionDir, { recursive: true });
 	await writeFile(`${sessionDir}/log`, "", { flag: "w" });
 	await writeFile(`${sessionDir}/role`, "inbound\n", { flag: "w" });
 
 	const agentName = wakeAgentName(handoff);
+	const launcher = slot ? `${sessionDir}/launcher` : undefined;
 	const place = await openHostedTab({
 		jobDir: sessionDir,
 		label: `inbound ${handoff.slug} · ${handoff.id}`,
 		cwd: root,
 		role: "inbound",
-		env: {},
+		env: slot
+			? {
+					LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+					LIMEN_SLOT_ID: slot.slot_id,
+					LIMEN_ROUTING_FINGERPRINT: routingFingerprint(slot),
+					LIMEN_CONTEXT_ROOT: slot.context_root,
+					LIMEN_SESSION_PATH: sessionDir,
+					LIMEN_PACKAGE: slot.app_root,
+					PATH: `${launcher}${delimiter}${process.env.PATH ?? ""}`,
+				}
+			: {},
 	});
 	await appendFile(claimPath, `workspace: ${place.workspace}\ntab: ${place.tab}\npane: ${place.pane}\n`);
-	const args = ["--approve", "--session-id", handoff.id, `@${atFile}`, WAKE_INSTRUCTION];
+	if (launcher && slot) await writeInboundLauncher(launcher, slot, sessionDir, place);
+	const extensionArgs = slot ? ["--no-extensions", "--extension", `${slot.app_root}/hook/communication.ts`, "--session-dir", sessionDir] : [];
+	const args = ["--approve", ...extensionArgs, "--session-id", handoff.id, `@${atFile}`, WAKE_INSTRUCTION];
 	const provider = process.env.LIMEN_PROVIDER?.trim();
 	const model = process.env.LIMEN_WORKER_MODEL?.trim() || process.env.LIMEN_MODEL?.trim();
 	const thinking = process.env.LIMEN_THINKING?.trim();
@@ -180,6 +197,35 @@ async function finishedOutbox(topicDir: string, handoffId: string): Promise<bool
 	} catch {
 		return false;
 	}
+}
+
+async function writeInboundLauncher(
+	directory: string,
+	slot: NonNullable<ReturnType<typeof activeProjectSlot>>,
+	sessionDir: string,
+	place: { readonly workspace: string; readonly tab: string; readonly pane: string },
+): Promise<void> {
+	await mkdir(directory, { recursive: true });
+	const environment = sanitizedSlotEnvironment({
+		LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+		LIMEN_SLOT_ID: slot.slot_id,
+		LIMEN_ROUTING_FINGERPRINT: routingFingerprint(slot),
+		LIMEN_CONTEXT_ROOT: slot.context_root,
+		LIMEN_PACKAGE: slot.app_root,
+		LIMEN_SESSION_PATH: sessionDir,
+		HERDR_ENV: "1",
+		HERDR_WORKSPACE_ID: place.workspace,
+		HERDR_TAB_ID: place.tab,
+		HERDR_PANE_ID: place.pane,
+	});
+	const assignments = Object.entries(environment)
+		.filter((entry): entry is [string, string] => entry[1] !== undefined)
+		.map(([name, value]) => `${name}=${shellQuote(value)}`)
+		.join(" ");
+	await writeFile(`${directory}/pi`, `#!/bin/sh\nexec env -i ${assignments} ${shellQuote(process.env.LIMEN_PI?.trim() || "pi")} "$@"\n`, { flag: "wx", mode: 0o700, flush: true });
+}
+function shellQuote(value: string): string {
+	return `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
 function encodeStateId(id: string): string {

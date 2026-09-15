@@ -3,6 +3,7 @@ import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { addBranchWorktree, branchExists, headCommit, repoRoot, workspaceRepository, workspaceRoot } from "../git.ts";
 import { herdrAvailable, openWatchTab } from "../herdr.ts";
 import { resolveJob } from "../lookup.ts";
+import { activeProjectSlot, makeRoutingRecord, readRoutingRecord, routingFingerprint } from "../project-slot.ts";
 import { atomicWrite, finalizeJob, launchWrapper } from "../wrapper.ts";
 import {
 	capturedVersions,
@@ -51,10 +52,13 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	const hosted = !detached;
 	if (hosted && !herdr) throw new Error("continue defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
 	const chosenModel = model ?? (process.env[review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
-	preflightPi(chosenModel, provider);
 
-	const root = workspaceRoot(cwd) ?? repoRoot(cwd);
+	const slot = activeProjectSlot();
+	const root = slot?.context_root ?? workspaceRoot(cwd) ?? repoRoot(cwd);
 	const { id: parentId, jobDir: parentDir } = await resolveJob(cwd, query);
+	const parentRouting = readRoutingRecord(parentDir, slot);
+	const role = review ? "reviewer" : (await text(`${parentDir}/role`)) || "worker";
+	const preamble = resolvePreamble(root, role);
 	const parentState = await text(`${parentDir}/state`);
 	if (!["done", "failed", "stopped"].includes(parentState)) throw new Error(`job ${parentId} is ${parentState || "stateless"}; continue needs a finished job`);
 	const worktree = await text(`${parentDir}/worktree`);
@@ -66,14 +70,13 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	const sessions = (await readdir(`${parentDir}/session`).catch(() => [])).filter((name) => name.endsWith(".jsonl"));
 	if (sessions.length === 0) throw new Error(`parent record ${parentId} has no session transcript to continue`);
 	const inheritedSession = sessions.sort().at(-1);
+	preflightPi(chosenModel, provider);
 
 	const finalLabel = label ?? `${(await text(`${parentDir}/label`)) || parentId} · continue`;
 	const id = makeJobId(finalLabel);
-	const jobDir = `${root}/.limen/jobs/${id}`;
-	const role = review ? "reviewer" : (await text(`${parentDir}/role`)) || "worker";
-	const preamble = resolvePreamble(root, role);
+	const jobDir = `${slot ? slot.cabinet_root : `${root}/.limen`}/jobs/${id}`;
 	if (!existsSync(worktree)) {
-		const repository = repo ? workspaceRepository(root, repo) : root;
+		const repository = parentRouting?.repository_root ?? (repo ? workspaceRepository(root, repo) : root);
 		if (!branchExists(repository, branch))
 			throw new Error(`parent worktree ${worktree} is gone and branch ${branch} is missing in ${repository}; restore that branch before continuing`);
 		addBranchWorktree(repository, worktree, branch);
@@ -81,6 +84,15 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	}
 	await mkdir(jobDir, { recursive: false });
 	await mkdir(`${jobDir}/notify/subscribers`, { recursive: true });
+	if (slot && parentRouting) {
+		const routing = makeRoutingRecord(slot, {
+			repository_root: parentRouting.repository_root,
+			repository_common_dir: parentRouting.repository_common_dir,
+			worktree,
+			session_path: `${jobDir}/session`,
+		});
+		await writeFile(`${jobDir}/routing.json`, `${JSON.stringify(routing, null, 2)}\n`, { flag: "wx", mode: 0o600, flush: true });
+	}
 	const notificationSession = currentNotificationSession();
 	const coordinatorTab = process.env.HERDR_TAB_ID?.trim();
 	await Promise.all([
@@ -114,7 +126,8 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	]);
 	// Resume the parent's opt-in (or absence), not the current shell's destination.
 	const finishConfig = await text(`${parentDir}/finish-webhook-env`);
-	if (finishConfig) await writeFile(`${jobDir}/finish-webhook-env`, `${finishConfig}\n`, { flag: "wx", mode: 0o600, flush: true });
+	if (finishConfig && (!slot || finishConfig === parentRouting?.finish_webhook_env))
+		await writeFile(`${jobDir}/finish-webhook-env`, `${finishConfig}\n`, { flag: "wx", mode: 0o600, flush: true });
 	await writeFile(`${jobDir}/notify/ready`, "1\n", { flag: "wx", flush: true });
 	const versions = capturedVersions().then((text) => writeFile(`${jobDir}/versions`, text, { flag: "wx", flush: true }));
 	// The continued run writes into its own transcript, seeded with a copy of the parent's
@@ -163,6 +176,15 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 		LIMEN_CONTINUE: "1",
 		LIMEN_PROVIDER: provider ?? "",
 		LIMEN_THINKING: thinking ?? "",
+		...(slot
+			? {
+					LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+					LIMEN_SLOT_ID: slot.slot_id,
+					LIMEN_ROUTING_FINGERPRINT: routingFingerprint(slot),
+					LIMEN_SESSION_PATH: `${jobDir}/session`,
+					LIMEN_PACKAGE: slot.app_root,
+				}
+			: {}),
 	};
 	if (chosenModel) environment.LIMEN_MODEL = chosenModel;
 	let wrapperPid: number;

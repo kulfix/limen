@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { closeCommand } from "./commands/close.ts";
 import { continueCommand } from "./commands/continue.ts";
 import { diffCommand } from "./commands/diff.ts";
@@ -14,6 +15,7 @@ import { sweepCommand } from "./commands/sweep.ts";
 import { ticketAuthorCommand } from "./commands/ticket-author.ts";
 import { waitCommand } from "./commands/wait.ts";
 import { unwatchCommand, watchCommand } from "./commands/watch.ts";
+import { assertSlotCwd, loadProjectSlot, readRoutingRecord, routingFingerprint } from "./project-slot.ts";
 import { runHostedSupervisor } from "./supervisor.ts";
 import { failInternalJob, runInternalJob } from "./wrapper.ts";
 
@@ -60,6 +62,7 @@ const COMMANDS = {
 >;
 const HELP = `limen — isolated coding jobs with files and git
 usage:
+  limen --slot <id> <command>                       # enabled only when LIMEN_PROJECTS_CONFIG is set
   limen init
   limen init --drop-leftovers
   limen workspace init
@@ -88,24 +91,59 @@ usage:
   limen linear [on [--team T --project P]|off|status]   # Linear mirror toggle — renames spec/linear.md ↔ .off; --team/--project write a fresh config
 Pass a short coordinator instruction, not $(cat ticket.md). The ticket is a pointer, not the prompt.`;
 export async function main(args: readonly string[], cwd = process.cwd()): Promise<void> {
+	let internalRoutingValidated = !process.env.LIMEN_PROJECTS_CONFIG;
 	try {
-		if (process.env.LIMEN_INTERNAL_RUN === "1") {
-			await runInternalJob();
+		if (process.env.LIMEN_INTERNAL_RUN === "1" || process.env.LIMEN_INTERNAL_HOSTED === "1") {
+			if (process.env.LIMEN_PROJECTS_CONFIG) {
+				readRoutingRecord(process.env.LIMEN_JOB_DIR ?? "");
+				internalRoutingValidated = true;
+			}
+			if (process.env.LIMEN_INTERNAL_RUN === "1") await runInternalJob();
+			else await runHostedSupervisor();
 			return;
 		}
-		if (process.env.LIMEN_INTERNAL_HOSTED === "1") {
-			await runHostedSupervisor();
-			return;
+		let commandArgs = [...args];
+		let requestedSlot: string | undefined;
+		if (commandArgs[0] === "--slot") {
+			requestedSlot = commandArgs[1];
+			if (!requestedSlot) throw new Error("--slot requires an id");
+			commandArgs = commandArgs.slice(2);
 		}
-		const [name, ...rest] = args;
+		if (commandArgs.includes("--slot")) throw new Error("--slot is a global option and must appear before the command");
+		const [name, ...rest] = commandArgs;
 		if (!name || name === "--help" || name === "-h" || name === "help") {
 			console.log(HELP);
 			return;
 		}
 		if (!(name in COMMANDS)) throw new Error(`unknown command ${JSON.stringify(name)}\n\n${HELP}`);
-		await COMMANDS[name as keyof typeof COMMANDS](rest, cwd);
+		const config = process.env.LIMEN_PROJECTS_CONFIG?.trim();
+		if (requestedSlot && !config) throw new Error("--slot requires LIMEN_PROJECTS_CONFIG; project slots are disabled by default");
+		if (!config) {
+			await COMMANDS[name as keyof typeof COMMANDS](rest, cwd);
+			return;
+		}
+		const assignedSlot = process.env.LIMEN_SLOT_ID?.trim();
+		if (requestedSlot && assignedSlot && requestedSlot !== assignedSlot) throw new Error(`--slot ${requestedSlot} conflicts with process slot ${assignedSlot}`);
+		const slotId = requestedSlot ?? assignedSlot;
+		if (!slotId) throw new Error("project command requires --slot <id> when LIMEN_PROJECTS_CONFIG is set");
+		const slot = loadProjectSlot(config, slotId);
+		const otherSlots = readdirSync(config)
+			.filter((file) => file.endsWith(".json"))
+			.flatMap((file) => {
+				try {
+					return [loadProjectSlot(config, file.slice(0, -5))];
+				} catch {
+					return [];
+				}
+			});
+		assertSlotCwd(slot, cwd, otherSlots);
+		process.env.LIMEN_SLOT_ID = slot.slot_id;
+		process.env.LIMEN_ROUTING_FINGERPRINT = routingFingerprint(slot);
+		process.env.LIMEN_CONTEXT_ROOT = slot.context_root;
+		process.env.LIMEN_PACKAGE = slot.app_root;
+		await COMMANDS[name as keyof typeof COMMANDS](rest, slot.context_root);
 	} catch (error) {
-		if (process.env.LIMEN_INTERNAL_RUN === "1" || process.env.LIMEN_INTERNAL_HOSTED === "1") await failInternalJob(error);
+		if (internalRoutingValidated && (process.env.LIMEN_INTERNAL_RUN === "1" || process.env.LIMEN_INTERNAL_HOSTED === "1")) await failInternalJob(error);
 		console.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 	}
