@@ -43,7 +43,7 @@ Istniejący plan produktu wskazuj zamiast tworzyć konkurencyjną kopię. `plan.
 
 ## Modele i miejsce uruchomienia
 
-Koordynator **wybiera model przy intake** i zapisuje płaskie pola `model_provider`, `model_id`, `model_thinking` w `source.md` / `notes.md` oraz w każdym task-file. Wybór jest zgodny z [MODELS.md](../MODELS.md) i torem — nie „zawsze Astra” ani „zawsze DeepSeek”. Te same wartości przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume. **Bez cichej substytucji** przy błędzie modelu lub quota: zachowaj pracę i zgłoś blocker.
+Model **musi** być wybrany przy assignment (Router→limen handoff / decision / task-file): płaskie pola `model_provider`, `model_id`, `model_thinking`. Koordynator **nie** improwizuje wyboru później. Brak modelu = blocker albo wybór **przed** spawnem z zapisem do `notes.md` i task-file — nigdy spawn bez modelu. Wybór jest zgodny z [MODELS.md](../MODELS.md) i torem — nie „zawsze Astra” ani „zawsze DeepSeek". Te same wartości przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume (dziedziczenie bez cichej zmiany). **Bez cichej substytucji** przy błędzie modelu lub quota: zachowaj pracę i zgłoś blocker.
 
 | Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
