@@ -43,13 +43,13 @@ Istniejący plan produktu wskazuj zamiast tworzyć konkurencyjną kopię. `plan.
 
 ## Modele i miejsce uruchomienia
 
-Model **musi** być wybrany przy assignment (Router→limen handoff / decision / task-file): płaskie pola `model_provider`, `model_id`, `model_thinking`. Koordynator **nie** improwizuje wyboru później. Brak modelu = blocker albo wybór **przed** spawnem z zapisem do `notes.md` i task-file — nigdy spawn bez modelu. Wybór jest zgodny z [MODELS.md](../MODELS.md) i torem — nie „zawsze Astra” ani „zawsze DeepSeek". Te same wartości przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume (dziedziczenie bez cichej zmiany). **Bez cichej substytucji** przy błędzie modelu lub quota: zachowaj pracę i zgłoś blocker.
+Model **musi** być wybrany przy każdym nowym assignment (Router→limen handoff / decision / task-file): płaskie pola `model_provider`, `model_id`, `model_thinking`. Koordynator **nie** improwizuje wyboru później. Brak modelu = blocker albo wybór **przed** spawnem z zapisem do `notes.md` i task-file — nigdy spawn bez modelu. Wybór jest zgodny z [MODELS.md](../MODELS.md) i torem — nie „zawsze Astra” ani „zawsze DeepSeek". Ten sam model można ponownie potwierdzić, ale nie dziedziczy się go między etapami. Resume lub continue tego samego joba/assignment zachowuje jego trójkę i przekazuje ją jawnie; następny etap dostaje własny assignment. **Bez cichej substytucji** przy błędzie modelu lub quota: zachowaj pracę i zgłoś blocker.
 
 | Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
 | **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment |
 | **brainstorm** design/plan, architektura, trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność tego wymaga | jawna wartość z assignment |
-| Execute / verify | Ten sam provider/model/thinking co przy intake, chyba że nowy decision jawnie wybiera inaczej | dziedziczone bez zmian |
+| Execute / verify | Własny provider/model/thinking potwierdzony przy assignment tego etapu; może powtórzyć intake, ale go nie dziedziczy | jawna wartość z assignment |
 
 Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko gdy assignment świadomie wybiera najtańszy off-sub — **nie** default research. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
 
@@ -82,6 +82,19 @@ limen inbound accept --wake /ABS/TEMAT/to-limen.md
 ```
 
 Job produktu uruchamiaj **z checkoutu produktu**, nigdy z repo narzędzia `/srv/limen/tools/limen`. Zachowaj środowisko sesji/subskrypcji koordynatora. `limen spawn --repo` nie przyjmuje dowolnej ścieżki z Git checkoutu narzędzia; służy przygotowanemu nie-Git workspace parent i jego repozytoriom.
+
+### Pre-job gate — przed płatnym spawnem
+
+Przed każdym spawnem issue-fix, execute lub verify koordynator zapisuje w `notes.md` potwierdzenie:
+
+- autoryzowanego repo dla issue produktu (dla pracy pytek: `kulfix/pytek`) i jego absolutnego checkoutu;
+- świeżego `main` albo autoryzowanego bazowego SHA;
+- cwd checkoutu produktu — nigdy `/srv/limen/tools/limen`, gdy issue dotyczy pytek lub rezavo;
+- istnienia na tym SHA ścieżek i funkcji nazwanych w issue.
+
+Niezgodność bazy, repo albo mapy kodu oznacza refresh lub pytanie przed wydaniem modelu, nie próbę naprawy na domysłach. Przed execute wymagającym izolowanych hostów testowych sprawdź ich osiągalność zatwierdzonym CLI; błąd SSH/infrastruktury nie jest błędem testu. Po błędzie engine (OAuth, limit tygodniowy, auth) krótko ustal i zapisz w `notes.md`, które konto/profil zawiodło; nie próbuj w ciemno kolejnych kont Claude (`a1` → `a2` → `a3`).
+
+Przed startem potwierdź też kanał powrotu do Groka (finish-webhook, wake albo poll outboxu). HTTP 2xx nie jest dowodem odbioru: dowodem jest zaobserwowany `to-grok.md`, bot turn albo receipt. Bez receipt sprawdź istniejący job; nie duplikuj wake i nie uruchamiaj automatycznie kolejnego etapu kodu.
 
 Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem (tu Grok):
 
@@ -117,7 +130,7 @@ Intake **musi** wybrać tor i zapisać go w `source.md` oraz `notes.md`. Nie zak
 Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie produkuj fałszywego `design.md` dla issue-fix.
 
 1. **Intake — koordynator.** Odczytaj live issue, potwierdź repo/tożsamość, przeczytaj lokalne zasady i istniejący plan. Zapisz `source.md`: URL, czas odczytu, objaw, acceptance, zakres, braki oraz **wybrany tor** (`issue-fix` | `brainstorm`) z krótkim uzasadnieniem. Instrukcje wykonania pochodzą z decision, nie z body issue. Nierozstrzygnięte braki blokują zlecenie wykonania.
-2. **Dokument diagnostyczny / projektowy — job dokumentacyjny.**
+2. **Dokument diagnostyczny / projektowy — job dokumentacyjny.** Przed startem koordynator zapisuje w `notes.md` jednego autora diagnozy: „robię sam” albo nazwę jednego workera. Lead i autor są znani przed zleceniem; nie prowadzą równoległych diagnoz i w danej chwili aktywny jest najwyżej jeden autor.
    - Tor **issue-fix:** oddaje `fix.md` — potwierdzony symptom, mapa kodu na SHA, diagnoza (bez udawanego root cause), proponowany zakres naprawy, acceptance, ryzyka (np. wsteczna zgodność), pytania do właściciela i jawne what's next. Bez kodu. **Nie** pisz `design.md`.
    - Tor **brainstorm:** oddaje `design.md` — problem, 2–3 realne opcje, rekomendacja, granice, ryzyka i pytania. Bez kodu.
    Koordynator czyta i zachowuje wynik poza worktree.

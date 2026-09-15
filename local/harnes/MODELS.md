@@ -45,7 +45,7 @@ DeepSeek **nie** jest domyślnym modelem „research”. To **opcjonalny**, najt
 
 1. Każde przypisanie ma jawne płaskie pola `model_provider`, `model_id` i `model_thinking` — w handoffie, decision albo task-file.
 2. Brak modelu jest blockerem. Można wybrać model przed spawnem, ale trzeba zapisać wybór w notes i handoffie; nigdy nie uruchamiaj zadania bez modelu.
-3. Spawn, continue i resume dziedziczą dokładnie ten sam provider, model i thinking. Nie zmieniaj ich po cichu przy błędzie lub quota; zachowaj pracę i zgłoś blocker.
+3. Resume i continue tego samego joba/assignment zachowują dokładnie jego provider, model i thinking. Każdy następny etap jest nowym assignmentem i musi osobno ustawić lub potwierdzić własną trójkę; może powtórzyć poprzednią, ale jej nie dziedziczy. Nie zmieniaj modelu po cichu przy błędzie lub quota; zachowaj pracę i zgłoś blocker.
 4. Menu assignment: OpenAI Luna→Terra→Sol→Astra, **Grok (first-class)**, opcjonalnie DeepSeek off-sub. Issue-fix: Luna, Terra albo Grok (DeepSeek tylko gdy assignment jawnie wybiera off-sub). Trudny brainstorm: Sol albo Astra; Astra nie jest domyślnym modelem dla każdego zadania.
 5. Flat frontmatter jest wymagany: parser inbound przyjmuje `model_provider`, `model_id`, `model_thinking`, a nie zagnieżdżony YAML.
 
