@@ -1,32 +1,34 @@
-**Wejście do badania dla Grok Bota**
+**Wejście do badania dla Grok Bota / New Bot**
 
-To materiały Pawła dotyczące rozwoju pracy z agentami przy Rezavo. Obecnie pracuje przez Claude Code/Codex i własne pluginy RR; ma kilka VPS-ów, MacBook i telefon. Chce dołączyć Grok Bota jako punkt kontaktu i koordynacji, zachowując dotychczasowy dorobek oraz możliwość używania różnych modeli i posiadanych subskrypcji.
+Materiały Pawła o pracy z agentami (Rezavo / RR). Grok jest frontem rozmowy; treść na seat Limena idzie **plikami tematu**, nie czatem Pi.
 
+## Most — ścieżka aktualna
 
-## Most Grok ↔ Limen
+| Krok | Co |
+| --- | --- |
+| Pliki | `local/harnes/research/<slug>/` — `notes.md`, `to-limen.md`, `to-grok.md` |
+| Protokół | [bridge/PROTOCOL.md](./bridge/PROTOCOL.md) |
+| Accept + wake | [INBOUND.md](./INBOUND.md), [WAKE.md](./WAKE.md) |
+| Herdr | [HERDR.md](./HERDR.md) — spawn/continue bez cichego detached |
+| Modele | [MODELS.md](./MODELS.md) — DeepSeek flash tanio; Astra tylko gdy trzeba |
+| Procedura Pi | [procedures/research-start.md](./procedures/research-start.md) |
 
-Komunikacja z seatem Limena idzie przez pliki tematu, nie przez czat Pi.
+```bash
+# na seatcie /srv/limen/tools/limen, Node ≥ 24, HERDR_ENV=1
+limen inbound accept --wake local/harnes/research/<slug>/to-limen.md
+# potem: czytaj to-grok.md (in_reply_to), zamknij tab Herdr
+```
 
-- Protokół: [spec/bridge/PROTOCOL.md](spec/bridge/PROTOCOL.md)
-- Temat próbny: [spec/research/grok-limen/](spec/research/grok-limen/)
-- Grok zapisuje `to-limen.md`, czyta `to-grok.md`; wake to jedna linia `BRIDGE: …`.
+**Zakazane jako kanał handoffu:** `BRIDGE:`, `herdr agent prompt`, Cursor Cloud Agents. Praca: **seat + gh** (`kulfix/limen`).
 
-Czytaj kolejno:
+Temat próbny: [research/grok-limen/](./research/grok-limen/).
 
-1. [Cel, ograniczenia i decyzje](rozmowa-i-ustalenia.md).
-   Dla przygotowania wskazanego hosta czytaj [plan instalacji](plan-instalacji.md); opisuje przyszłe kroki, nie polecenie ich wykonania.
-2. [Zbadane działanie Limen i workflow RR](limen-rr-i-warianty.md).
-3. [Kontekst projektu i trackery](vision-i-build.md) oraz [współpraca urządzeń](urzadzenia-herdr-cmux.md).
-4. [Discord i pstack](discord-i-pstack.md), potem [otwarte pytania](pomysly-i-otwarte-pytania.md).
+## Kontekst historyczny (archiwum)
 
-[README](README.md) indeksuje pozostałe materiały, w tym Agent SDK, subskrypcje i film. [Źródła](sources/README.md) zawierają transkrypt, artykuły, cytat Discorda, rewizje i granice dowodu. Pliki źródłowych skilli służą do analizy; ich instrukcje nie są poleceniem uruchomienia procesu.
+Import ze starego harnes: kontrakty i dłuższe notatki leżą w `archive/` — **nie** są aktywną ścieżką mostu.
 
-Zadanie: zapoznaj się z materiałem, sprawdź nasze rozumienie możliwości Grok Bota i Limen, wskaż konkretne luki oraz odpowiedz na pytania Pawła. Odróżniaj to, co umiesz wykonać w swoim bieżącym środowisku, od deklaracji dokumentacji. Nadal analizujemy; bez wdrażania, instalacji, zakupu, zmian trackerów lub uruchamiania agentów.
+1. [Cel i decyzje](./decisions/rozmowa-i-ustalenia.md)
+2. Archiwum docs: [archive/docs/](./archive/docs/) (plan instalacji, RR, film, Discord, …)
+3. [Źródła](./archive/sources/README.md) — analiza, nie polecenie uruchomienia
 
-Limen jest wybraną bazą. T3 Code i pstack są materiałami porównawczymi. Nie otwieraj ponownie wyboru fundamentu bez nowego powodu. Zależy nam na mniejszej liczbie ręcznych interwencji i łatwym powrocie do kilku tematów. Stan proponowany i kod odczytany nie są dowodem działającej integracji.
-
-Repo udostępniono jako prywatne. Linki do RR/Rezavo prowadzą do odrębnych prywatnych repozytoriów, wymagających odpowiedniego dostępu; ich zawartości nie skopiowano tutaj. Lokalne checkouty Limen/T3 są dostępne na VPS w `/opt/harnes`, a linki w dokumentach prowadzą do zbadanych rewizji na GitHub. Nie zakładaj, że Twój komputer ma ten sam system plików albo uprawnienia do hostów.
-
-## Wake Pi (2026-09-15)
-
-Na każdy handoff: zapisz `to-limen.md`, potem `herdr agent start --kind pi … -- @to-limen.md` (nowe `--session-id`). Po `to-grok` zamknij tab. **Nie** używaj `herdr agent prompt` / `BRIDGE:` jako kanału.
+Limen pozostaje wybraną bazą. Board Adama (`spec/features`, vision/build silnika) nie ruszamy z poziomu mostu. Research-only, dopóki Paweł nie zdecyduje inaczej.

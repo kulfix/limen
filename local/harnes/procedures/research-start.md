@@ -1,25 +1,33 @@
 # research-start — procedura prowadzącego
 
-Instrukcja dla koordynatora Pi. To nie jest zarejestrowany nowy silnik Limen.
+Instrukcja dla koordynatora Pi po **wake=@file** (`limen inbound wake`). To nie jest osobny silnik Limen.
 
 ## Wejście
 
-Handoff przychodzi z `spec/research/<slug>/to-limen.md` (most Grok↔Limen). Sygnał `BRIDGE:` w TUI oznacza tylko „przeczytaj plik”, nie rozmowę.
+Handoff jest już w argv jako `@/…/local/harnes/research/<slug>/to-limen.md` (absolutna ścieżka).  
+**Nie** czekaj na `BRIDGE:` ani `herdr agent prompt` — treść startowa jest w pliku.
+
+Odczytaj też: `notes.md` w tym samym katalogu tematu, [bridge/PROTOCOL.md](../bridge/PROTOCOL.md), [MODELS.md](../MODELS.md).
 
 ## Kroki
 
-1. **Przyjmij** ID tematu (slug) oraz cel z `to-limen.md` (ew. uzupełnij z wiadomości użytkownika tylko gdy brak pliku).
-2. **Odczytaj** `notes.md`, `spec/bridge/PROTOCOL.md`, `GROK.md`, `rozmowa-i-ustalenia.md` i wskazane źródła; nie kopiuj całych transkryptów — linkuj.
-3. **Ustal** potrzebne dowody (które pliki/fragmenty, jaki wynik jobu).
-4. **Zleć wyłącznie ograniczone badanie** (`limen spawn` research-only), **jeśli** handoff na to pozwala: jawny provider/model/thinking z `spec/build.md`, krótki prompt, timeout; bez zmian aplikacji. Gdy handoff zabrania jobów — pomiń spawn.
-5. **Oddziel** w odpowiedzi: fakty (z odnośnikami) / propozycje / pytania otwarte.
-6. **Zapisz** stan w `notes.md` oraz odpowiedź dla Groka w `to-grok.md` (`question` | `result` | `blocked` | `ack`).
-7. **Zakończ** na outboxie albo jawnym pytaniu do użytkownika przez Groka — nie na dłuższej rozmowie w TUI.
+1. **Przyjmij** `id` + `slug` z frontmatter `to-limen.md`.
+2. **Odczytaj** `notes.md` i wskazane źródła; linkuj, nie wklejaj transkryptów.
+3. **Ustal** dowody (pliki / wynik jednego ograniczonego jobu).
+4. **Job research-only** tylko gdy handoff pozwala: `limen spawn` w Herdr (domyślnie hosted).  
+   **Tanio:** DeepSeek flash + thinking `low` — patrz [MODELS.md](../MODELS.md).  
+   Astra (`openai-codex` / `gpt-6-astra`) tylko gdy handoff jawnie wymaga ciężkiej syntezy albo Paweł eskaluje.  
+   Bez zmian aplikacji / usług / boardu Adama. Gdy handoff zabrania jobów — pomiń spawn.
+5. **Oddziel** w odpowiedzi: fakty (z odnośnikami) / propozycje / pytania.
+6. **Zapisz** `notes.md` oraz `to-grok.md` (`question` | `result` | `blocked` | `ack`) z **`in_reply_to: <handoff id>`**.
+7. **Zakończ** na outboxie — nie na rozmowie w TUI. Grok zamknie tab.
 
 ## Zakazy
 
-- Nie prowadź merytorycznej rozmowy z Grokiem w TUI; treść tylko w plikach mostu.
-- Nie wywołuj `writing-plans`, overnight ani implementacji na podstawie samego ukończenia jobu.
-- Nie zmieniaj scope tematu; badacz nie rozszerza zadania.
-- Nie startuj review/merge/deploy ani kolejnego jobu bez decyzji użytkownika (przez `to-limen.md` typu `decision`).
-- Max jeden aktywny worker próby naraz.
+- Brak merytorycznej rozmowy z Grokiem w TUI; tylko pliki mostu.
+- Brak `writing-plans` / overnight / implementacji z samego „job done”.
+- Brak rozszerzania scope tematu.
+- Brak review/merge/deploy / kolejnego jobu bez `to-limen.md` typu `decision`.
+- Max jeden aktywny worker naraz.
+- Brak cichego `--detached`; bez Herdr spawn ma failować ([HERDR.md](../HERDR.md)).
+- Nie traktuj HTTP 2xx webhooka jako dowodu odbioru przez bota.

@@ -1,6 +1,6 @@
 # Inbound Grok → Limen
 
-File-based handoff accept + optional Herdr wake (`@to-limen.md`). No F-tickets.
+Accept handoffu plikowego + wake świeżej sesji Pi w Herdr. Bez F-ticketów Adama.
 
 ## Root
 
@@ -8,20 +8,22 @@ File-based handoff accept + optional Herdr wake (`@to-limen.md`). No F-tickets.
 local/harnes/research/<slug>/to-limen.md
 ```
 
-Paths outside that root are rejected.
+Ścieżki poza tym rootem są odrzucane.
 
-## Commands
+## Komendy
 
 ```bash
-# Accept only (validate + dedupe + ack with in_reply_to)
+# Sam accept (walidacja + dedupe id + ack z in_reply_to)
 limen inbound local/harnes/research/<slug>/to-limen.md
 limen inbound accept local/harnes/research/<slug>/to-limen.md
 
-# Wake = fresh Pi in Herdr with absolute @file (requires prior accept + Herdr)
+# Wake = świeża Pi w Herdr z absolutnym @file (wymaga prior accept + Herdr)
 limen inbound wake local/harnes/research/<slug>/to-limen.md
 
-# Accept + wake
+# Accept + wake (New Bot / operator)
 limen inbound accept --wake local/harnes/research/<slug>/to-limen.md
 ```
 
-Details: [WAKE.md](./WAKE.md), [HERDR.md](./HERDR.md), [bridge/PROTOCOL.md](./bridge/PROTOCOL.md).
+Stan accept/wake: `.limen/inbound/<id>`. Drugie accept tego samego id → błąd. Drugie wake / gotowy `result|blocked` → bez duplikatu sesji.
+
+Dalej: [WAKE.md](./WAKE.md), [HERDR.md](./HERDR.md), [MODELS.md](./MODELS.md), [bridge/PROTOCOL.md](./bridge/PROTOCOL.md).
