@@ -47,21 +47,31 @@ Model **musi** być wybrany przy assignment (Router→limen handoff / decision /
 
 | Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
-| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`), DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash`) albo Grok (`xai` / `grok-4.6`) — wg assignment | jawna wartość z assignment |
+| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment |
 | **brainstorm** design/plan, architektura, trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność tego wymaga | jawna wartość z assignment |
 | Execute / verify | Ten sam provider/model/thinking co przy intake, chyba że nowy decision jawnie wybiera inaczej | dziedziczone bez zmian |
 
-Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry; issue-fix może użyć Luny, Terry, DeepSeek albo Groka. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
+Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko gdy assignment świadomie wybiera najtańszy off-sub — **nie** default research. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
 
-Grok przy nowym, autoryzowanym wake ustawia środowisko **wybranego** modelu. `LIMEN_WORKER_MODEL` ma przy wake pierwszeństwo przed `LIMEN_MODEL`: samo ID modelu (np. `deepseek/deepseek-v4.1-flash` albo `gpt-6-astra`), bez sklejki provider/model ani sufiksu thinking.
+Przy nowym, autoryzowanym wake ustaw środowisko **wybranego** modelu (z assignment). `LIMEN_WORKER_MODEL` ma przy wake pierwszeństwo przed `LIMEN_MODEL`: samo ID modelu (np. `gpt-5.6-luna`, `grok-4.6` albo `gpt-6-astra`), bez sklejki provider/model ani sufiksu thinking.
 
-Przykład wake dla issue-fix (DeepSeek):
+Przykład wake dla issue-fix (Luna — drabina OpenAI):
 
 ```bash
-LIMEN_PROVIDER=openrouter LIMEN_MODEL=deepseek/deepseek-v4.1-flash \
-LIMEN_WORKER_MODEL=deepseek/deepseek-v4.1-flash LIMEN_THINKING=low \
+LIMEN_PROVIDER=openai-codex LIMEN_MODEL=gpt-5.6-luna \
+LIMEN_WORKER_MODEL=gpt-5.6-luna LIMEN_THINKING=low \
 limen inbound accept --wake /ABS/TEMAT/to-limen.md
 ```
+
+Przykład wake issue-fix z **Grok** (first-class, gdy subskrypcja xAI pasuje):
+
+```bash
+LIMEN_PROVIDER=xai LIMEN_MODEL=grok-4.6 \
+LIMEN_WORKER_MODEL=grok-4.6 LIMEN_THINKING=medium \
+limen inbound accept --wake /ABS/TEMAT/to-limen.md
+```
+
+Opcjonalnie DeepSeek tylko gdy assignment jawnie wybiera najtańszy off-sub — nie jako default research.
 
 Przykład wake, gdy design/plan wymaga Astry (brainstorm):
 
@@ -73,11 +83,11 @@ limen inbound accept --wake /ABS/TEMAT/to-limen.md
 
 Job produktu uruchamiaj **z checkoutu produktu**, nigdy z repo narzędzia `/srv/limen/tools/limen`. Zachowaj środowisko sesji/subskrypcji koordynatora. `limen spawn --repo` nie przyjmuje dowolnej ścieżki z Git checkoutu narzędzia; służy przygotowanemu nie-Git workspace parent i jego repozytoriom.
 
-Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem:
+Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem (tu Grok):
 
 ```bash
 (cd /ABS/CHECKOUT-PRODUKTU && \
-  limen spawn --provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low \
+  limen spawn --provider xai --model grok-4.6 --thinking medium \
     --label 'issue-fix diagnostyka wybranego issue' \
     --task-file /ABS/TEMAT/outbox/RUN/handoffs/issue-fix-1.md)
 ```
