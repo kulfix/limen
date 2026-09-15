@@ -19,7 +19,7 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 - Zakazy dodatkowe: `<granice z decision i repo>`
 - Review owner / polityka: `<kto ocenia wynik; czy odrębny reviewer jest autoryzowany>`
 - Limit prób / spendu: `<jawny limit; przekroczenie wraca do koordynatora>`
-- Model także przy resume: `--provider <wybrany> --model <wybrany> --thinking <…>` z intake / [MODELS.md](../MODELS.md) (issue-fix → DeepSeek lub Grok; brainstorm design/plan → Astra/high). **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
+- Model także przy resume: `--provider <wybrany> --model <wybrany> --thinking <…>` z assignment / [MODELS.md](../MODELS.md). Issue-fix wybiera Luna, Terra, DeepSeek albo Grok; trudny brainstorm wybiera Sol albo Astrę. **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
 
 ## Wejście
 
