@@ -1,6 +1,7 @@
 import { closeCommand } from "./commands/close.ts";
 import { continueCommand } from "./commands/continue.ts";
 import { diffCommand } from "./commands/diff.ts";
+import { inboundCommand } from "./commands/inbound.ts";
 import { initCommand, workspaceCommand } from "./commands/init.ts";
 import { jobsCommand } from "./commands/jobs.ts";
 import { linearCommand } from "./commands/linear.ts";
@@ -20,6 +21,7 @@ type Command = (args: readonly string[], cwd: string) => Promise<void>;
 const COMMANDS = {
 	init: initCommand,
 	workspace: workspaceCommand,
+	inbound: inboundCommand,
 	spawn: spawnCommand,
 	continue: continueCommand,
 	diff: diffCommand,
@@ -38,6 +40,7 @@ const COMMANDS = {
 } as const satisfies Record<
 	| "init"
 	| "workspace"
+	| "inbound"
 	| "spawn"
 	| "continue"
 	| "diff"
@@ -60,6 +63,7 @@ usage:
   limen init
   limen init --drop-leftovers
   limen workspace init
+  limen inbound <path-to-to-limen.md> | accept <path>   # validate Grok handoff under local/harnes/research/; write ack with in_reply_to
   limen spawn "Implement FNNN: <outcome>. Start by writing <slice>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X] [--branch B] [--role NAME] [--timeout 20m; default 90m] [--task-file F|-] [--prepare CMD]
   limen spawn --role advisor --engine claude --detached "…"   # a perspective from claude; detached only, never merges
   limen spawn "…" [--label L] [--provider P] [--model X] [--thinking T]  # Pi flags; in Herdr: hosted, else detached

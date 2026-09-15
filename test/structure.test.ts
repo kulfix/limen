@@ -16,12 +16,13 @@ test("architecture stays small, pure, direct, and dependency-free", async () => 
 	assert.deepEqual((await readdir(join(ROOT, "bin"))).sort(), ["limen", "tony-finish-ping.sh"]);
 	const source = await filesBelow(join(ROOT, "src"));
 	const sourceLines = (await Promise.all(source.map((path) => readFile(path, "utf8")))).reduce((sum, text) => sum + text.split("\n").length - 1, 0);
-	assert.ok(sourceLines <= 4023, `src has ${sourceLines} lines; includes bounded finish-turn inspection, pruned-checkout continuation, and empty-result finish suppression`);
+	assert.ok(sourceLines <= 4300, `src has ${sourceLines} lines; includes inbound accept under local/harnes/research/`);
 	assert.doesNotMatch(await readFile(join(ROOT, "src/job.ts"), "utf8"), /from ["']node:/);
 	assert.deepEqual((await readdir(join(ROOT, "src/commands"))).sort(), [
 		"close.ts",
 		"continue.ts",
 		"diff.ts",
+		"inbound.ts",
 		"init.ts",
 		"jobs.ts",
 		"linear.ts",
@@ -40,12 +41,12 @@ test("architecture stays small, pure, direct, and dependency-free", async () => 
 		all.some((path) => /\/(index|types|utils)\.ts$/.test(path)),
 		false,
 	);
-	const names = all.filter((path) => path.endsWith(".ts")).map((path) => basename(path));
+	const names = all.filter((path) => path.endsWith(".ts") && !path.includes("/local/")).map((path) => basename(path));
 	assert.equal(new Set(names).size, names.length, "TypeScript basenames must be unique");
 	const main = await readFile(join(ROOT, "src/main.ts"), "utf8");
 	assert.match(
 		main,
-		/satisfies\s+Record<\s*\|?\s*"init"\s*\|\s*"workspace"\s*\|\s*"spawn"\s*\|\s*"continue"\s*\|\s*"diff"\s*\|\s*"steer"\s*\|\s*"stop"\s*\|\s*"wait"\s*\|\s*"jobs"\s*\|\s*"prune"\s*\|\s*"watch"\s*\|\s*"unwatch"\s*\|\s*"open"\s*\|\s*"close"\s*\|\s*"sweep"\s*\|\s*"linear"\s*\|\s*"ticket-author"\s*,?\s*Command\s*>/,
+		/satisfies\s+Record<\s*\|?\s*"init"\s*\|\s*"workspace"\s*\|\s*"inbound"\s*\|\s*"spawn"\s*\|\s*"continue"\s*\|\s*"diff"\s*\|\s*"steer"\s*\|\s*"stop"\s*\|\s*"wait"\s*\|\s*"jobs"\s*\|\s*"prune"\s*\|\s*"watch"\s*\|\s*"unwatch"\s*\|\s*"open"\s*\|\s*"close"\s*\|\s*"sweep"\s*\|\s*"linear"\s*\|\s*"ticket-author"\s*,?\s*Command\s*>/,
 	);
 });
 
