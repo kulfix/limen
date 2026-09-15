@@ -76,8 +76,12 @@ export async function wakeInbound(cwd: string, input: string): Promise<WakeResul
 }
 
 export function wakeAgentName(handoff: Handoff): string {
-	const safe = handoff.id.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "handoff";
-	return `limen-inbound-${handoff.slug}-${safe}`.slice(0, 80);
+	// Herdr agent names: [a-z0-9_-]{1,32}, start with letter.
+	const slug = handoff.slug.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "topic";
+	const id = handoff.id.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "id";
+	const compact = `li-${slug}-${id}`.replace(/-+/g, "-");
+	const clipped = compact.slice(0, 32).replace(/-+$/g, "");
+	return /^[a-z]/.test(clipped) ? clipped : `a${clipped}`.slice(0, 32);
 }
 
 async function finishedOutbox(topicDir: string, handoffId: string): Promise<boolean> {
