@@ -1,0 +1,548 @@
+
+> @overment/limen@0.1.0 check
+> tsc --noEmit && biome check . && node --test --test-concurrency=1 --test-timeout=60000 test/*.test.ts
+
+local/harnes/archive/runtime/.pi/settings.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+    1 1 │   {
+    2   │ - ··"defaultProvider":·"openai-codex",
+    3   │ - ··"defaultModel":·"gpt-6-astra",
+    4   │ - ··"defaultThinkingLevel":·"high"
+      2 │ + → "defaultProvider":·"openai-codex",
+      3 │ + → "defaultModel":·"gpt-6-astra",
+      4 │ + → "defaultThinkingLevel":·"high"
+    5 5 │   }
+    6 6 │
+
+
+local/harnes/archive/sources/3pSATWHe2W4.metadata.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+    1    │ - ...rczyk","durationSec":6360,"_source":"worker-b-hk"}
+       1 │ + {
+       2 │ + → "videoTitle":·"Autonomia·Agentów·w·Rozwoju·Oprogramowania·—·MEGA.dev·LIVE",
+       3 │ + → "subtitles":·[
+       4 │ + → → {
+       5 │ + → → → "langCode":·"a-pl",
+       6 │ + → → → "langName":·"pl",
+       7 │ + → → → "isAsr":·true,
+       8 │ + → → → "isTranslatable":·true,
+       9 │ + → → → "vttUrl":·"https://www.youtube.com/api/timedtext?v=3pSATWHe2W4&ei=k9-mauuQJ6LEpt8Pv_nauQE&caps=asr&opi=112496729&xoaf=5&xowf=1&xospf=1&hl=en&ip=0.0.0.0&ipbits=0&expire=1789346307&sparams=ip%2Cipbits%2Cexpire%2Cv%2Cei%2Ccaps%2Copi%2Cxoaf&signature=4E9A74B1CE19D88B3267357DCB5004B40AD540D0.2AC6C129497AE43FB107178E63C3C0A65AEABF8C&key=yt8&kind=asr&lang=pl&fmt=vtt",
+      10 │ + → → → "json3Url":·"https://www.youtube.com/api/timedtext?v=3pSATWHe2W4&ei=k9-mauuQJ6LEpt8Pv_nauQE&caps=asr&opi=112496729&xoaf=5&xowf=1&xospf=1&hl=en&ip=0.0.0.0&ipbits=0&expire=1789346307&sparams=ip%2Cipbits%2Cexpire%2Cv%2Cei%2Ccaps%2Copi%2Cxoaf&signature=4E9A74B1CE19D88B3267357DCB5004B40AD540D0.2AC6C129497AE43FB107178E63C3C0A65AEABF8C&key=yt8&kind=asr&lang=pl&fmt=json3",
+      11 │ + → → → "vttContent":·"WEBVTT\nKind:·captions\nLanguage:·pl\n\n00:00:01.964·-->·00:00:06.540·align:sta...
+      12 │ + → → }
+      13 │ + → ],
+      14 │ + → "publishDate":·"",
+      15 │ + → "author":·"BRAVE",
+      16 │ + → "channelId":·"UCDbBtlkrWGyFNYNMcm5WeKg",
+      17 │ + → "viewCount":·"5739",
+      18 │ + → "description":·"👉·Dołącz·do·mega.dev:·https://mega.dev/\n\n🔔·Zapisz·się,·aby·otrzymać·przypomnie...
+      19 │ + → "durationSec":·6360,
+      20 │ + → "_source":·"worker-b-hk"
+      21 │ + }
+      22 │ +
+
+
+local/harnes/archive/sources/discord-pstack-source-manifest.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+     1  1 │   {
+     2    │ - ··"created_at":·"2026-09-14T17:11:37.678749+00:00",
+     3    │ - ··"sources":·[
+     4    │ - ····{
+     5    │ - ······"file":·"pstack/README.md",
+     6    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/README.md",
+     7    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+     8    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+     9    │ - ······"sha256":·"cd63df9733eb5b393371baca8194ea2dd9a3c815803ac48b8ff6580e49adef71"
+    10    │ - ····},
+    11    │ - ····{
+    12    │ - ······"file":·"pstack/skills/poteto-mode/SKILL.md",
+    13    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/poteto-mode/SKILL.md",
+    14    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    15    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    16    │ - ······"sha256":·"b3c505602b82fb3641a3983e9c46fb974881faa12ece1af804fae27afb7be532"
+    17    │ - ····},
+    18    │ - ····{
+    19    │ - ······"file":·"pstack/docs/guide/02-poteto-mode.md",
+    20    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/docs/guide/02-poteto-mode.md",
+    21    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    22    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    23    │ - ······"sha256":·"379a1b2c9cd2ba54032b2b142563328d0f3d65039f067863d19b1d4c008737f5"
+    24    │ - ····},
+    25    │ - ····{
+    26    │ - ······"file":·"pstack/skills/create-verification-skill/SKILL.md",
+    27    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/create-verification-skill/SKILL.md",
+    28    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    29    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    30    │ - ······"sha256":·"644f2551403c1bca01a2855b34611b6e7be0ce0dc5b204514c376c0f6a6e6ac4"
+    31    │ - ····},
+    32    │ - ····{
+    33    │ - ······"file":·"pstack/skills/principle-guard-the-context-window/SKILL.md",
+    34    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-guard-the-context-window/SKILL.md",
+    35    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    36    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    37    │ - ······"sha256":·"9f60e2c79b35f865cb103462f9128c6760b70f603475d1e535e5930f61840f66"
+    38    │ - ····},
+    39    │ - ····{
+    40    │ - ······"file":·"pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+    41    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+    42    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    43    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    44    │ - ······"sha256":·"761390804ee36c32f5338d8db47ec54463d40ff96dbb296dfafabcd5f2593eec"
+    45    │ - ····},
+    46    │ - ····{
+    47    │ - ······"file":·"pstack/skills/recall/SKILL.md",
+    48    │ - ······"source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/recall/SKILL.md",
+    49    │ - ······"revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+    50    │ - ······"retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+    51    │ - ······"sha256":·"d265b0e5b6dc5b89c0407f3387d24462c988e1990a37d5359735137908128c5a"
+    52    │ - ····},
+    53    │ - ····{
+    54    │ - ······"file":·"poteto-pstack-pt1.json",
+    55    │ - ······"source_url":·"https://api.fxtwitter.com/poteto/status/2094457600259842065",
+    56    │ - ······"original_url":·"https://x.com/poteto/status/2094457600259842065",
+    57    │ - ······"retrieved_date":·"2026-09-14",
+    58    │ - ······"sha256":·"3e272201dbccbf8cba44921c3b667e1355cf3bb7fc6096ea9fd5bbe58832bd51",
+    59    │ - ······"transformation":·"original·response"
+    60    │ - ····},
+    61    │ - ····{
+    62    │ - ······"file":·"poteto-pstack-pt1.txt",
+    63    │ - ······"source_url":·"https://api.fxtwitter.com/poteto/status/2094457600259842065",
+    64    │ - ······"original_url":·"https://x.com/poteto/status/2094457600259842065",
+    65    │ - ······"retrieved_date":·"2026-09-14",
+    66    │ - ······"sha256":·"28b225f8658c3e1766a996c5ce30995910fe6af96ffefd987407a261dbbab3eb",
+    67    │ - ······"transformation":·"title·and·content.blocks[].text;·no·image·OCR"
+    68    │ - ····},
+    69    │ - ····{
+    70    │ - ······"file":·"poteto-pstack-pt2.json",
+    71    │ - ······"source_url":·"https://api.fxtwitter.com/poteto/status/2097732320606507506",
+    72    │ - ······"original_url":·"https://x.com/poteto/status/2097732320606507506",
+    73    │ - ······"retrieved_date":·"2026-09-14",
+    74    │ - ······"sha256":·"ba1be054a9206942264984354ca6c50f37332a482991249506f1455e780d90ba",
+    75    │ - ······"transformation":·"original·response"
+    76    │ - ····},
+    77    │ - ····{
+    78    │ - ······"file":·"poteto-pstack-pt2.txt",
+    79    │ - ······"source_url":·"https://api.fxtwitter.com/poteto/status/2097732320606507506",
+    80    │ - ······"original_url":·"https://x.com/poteto/status/2097732320606507506",
+    81    │ - ······"retrieved_date":·"2026-09-14",
+    82    │ - ······"sha256":·"26dabfe43c43cbea0a9aeb26a607703988aa6df0144aa314cbb43209e620c449",
+    83    │ - ······"transformation":·"title·and·content.blocks[].text;·no·image·OCR"
+    84    │ - ····},
+    85    │ - ····{
+    86    │ - ······"file":·"discord-limen-2026-09-14.txt",
+    87    │ - ······"source":·"user-provided·Discord·quotation",
+    88    │ - ······"received_date":·"2026-09-14",
+    89    │ - ······"transformation":·"removed·enclosing·quotation·marks·only",
+    90    │ - ······"sha256":·"d6c29ca006479497a6115149a15aba53218f0a8278a6cad03914ea9dccc873f6"
+    91    │ - ····}
+    92    │ - ··]
+        2 │ + → "created_at":·"2026-09-14T17:11:37.678749+00:00",
+        3 │ + → "sources":·[
+        4 │ + → → {
+        5 │ + → → → "file":·"pstack/README.md",
+        6 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/README.md",
+        7 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+        8 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+        9 │ + → → → "sha256":·"cd63df9733eb5b393371baca8194ea2dd9a3c815803ac48b8ff6580e49adef71"
+       10 │ + → → },
+       11 │ + → → {
+       12 │ + → → → "file":·"pstack/skills/poteto-mode/SKILL.md",
+       13 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/poteto-mode/SKILL.md",
+       14 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       15 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       16 │ + → → → "sha256":·"b3c505602b82fb3641a3983e9c46fb974881faa12ece1af804fae27afb7be532"
+       17 │ + → → },
+       18 │ + → → {
+       19 │ + → → → "file":·"pstack/docs/guide/02-poteto-mode.md",
+       20 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/docs/guide/02-poteto-mode.md",
+       21 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       22 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       23 │ + → → → "sha256":·"379a1b2c9cd2ba54032b2b142563328d0f3d65039f067863d19b1d4c008737f5"
+       24 │ + → → },
+       25 │ + → → {
+       26 │ + → → → "file":·"pstack/skills/create-verification-skill/SKILL.md",
+       27 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/create-verification-skill/SKILL.md",
+       28 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       29 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       30 │ + → → → "sha256":·"644f2551403c1bca01a2855b34611b6e7be0ce0dc5b204514c376c0f6a6e6ac4"
+       31 │ + → → },
+       32 │ + → → {
+       33 │ + → → → "file":·"pstack/skills/principle-guard-the-context-window/SKILL.md",
+       34 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-guard-the-context-window/SKILL.md",
+       35 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       36 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       37 │ + → → → "sha256":·"9f60e2c79b35f865cb103462f9128c6760b70f603475d1e535e5930f61840f66"
+       38 │ + → → },
+       39 │ + → → {
+       40 │ + → → → "file":·"pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+       41 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+       42 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       43 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       44 │ + → → → "sha256":·"761390804ee36c32f5338d8db47ec54463d40ff96dbb296dfafabcd5f2593eec"
+       45 │ + → → },
+       46 │ + → → {
+       47 │ + → → → "file":·"pstack/skills/recall/SKILL.md",
+       48 │ + → → → "source_url":·"https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/recall/SKILL.md",
+       49 │ + → → → "revision":·"be432a96ed36e48d05f44bf375864355f62263f9",
+       50 │ + → → → "retrieved_at":·"2026-09-14T17:11:37.678749+00:00",
+       51 │ + → → → "sha256":·"d265b0e5b6dc5b89c0407f3387d24462c988e1990a37d5359735137908128c5a"
+       52 │ + → → },
+       53 │ + → → {
+       54 │ + → → → "file":·"poteto-pstack-pt1.json",
+       55 │ + → → → "source_url":·"https://api.fxtwitter.com/poteto/status/2094457600259842065",
+       56 │ + → → → "original_url":·"https://x.com/poteto/status/2094457600259842065",
+       57 │ + → → → "retrieved_date":·"2026-09-14",
+       58 │ + → → → "sha256":·"3e272201dbccbf8cba44921c3b667e1355cf3bb7fc6096ea9fd5bbe58832bd51",
+       59 │ + → → → "transformation":·"original·response"
+  35 more lines truncated
+
+
+local/harnes/archive/sources/poteto-pstack-pt1.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+    1     │ - ...s://t.co/4yjdWKPieE","display_text_range":[0,71],"facets":[{"type":"url","indices":[48,71],"original...
+        1 │ + {
+        2 │ + → "code":·200,
+        3 │ + → "message":·"OK",
+        4 │ + → "tweet":·{
+        5 │ + → → "url":·"https://x.com/poteto/status/2094457600259842065",
+        6 │ + → → "id":·"2094457600259842065",
+        7 │ + → → "text":·"I'm·writing·a·guide·to·pstack!·Here's·part·one.·https://x.com/i/article/2094151284949688320",
+        8 │ + → → "raw_text":·{
+        9 │ + → → → "text":·"I'm·writing·a·guide·to·pstack!·Here's·part·one.·https://t.co/4yjdWKPieE",
+       10 │ + → → → "display_text_range":·[0,·71],
+       11 │ + → → → "facets":·[
+       12 │ + → → → → {
+       13 │ + → → → → → "type":·"url",
+       14 │ + → → → → → "indices":·[48,·71],
+       15 │ + → → → → → "original":·"https://t.co/4yjdWKPieE",
+       16 │ + → → → → → "replacement":·"https://x.com/i/article/2094151284949688320",
+       17 │ + → → → → → "display":·"x.com/i/article/2094…"
+       18 │ + → → → → }
+       19 │ + → → → ]
+       20 │ + → → },
+       21 │ + → → "author":·{
+       22 │ + → → → "screen_name":·"poteto",
+       23 │ + → → → "url":·"https://x.com/poteto",
+       24 │ + → → → "id":·"2832427459",
+       25 │ + → → → "followers":·100642,
+       26 │ + → → → "following":·1707,
+       27 │ + → → → "likes":·16197,
+       28 │ + → → → "media_count":·394,
+       29 │ + → → → "name":·"lauren",
+       30 │ + → → → "description":·"Grok·@Bot·at·@SpaceXAI.·Shipping·with·https://cursor.com/marketplace/cursor/pstack.·React·compiler·core·team,·prev·cursor,·meta,·netflix",
+       31 │ + → → → "raw_description":·{
+       32 │ + → → → → "text":·"Grok·@Bot·at·@SpaceXAI.·Shipping·with·https://t.co/WDB4U1rwmu.·React·compiler·core·team,·prev·cursor,·meta,·netflix",
+       33 │ + → → → → "facets":·[
+       34 │ + → → → → → {
+       35 │ + → → → → → → "type":·"url",
+       36 │ + → → → → → → "indices":·[38,·61],
+       37 │ + → → → → → → "original":·"https://t.co/WDB4U1rwmu",
+       38 │ + → → → → → → "replacement":·"https://cursor.com/marketplace/cursor/pstack",
+       39 │ + → → → → → → "display":·"cursor.com/marketplace/cu…"
+       40 │ + → → → → → }
+       41 │ + → → → → ]
+       42 │ + → → → },
+       43 │ + → → → "location":·"OC",
+       44 │ + → → → "banner_url":·"https://pbs.twimg.com/profile_banners/2832427459/1760377968",
+       45 │ + → → → "avatar_url":·"https://pbs.twimg.com/profile_images/2093473719830315008/oo09g1Ov_200x200.jpg",
+       46 │ + → → → "joined":·"Fri·Sep·26·01:06:36·+0000·2014",
+       47 │ + → → → "protected":·false,
+       48 │ + → → → "website":·null,
+       49 │ + → → → "verification":·{·"verified":·true,·"verified_at":·null,·"type":·"individual"·},
+       50 │ + → → → "avatar_color":·null
+       51 │ + → → },
+       52 │ + → → "replies":·219,
+       53 │ + → → "retweets":·518,
+       54 │ + → → "likes":·5795,
+       55 │ + → → "bookmarks":·12551,
+       56 │ + → → "quotes":·188,
+       57 │ + → → "created_at":·"Mon·Aug·31·16:09:39·+0000·2026",
+       58 │ + → → "created_timestamp":·1788192579,
+       59 │ + → → "possibly_sensitive":·false,
+       60 │ + → → "views":·870241,
+       61 │ + → → "is_note_tweet":·false,
+       62 │ + → → "community_note":·null,
+       63 │ + → → "lang":·"en",
+       64 │ + → → "replying_to":·null,
+       65 │ + → → "replying_to_status":·null,
+       66 │ + → → "source":·"Twitter·Web·App",
+       67 │ + → → "article":·{
+       68 │ + → → → "created_at":·"2026-08-31T16:09:39.000Z",
+       69 │ + → → → "modified_at":·"2026-08-31T16:09:39.000Z",
+       70 │ + → → → "id":·"2094151284949688320",
+       71 │ + → → → "title":·"The·Complete·Guide·to·pstack·Pt.·1",
+       72 │ + → → → "preview_text":·"In·this·series·of·posts,·I'm·going·to·show·you·how·I·use·pstack,·my·personal·set·of·skills·for·doing·rigorous·engineering·work.·It's·allowed·me·to·ship·2,000·PRs·a·month·to·production·with·high",
+       73 │ + → → → "cover_media":·{
+       74 │ + → → → → "id":·"QXBpTWVkaWE6DAAFCgABHQ/0MA/aMAAKAAIAAAAAqNNpwwAA",
+       75 │ + → → → → "media_id":·"2094160839012134912",
+       76 │ + → → → → "media_info":·{
+       77 │ + → → → → → "__typename":·"ApiImage",
+       78 │ + → → → → → "color_info":·{
+       79 │ + → → → → → → "palette":·[
+       80 │ + → → → → → → → {·"percentage":·49.02,·"rgb":·{·"blue":·194,·"green":·221,·"red":·239·}·},
+       81 │ + → → → → → → → {·"percentage":·21.84,·"rgb":·{·"blue":·40,·"green":·70,·"red":·101·}·},
+       82 │ + → → → → → → → {·"percentage":·8.01,·"rgb":·{·"blue":·55,·"green":·56,·"red":·42·}·},
+       83 │ + → → → → → → → {·"percentage":·5.39,·"rgb":·{·"blue":·87,·"green":·144,·"red":·193·}·},
+       84 │ + → → → → → → → {·"percentage":·5.09,·"rgb":·{·"blue":·237,·"green":·225,·"red":·217·}·}
+       85 │ + → → → → → → ]
+       86 │ + → → → → → },
+       87 │ + → → → → → "original_img_height":·778,
+       88 │ + → → → → → "original_img_url":·"https://pbs.twimg.com/media/HQ_0MA_aMAA9zMt.jpg",
+       89 │ + → → → → → "original_img_width":·1946
+       90 │ + → → → → },
+       91 │ + → → → → "media_key":·"3_2094160839012134912"
+       92 │ + → → → },
+       93 │ + → → → "content":·{
+       94 │ + → → → → "blocks":·[
+       95 │ + → → → → → {
+       96 │ + → → → → → → "data":·{},
+       97 │ + → → → → → → "entityRanges":·[{·"key":·0,·"length":·6,·"offset":·57·}],
+       98 │ + → → → → → → "inlineStyleRanges":·[{·"length":·6,·"offset":·57,·"style":·"Bold"·}],
+       99 │ + → → → → → → "key":·"4dpkh",
+      100 │ + → → → → → → "text":·"In·this·series·of·posts,·I'm·going·to·show·you·how·I·use·pstack,·my·personal·set·of·skills·for·doing·rigorous·engineering·work.·It's·allowed·me·to·ship·2,000·PRs·a·month·to·production·with·high·confidence.·",
+      101 │ + → → → → → → "type":·"unstyled"
+      102 │ + → → → → → },
+      103 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·1,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"f31d4",·"text":·"·",·"type":·"atomic"·},
+      104 │ + → → → → → {
+      105 │ + → → → → → → "data":·{},
+      106 │ + → → → → → → "entityRanges":·[],
+      107 │ + → → → → → → "inlineStyleRanges":·[],
+      108 │ + → → → → → → "key":·"4bpte",
+      109 │ + → → → → → → "text":·"Personally,·I·have·never·put·much·emphasis·into·how·many·lines·of·code·or·how·many·PRs·I·was·landing.·Before·agents,·no·one·cared,·and·rightfully·so,·as·raw·productivity·did·not·always·equate·to·quality·or·a·visible·outcome·for·users.·It·was·simply·a·vanity·metric.",
+      110 │ + → → → → → → "type":·"unstyled"
+      111 │ + → → → → → },
+      112 │ + → → → → → {
+      113 │ + → → → → → → "data":·{·"mentions":·[{·"fromIndex":·229,·"text":·"Bot",·"toIndex":·233·},·{·"fromIndex":·416,·"text":·"Bot",·"toIndex":·420·}]·},
+      114 │ + → → → → → → "entityRanges":·[],
+      115 │ + → → → → → → "inlineStyleRanges":·[{·"length":·6,·"offset":·51,·"style":·"Bold"·},·{·"length":·6,·"offset":·431,·"style":·"Bold"·}],
+      116 │ + → → → → → → "key":·"2sn32",
+      117 │ + → → → → → → "text":·"But·I've·discovered·through·the·course·of·building·pstack·that·volume·does·matt...
+      118 │ + → → → → → → "type":·"unstyled"
+      119 │ + → → → → → },
+      120 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·2,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"d17ij",·"text":·"·",·"type":·"atomic"·},
+      121 │ + → → → → → {
+      122 │ + → → → → → → "data":·{·"mentions":·[{·"fromIndex":·11,·"text":·"Bot",·"toIndex":·15·}]·},
+      123 │ + → → → → → → "entityRanges":·[],
+      124 │ + → → → → → → "inlineStyleRanges":·[{·"length":·6,·"offset":·85,·"style":·"Bold"·}],
+      125 │ + → → → → → → "key":·"7pi9v",
+      126 │ + → → → → → → "text":·"Being·Grok·@Bot's·gardener·and·maintainer·is·something·I·was·only·able·to·do·th...
+      127 │ + → → → → → → "type":·"unstyled"
+      128 │ + → → → → → },
+      129 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·3,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"8dqed",·"text":·"·",·"type":·"atomic"·},
+      130 │ + → → → → → {
+      131 │ + → → → → → → "data":·{·"mentions":·[{·"fromIndex":·21,·"text":·"Bot",·"toIndex":·25·}]·},
+      132 │ + → → → → → → "entityRanges":·[],
+      133 │ + → → → → → → "inlineStyleRanges":·[{·"length":·6,·"offset":·159,·"style":·"Bold"·}],
+      134 │ + → → → → → → "key":·"322ap",
+      135 │ + → → → → → → "text":·"The·proof·is·in·Grok·@Bot·itself.·Over·the·next·few·weeks,·I'll·tell·you·everything·you·need·to·know·to·be·able·to·build·and·maintain·a·high·quality·app·using·pstack.",
+      136 │ + → → → → → → "type":·"unstyled"
+      137 │ + → → → → → },
+      138 │ + → → → → → {·"data":·{},·"entityRanges":·[],·"inlineStyleRanges":·[],·"key":·"9oouo",·"text":·"Part·1·–·Verification·is·all·you·need",·"type":·"header-one"·},
+      139 │ + → → → → → {
+      140 │ + → → → → → → "data":·{},
+      141 │ + → → → → → → "entityRanges":·[],
+      142 │ + → → → → → → "inlineStyleRanges":·[],
+      143 │ + → → → → → → "key":·"f9u9q",
+      144 │ + → → → → → → "text":·"The·most·critical·skill·to·have·in·your·toolbox·is·a·high·quality·verification·skill.·This·skill·is·so·important·to·have·and·maintain·that·I·think·of·it·more·like·critical·infrastructure·rather·than·\"just\"·a·skill.·A·good·one·will·amplify·the·output·of·your·whole·team,·including·non-engineers.·Done·well,·you·will·100-1000x·your·whole·team's·output.·",
+      145 │ + → → → → → → "type":·"unstyled"
+      146 │ + → → → → → },
+      147 │ + → → → → → {
+      148 │ + → → → → → → "data":·{},
+      149 │ + → → → → → → "entityRanges":·[{·"key":·4,·"length":·19,·"offset":·344·}],
+  792 more lines truncated
+
+
+local/harnes/archive/sources/poteto-pstack-pt2.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+    1      │ - ...://t.co/UeV4pJ4NFx","display_text_range":[0,100],"facets":[{"type":"url","indices":[77,100],"origina...
+         1 │ + {
+         2 │ + → "code":·200,
+         3 │ + → "message":·"OK",
+         4 │ + → "tweet":·{
+         5 │ + → → "url":·"https://x.com/poteto/status/2097732320606507506",
+         6 │ + → → "id":·"2097732320606507506",
+         7 │ + → → "text":·"Part·2·is·here!·Let's·learn·the·art·of·supervising·someone·smarter·than·you.·https://x.com/i/article/2094940651607715840",
+         8 │ + → → "raw_text":·{
+         9 │ + → → → "text":·"Part·2·is·here!·Let's·learn·the·art·of·supervising·someone·smarter·than·you.·https://t.co/UeV4pJ4NFx",
+        10 │ + → → → "display_text_range":·[0,·100],
+        11 │ + → → → "facets":·[
+        12 │ + → → → → {
+        13 │ + → → → → → "type":·"url",
+        14 │ + → → → → → "indices":·[77,·100],
+        15 │ + → → → → → "original":·"https://t.co/UeV4pJ4NFx",
+        16 │ + → → → → → "replacement":·"https://x.com/i/article/2094940651607715840",
+        17 │ + → → → → → "display":·"x.com/i/article/2094…"
+        18 │ + → → → → }
+        19 │ + → → → ]
+        20 │ + → → },
+        21 │ + → → "author":·{
+        22 │ + → → → "screen_name":·"poteto",
+        23 │ + → → → "url":·"https://x.com/poteto",
+        24 │ + → → → "id":·"2832427459",
+        25 │ + → → → "followers":·100642,
+        26 │ + → → → "following":·1707,
+        27 │ + → → → "likes":·16197,
+        28 │ + → → → "media_count":·394,
+        29 │ + → → → "name":·"lauren",
+        30 │ + → → → "description":·"Grok·@Bot·at·@SpaceXAI.·Shipping·with·https://cursor.com/marketplace/cursor/pstack.·React·compiler·core·team,·prev·cursor,·meta,·netflix",
+        31 │ + → → → "raw_description":·{
+        32 │ + → → → → "text":·"Grok·@Bot·at·@SpaceXAI.·Shipping·with·https://t.co/WDB4U1rwmu.·React·compiler·core·team,·prev·cursor,·meta,·netflix",
+        33 │ + → → → → "facets":·[
+        34 │ + → → → → → {
+        35 │ + → → → → → → "type":·"url",
+        36 │ + → → → → → → "indices":·[38,·61],
+        37 │ + → → → → → → "original":·"https://t.co/WDB4U1rwmu",
+        38 │ + → → → → → → "replacement":·"https://cursor.com/marketplace/cursor/pstack",
+        39 │ + → → → → → → "display":·"cursor.com/marketplace/cu…"
+        40 │ + → → → → → }
+        41 │ + → → → → ]
+        42 │ + → → → },
+        43 │ + → → → "location":·"OC",
+        44 │ + → → → "banner_url":·"https://pbs.twimg.com/profile_banners/2832427459/1760377968",
+        45 │ + → → → "avatar_url":·"https://pbs.twimg.com/profile_images/2093473719830315008/oo09g1Ov_200x200.jpg",
+        46 │ + → → → "joined":·"Fri·Sep·26·01:06:36·+0000·2014",
+        47 │ + → → → "protected":·false,
+        48 │ + → → → "website":·null,
+        49 │ + → → → "verification":·{·"verified":·true,·"verified_at":·null,·"type":·"individual"·},
+        50 │ + → → → "avatar_color":·null
+        51 │ + → → },
+        52 │ + → → "replies":·141,
+        53 │ + → → "retweets":·261,
+        54 │ + → → "likes":·2985,
+        55 │ + → → "bookmarks":·5544,
+        56 │ + → → "quotes":·69,
+        57 │ + → → "created_at":·"Wed·Sep·09·17:02:13·+0000·2026",
+        58 │ + → → "created_timestamp":·1788973333,
+        59 │ + → → "possibly_sensitive":·false,
+        60 │ + → → "views":·367906,
+        61 │ + → → "is_note_tweet":·false,
+        62 │ + → → "community_note":·null,
+        63 │ + → → "lang":·"en",
+        64 │ + → → "replying_to":·null,
+        65 │ + → → "replying_to_status":·null,
+        66 │ + → → "source":·"Twitter·Web·App",
+        67 │ + → → "article":·{
+        68 │ + → → → "created_at":·"2026-09-09T17:02:13.000Z",
+        69 │ + → → → "modified_at":·"2026-09-09T17:02:13.000Z",
+        70 │ + → → → "id":·"2094940651607715840",
+        71 │ + → → → "title":·"The·Complete·Guide·to·pstack·Pt.·2",
+        72 │ + → → → "preview_text":·"In·my·last·post,·I·showed·you·why·verification·is·the·foundation·of·everything·I·do·with·agents,·and·how·to·get·started·creating·your·own·verification·skills.·The·key·lesson·was·that·if·an·agent·can't",
+        73 │ + → → → "cover_media":·{
+        74 │ + → → → → "id":·"QXBpTWVkaWE6DAAFCgABHRK8DfAbEAEKAAIAAAAAqNNpwwAA",
+        75 │ + → → → → "media_id":·"2094943544729604097",
+        76 │ + → → → → "media_info":·{
+        77 │ + → → → → → "__typename":·"ApiImage",
+        78 │ + → → → → → "color_info":·{
+        79 │ + → → → → → → "palette":·[
+        80 │ + → → → → → → → {·"percentage":·41.67,·"rgb":·{·"blue":·201,·"green":·217,·"red":·228·}·},
+        81 │ + → → → → → → → {·"percentage":·17.33,·"rgb":·{·"blue":·119,·"green":·161,·"red":·181·}·},
+        82 │ + → → → → → → → {·"percentage":·17.08,·"rgb":·{·"blue":·44,·"green":·59,·"red":·75·}·},
+        83 │ + → → → → → → → {·"percentage":·4.5,·"rgb":·{·"blue":·230,·"green":·213,·"red":·187·}·},
+        84 │ + → → → → → → → {·"percentage":·3.95,·"rgb":·{·"blue":·83,·"green":·99,·"red":·186·}·}
+        85 │ + → → → → → → ]
+        86 │ + → → → → → },
+        87 │ + → → → → → "original_img_height":·779,
+        88 │ + → → → → → "original_img_url":·"https://pbs.twimg.com/media/HRK8DfAbEAEt18A.jpg",
+        89 │ + → → → → → "original_img_width":·1947
+        90 │ + → → → → },
+        91 │ + → → → → "media_key":·"3_2094943544729604097"
+        92 │ + → → → },
+        93 │ + → → → "content":·{
+        94 │ + → → → → "blocks":·[
+        95 │ + → → → → → {
+        96 │ + → → → → → → "data":·{},
+        97 │ + → → → → → → "entityRanges":·[{·"key":·0,·"length":·9,·"offset":·6·}],
+        98 │ + → → → → → → "inlineStyleRanges":·[],
+        99 │ + → → → → → → "key":·"5k4mr",
+       100 │ + → → → → → → "text":·"In·my·last·post,·I·showed·you·why·verification·is·the·foundation·of·everything·I·do·with·agents,·and·how·to·get·started·creating·your·own·verification·skills.·The·key·lesson·was·that·if·an·agent·can't·verify·its·own·work,·nothing·else·matters.·You·remain·the·bottleneck,·and·your·whole·day·will·be·spent·babysitting·your·agents.",
+       101 │ + → → → → → → "type":·"unstyled"
+       102 │ + → → → → → },
+       103 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·1,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"ddrm5",·"text":·"·",·"type":·"atomic"·},
+       104 │ + → → → → → {
+       105 │ + → → → → → → "data":·{},
+       106 │ + → → → → → → "entityRanges":·[],
+       107 │ + → → → → → → "inlineStyleRanges":·[],
+       108 │ + → → → → → → "key":·"9n6om",
+       109 │ + → → → → → → "text":·"But·once·you·have·verification·working,·the·next·question·is:·how·do·you·actually·figure·out·what·to·build?",
+       110 │ + → → → → → → "type":·"unstyled"
+       111 │ + → → → → → },
+       112 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·2,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"djv3s",·"text":·"·",·"type":·"atomic"·},
+       113 │ + → → → → → {
+       114 │ + → → → → → → "data":·{},
+       115 │ + → → → → → → "entityRanges":·[{·"key":·3,·"length":·6,·"offset":·109·}],
+       116 │ + → → → → → → "inlineStyleRanges":·[{·"length":·6,·"offset":·109,·"style":·"Bold"·}],
+       117 │ + → → → → → → "key":·"f0cvd",
+       118 │ + → → → → → → "text":·"In·this·post,·I·am·going·to·walk·you·through·how·I·do·research,·planning,·prototyping,·and·architecture·with·pstack.·This·is·the·exact·workflow·that·allows·me·to·ship·thousands·of·PRs·a·month·into·production·while·keeping·code·quality·extraordinarily·high.",
+       119 │ + → → → → → → "type":·"unstyled"
+       120 │ + → → → → → },
+       121 │ + → → → → → {·"data":·{},·"entityRanges":·[{·"key":·4,·"length":·1,·"offset":·0·}],·"inlineStyleRanges":·[],·"key":·"6441d",·"text":·"·",·"type":·"atomic"·},
+       122 │ + → → → → → {·"data":·{},·"entityRanges":·[],·"inlineStyleRanges":·[],·"key":·"et7tj",·"text":·"The·art·of·supervising·someone·smarter·than·you",·"type":·"header-one"·},
+       123 │ + → → → → → {
+       124 │ + → → → → → → "data":·{},
+       125 │ + → → → → → → "entityRanges":·[],
+       126 │ + → → → → → → "inlineStyleRanges":·[],
+       127 │ + → → → → → → "key":·"cfd8c",
+       128 │ + → → → → → → "text":·"Back·in·the·old·days·of·2024,·to·make·any·change·in·a·system,·you·first·needed·...
+       129 │ + → → → → → → "type":·"unstyled"
+       130 │ + → → → → → },
+       131 │ + → → → → → {
+       132 │ + → → → → → → "data":·{},
+       133 │ + → → → → → → "entityRanges":·[],
+       134 │ + → → → → → → "inlineStyleRanges":·[],
+       135 │ + → → → → → → "key":·"d71gq",
+       136 │ + → → → → → → "text":·"Agents·obviously·remove·this·barrier.·You·can·make·changes·to·systems·very·easily·by·just·prompting·your·agent·and·it·will·do·it,·regardless·of·how·much·or·little·you·know·about·the·code.·But·keeping·the·quality·of·the·code·and·user·experience·high·is·still·difficult,·especially·if·you're·not·already·a·domain·expert·who·knows·what·to·look·for·and·ask.",
+       137 │ + → → → → → → "type":·"unstyled"
+       138 │ + → → → → → },
+       139 │ + → → → → → {
+       140 │ + → → → → → → "data":·{},
+       141 │ + → → → → → → "entityRanges":·[],
+       142 │ + → → → → → → "inlineStyleRanges":·[],
+       143 │ + → → → → → → "key":·"tpu",
+       144 │ + → → → → → → "text":·"Even·though·frontier·models·have·gotten·very·capable,·there·are·still·2·failure·modes·that·I·constantly·observe:",
+       145 │ + → → → → → → "type":·"unstyled"
+       146 │ + → → → → → },
+       147 │ + → → → → → {
+       148 │ + → → → → → → "data":·{},
+       149 │ + → → → → → → "entityRanges":·[],
+  990 more lines truncated
+
+
+test/spawn-command.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+    334 334 │     context.after(scratch.cleanup);
+    335 335 │     assert.equal(limen(scratch, "init").status, 0);
+    336     │ - → const·launched·=·limenWithEnv(scratch,·{·LIMEN_PREFLIGHT:·"auth"·},·"spawn",·"--detached",·"--provider",·"openai-codex",·"--model",·"gpt-6-astra",·"--thinking",·"high",·"do·work");
+        336 │ + → const·launched·=·limenWithEnv(
+        337 │ + → → scratch,
+        338 │ + → → {·LIMEN_PREFLIGHT:·"auth"·},
+        339 │ + → → "spawn",
+        340 │ + → → "--detached",
+        341 │ + → → "--provider",
+        342 │ + → → "openai-codex",
+        343 │ + → → "--model",
+        344 │ + → → "gpt-6-astra",
+        345 │ + → → "--thinking",
+        346 │ + → → "high",
+        347 │ + → → "do·work",
+        348 │ + → );
+    337 349 │     assert.equal(launched.status, 1);
+    338 350 │     assert.match(launched.stderr, /requested provider refused/);
+
+
+Checked 98 files in 174ms. No fixes applied.
+Found 6 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.

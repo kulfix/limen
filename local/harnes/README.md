@@ -22,6 +22,7 @@ Snapshot mostu z projektu badawczego harnes w forku silnika (`kulfix/limen`).
 | [WAKE.md](./WAKE.md) | End-to-end wake |
 | [HERDR.md](./HERDR.md) | Herdr-only default |
 | [MODELS.md](./MODELS.md) | Astra vs DeepSeek flash (tanio by default) |
+| [PLANE-GH.md](./PLANE-GH.md) | Konwencja REZ: Plane/GH jako źródło zadań, seat REST i write-back |
 | [CCS.md](./CCS.md) | Multi-account Claude via CCS profiles (a1/a2/a3) |
 | [GROK.md](./GROK.md) | Wejście dla Grok Bota |
 | [procedures/research-start.md](./procedures/research-start.md) | Procedura koordynatora Pi |
