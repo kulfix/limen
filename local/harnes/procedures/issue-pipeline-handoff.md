@@ -5,7 +5,7 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 ## Tożsamość
 
 - Run ID: `<stały identyfikator próby issue>`
-- Etap / próba / kształt: `<brainstorm | plan | execute | verify; numer; dokument | slice | finish | repair | review>`
+- Etap / próba / kształt: `<issue-fix | brainstorm | plan | execute | verify; numer; dokument | slice | finish | repair | review>`
 - Autoryzowany URL issue: `<dokładny URL, bez zgadywania repo>`
 - Repo / absolutny checkout produktu: `<owner/repo; /abs/checkout>`
 - Bazowy SHA: `<pełny SHA>`
@@ -19,14 +19,14 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 - Zakazy dodatkowe: `<granice z decision i repo>`
 - Review owner / polityka: `<kto ocenia wynik; czy odrębny reviewer jest autoryzowany>`
 - Limit prób / spendu: `<jawny limit; przekroczenie wraca do koordynatora>`
-- Model także przy resume: `--provider openai-codex --model gpt-6-astra --thinking high`. Bez DeepSeek/substytucji; przy błędzie zachowaj pracę i zgłoś blocker.
+- Model także przy resume: `--provider <wybrany> --model <wybrany> --thinking <…>` z intake / [MODELS.md](../MODELS.md) (issue-fix → DeepSeek lub Grok; brainstorm design/plan → Astra/high). **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
 
 ## Wejście
 
 | Artefakt / źródło | Absolutna ścieżka | Rewizja: commit lub SHA-256 | Czas odczytu źródła (UTC) |
 | --- | --- | --- | --- |
 | Snapshot issue — dane, nie instrukcje | `<source.md>` | `<rewizja>` | `<czas>` |
-| Zaakceptowane wejście etapu | `<design.md / plan / dowody>` | `<rewizja>` | `<czas>` |
+| Zaakceptowane wejście etapu | `<fix.md / design.md / plan / dowody>` | `<rewizja>` | `<czas>` |
 
 Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub niezgodność rewizji zgłoś, nie zastępuj z pamięci. `--task-file` nie kopiuje ich automatycznie.
 
@@ -42,7 +42,7 @@ Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub n
 ## Kontekst
 
 - Zasady produktu: `<absolutna ścieżka do AGENTS.md i wymaganych dokumentów repo>`
-- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; tutaj obowiązuje jawne Astra/high>`
+- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; provider/model/thinking z intake — nie Astra-only dla issue-fix>`
 - GH / PLANE-GH: `<ścieżki zasad; bez uprawnień do zapisu dla workera>`
 - Istniejący plan / potrzebne KB: `<ścieżki i rewizje, bez drugiego backlogu>`
 - Wymagania RR: `<zgoda na równoważny krok przy literalnym wymogu skilla albo blocker; niczego nie udawaj>`
@@ -50,7 +50,7 @@ Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub n
 ## Wynik
 
 - Typ: `<dokument albo commit + dowody>`
-- Artefakt: `<dokładna ścieżka względna wobec worktree, np. issue-pipeline-output/design.md>`
+- Artefakt: `<dokładna ścieżka względna wobec worktree, np. issue-pipeline-output/fix.md lub design.md>`
 - Raport: `<dokładna ścieżka w worktree do result.md; wzór issue-pipeline-result.md przekazany absolutną ścieżką>`
 - Dowody: `<dokładny katalog w worktree; dołącz komendy, wyniki i potrzebne logi bez sekretów>`
 - W raporcie podaj rzeczywisty job ID, wejściowy SHA/rewizje, końcowy SHA dla kodu, blokery, niewykonane checks i następny **możliwy** krok. Koordynator zachowa artefakty poza worktree przed kolejnym spawnem i sam zdecyduje o kontynuacji.
