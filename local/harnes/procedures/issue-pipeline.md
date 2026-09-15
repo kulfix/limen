@@ -123,9 +123,18 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
    Koordynator czyta i zachowuje wynik poza worktree.
 3. **Owner review — właściciel przez Groka.** Zapisz wybór, autora decyzji i rewizję `fix.md` albo `design.md` w `notes.md`; zewnętrzny werdykt zachowaj jako `fix-review.md` lub `design-review.md`. Bez zgody właściciela nie przechodź do planu/kodu; nie udawaj decyzji produktowej.
 4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` i aktualnego checkoutu oddaje `plan.md`: małe kroki, punkt startu, zależności, acceptance i sposób weryfikacji. Przed execute koordynator/właściciel robi plan review: zapisuje przyjętą rewizję, zakres zgody na kod, wymagane dowody i review owner. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
-5. **Execute — job implementacyjny.** Dostaje plan i bazowy SHA; oddaje commit oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość.
+5. **Execute — job implementacyjny.** Dostaje plan i bazowy SHA; oddaje commit oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr).
 6. **Verify — koordynator lub autoryzowany reviewer.** Bada dokładny SHA oraz zachowane dowody zgodnie z zasadami repo. Zapisz `verification.md`, a werdykt review osobno. Podaj wykonane komendy i wyniki, niewykonane checks oraz ograniczenia dowodu. Zmieniony SHA wymaga ponownego osądu; lokalna weryfikacja nie dowodzi produkcji. Defekt nie uruchamia automatycznej naprawy/re-review ponad zgodę i budżet.
-7. **GH write-back — koordynator, tylko za zgodą.** Publikuj wyłącznie dozwoloną operację i zachowaj read-back w `writeback.md`. Brak uprawnienia pozostawia issue otwarte i wynik gotowy do decyzji; nie odbiera dowodom kodu ważności. Zapisz `to-grok.md` z `in_reply_to` bieżącego handoffu i zakończ sesję na outboxie.
+7. **GH write-back — koordynator, tylko za zgodą.** Publikuj wyłącznie dozwoloną operację i zachowaj read-back w `writeback.md`. Brak uprawnienia pozostawia issue otwarte i wynik gotowy do decyzji; nie odbiera dowodom kodu ważności. Po otwarciu PR: monitoruj CI, w razie RED Summary ze skip/braku full sami dodaj `ci:run-full` (lub równoważnik) i czekaj na zielone — nie wołaj Pawła o label ([Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr)). Zapisz `to-grok.md` z `in_reply_to` bieżącego handoffu dopiero gdy sukces (mergeable + required green) albo realny blocker; zakończ sesję na outboxie.
+
+
+## Kryteria sukcesu (issue-fix → PR)
+
+**issue-fix jest skończony dopiero gdy PR jest mergeable i wymagane checks są zielone** — nie wtedy, gdy jest RED Summary (np. skip / brak pełnego profilu). Otwarcie PR albo czerwone Summary z powodu pominiętych jobów **nie** kończy etapu ani pipeline'u.
+
+Po otwarciu PR koordynator/worker **sami** monitorują CI. Jeśli Summary pada przez skip / brak full (w pytek: zdarzenie dodania `ci:run-full`; w innym repo — równoważny label/event wg zasad produktu): **sami** dodają ten label/event i czekają na zielone required checks. Nie eskaluj do Pawła z prośbą o label ani „odpal full”.
+
+Do Routera/Pawła eskaluj wyłącznie: (a) zielone i gotowe do merge, albo (b) realny fail testów / blocker decyzyjny — **nie** „brakuje labela / brak full”.
 
 ## Przekazanie i odzyskiwanie
 
@@ -142,7 +151,7 @@ Koordynator jest jedynym GH writerem; worker nie publikuje, Grok nie dubluje kom
 
 Przed POST wyszukaj marker na wszystkich stronach właściwego zasobu GH. Po zapisie wykonaj GET i zachowaj URL/ID oraz potwierdzoną treść jako receipt. Po niepewnym wyniku wykonaj GET/search markera, **nie drugi POST**. Jeśli nie da się rozstrzygnąć przyjęcia, zostaw pending wraz z żądaniem do odzyskania; brak markera przy możliwej operacji w toku nie jest dowodem bezpiecznego retry.
 
-Odróżniaj „kod zweryfikowany/gotowy do PR”, „issue zamknięte” i „poprawka działa po dostarczeniu”. Bez osobnej zgody nie zamykaj issue, nie używaj closing keywords, nie twórz PR, nie merguj ani nie deployuj. Błąd publikacji to brak dostarczenia, nie utrata dowodów kodu. HTTP 2xx webhooka nie dowodzi bot turn. [PLANE-GH.md](../PLANE-GH.md) dostarcza kontekstu zasad produktu; nie rozszerza tutaj zgody na zapisy REZ.
+Odróżniaj „kod zweryfikowany/gotowy do PR”, „PR mergeable + required checks green” (dopiero to kończy issue-fix z PR), „issue zamknięte” i „poprawka działa po dostarczeniu”. Bez osobnej zgody nie zamykaj issue, nie używaj closing keywords, nie twórz PR, nie merguj ani nie deployuj. Błąd publikacji to brak dostarczenia, nie utrata dowodów kodu. HTTP 2xx webhooka nie dowodzi bot turn. [PLANE-GH.md](../PLANE-GH.md) dostarcza kontekstu zasad produktu; nie rozszerza tutaj zgody na zapisy REZ.
 
 ## Czego nie portować z RR
 
