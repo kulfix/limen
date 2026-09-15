@@ -19,8 +19,8 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 - Zakazy dodatkowe: `<granice z decision i repo>`
 - Review owner / polityka: `<kto ocenia wynik; czy odrębny reviewer jest autoryzowany>`
 - Limit prób / spendu: `<jawny limit; przekroczenie wraca do koordynatora>`
-- Model (assignment, obowiązkowe): `model_provider: <openai-codex|openrouter|xai|…>` · `model_id: <np. gpt-5.6-luna>` · `model_thinking: <low|medium|high>` — skopiuj z decision/`to-limen.md`; brak = blocker albo wybór przed spawnem zapisany w notes.
-- Model także przy resume: te same `--provider` / `--model` / `--thinking` (bez cichej zmiany). Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko opcjonalnie off-sub (nie default research); trudny brainstorm: Sol albo Astra. **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
+- Model (assignment, obowiązkowe): `model_provider: <openai-codex|openrouter|xai|…>` · `model_id: <np. gpt-5.6-luna>` · `model_thinking: <low|medium|high>` — ustaw lub potwierdź dla tego etapu i zapisz w decision/`to-limen.md`; brak = blocker albo wybór przed spawnem zapisany w notes.
+- Model także przy resume tego samego assignmentu: te same `--provider` / `--model` / `--thinking` (bez cichej zmiany). Następny etap ma nowy assignment i własną trójkę, nawet gdy świadomie powtarza poprzednią. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko opcjonalnie off-sub (nie default research); trudny brainstorm: Sol albo Astra. **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
 
 ## Wejście
 
@@ -43,7 +43,7 @@ Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub n
 ## Kontekst
 
 - Zasady produktu: `<absolutna ścieżka do AGENTS.md i wymaganych dokumentów repo>`
-- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; provider/model/thinking z intake — nie Astra-only dla issue-fix>`
+- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; provider/model/thinking przypisane temu etapowi — nie dziedziczone z intake; nie Astra-only dla issue-fix>`
 - GH / PLANE-GH: `<ścieżki zasad; bez uprawnień do zapisu dla workera>`
 - Istniejący plan / potrzebne KB: `<ścieżki i rewizje, bez drugiego backlogu>`
 - Wymagania RR: `<zgoda na równoważny krok przy literalnym wymogu skilla albo blocker; niczego nie udawaj>`
