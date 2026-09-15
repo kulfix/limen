@@ -1,10 +1,10 @@
-# Herdr-only default (Patch 2)
+# Herdr-only default
 
-`limen spawn` and `limen continue` default to **hosted in Herdr** (visible tab while working).
+`limen spawn` i `limen continue` domyślnie idą **hosted w Herdr** (widoczny tab).
 
-- Requires `HERDR_ENV=1` and a usable `herdr` binary.
-- Without Herdr: **explicit error**, no job/process created.
-- Escape hatch: pass **`--detached`** (documented; never a silent fallback).
-- `claude` / advisor engines are not hosted — they also require explicit `--detached`.
+- Wymaga `HERDR_ENV=1` i działającego `herdr`.
+- Bez Herdr: **jawny błąd**, bez procesu / joba.
+- Escape: tylko **`--detached`** (nigdy cichy fallback).
+- `claude` / advisor też wymagają jawnego `--detached` (nie są hosted).
 
-Wake=@file: see [WAKE.md](./WAKE.md) (`limen inbound wake`).
+Wake mostu: [WAKE.md](./WAKE.md). Modele jobów: [MODELS.md](./MODELS.md).
