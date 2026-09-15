@@ -1,0 +1,38 @@
+✔ comment: accepted POST timeout and rerun use paginated marker, never duplicate (259.654607ms)
+✔ link: accepted POST timeout and rerun use paginated marker, never duplicate (219.668311ms)
+✔ GET WI and all workflow pages use REZ-138's canonical UUIDs (7.845488ms)
+✔ Ops API-root configuration does not duplicate /api/v1 (4.643844ms)
+✔ redirects are refused rather than forwarding the API key (5.209477ms)
+✔ unpaginated array responses are supported (4.129238ms)
+✔ missing auth and missing write approval perform no requests (1.366182ms)
+✔ 401 GET: refusal is immediate, no false receipt or retry (5.075584ms)
+✔ 401 POST: refusal is immediate, no false receipt or retry (9.408749ms)
+✔ 401 PATCH: refusal is immediate, no false receipt or retry (6.888917ms)
+✔ 403 GET: refusal is immediate, no false receipt or retry (3.773071ms)
+✔ 403 POST: refusal is immediate, no false receipt or retry (7.25539ms)
+✔ 403 PATCH: refusal is immediate, no false receipt or retry (7.431765ms)
+✔ 429 GET respects Retry-After and retries finitely (48.095956ms)
+✔ 429 HTTP-date beyond wait budget refuses early rather than retrying early (7.657404ms)
+✔ 429 POST rechecks all pages before bounded retry (34.192589ms)
+✔ 429 after acceptance returns only read-back receipt, no second POST (10.784898ms)
+✔ successful POST response without stored write remains pending (11.041198ms)
+✔ timeout without acceptance stays pending and never auto-reposts (209.303513ms)
+✔ read-back failure after acceptance cannot claim success; retry finds existing marker (11.026524ms)
+✔ incomplete pagination prevents POST: {"results":[],"next_page_results":true} (3.136575ms)
+✔ incomplete pagination prevents POST: {"results":[],"next_page_results":true,"next_cursor":"repeated"} (7.046807ms)
+✔ incomplete pagination prevents POST: {"results":[]} (5.350983ms)
+✔ incomplete pagination prevents POST: {"results":[],"next":"https://other.invalid/steal-key"} (4.007314ms)
+✔ exact marker delimiters avoid prefix collisions; changed payload and duplicate markers refuse (15.374313ms)
+✔ link marker with a different URL is not a receipt (11.430918ms)
+✔ PATCH timeout is reconciled by GET; rerun does not patch twice (212.870262ms)
+✔ state transition refuses unknown destination and changed human state (6.027839ms)
+✔ PATCH 200 without applied state is not confirmed (5.502456ms)
+✔ CLI partial delivery exits nonzero with no false done or leaked credentials (674.574151ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1987.346822

@@ -1,0 +1,62 @@
+{
+	"apiBase": "https://plane.wczasowa8.pl/api/v1",
+	"workItem": {
+		"id": "2f532bb9-d9c5-436f-b03a-5fde182a22fa",
+		"sequence_id": 138,
+		"project": "47b7d43a-9fc1-4dce-9c51-863e09c108c1",
+		"name": "Limen ↔ Plane/GH write-back (wariant B)",
+		"state": "976c22aa-3e76-4dda-ba6d-9c67f4709682"
+	},
+	"states": [
+		{
+			"id": "976c22aa-3e76-4dda-ba6d-9c67f4709682",
+			"name": "Backlog"
+		},
+		{
+			"id": "1275edca-2782-4fe7-985b-68931a24dca3",
+			"name": "Todo"
+		},
+		{
+			"id": "6f513b61-6ac3-427c-b5c1-d7da1006ef2a",
+			"name": "In Progress"
+		},
+		{
+			"id": "6c513b4a-f205-4ba0-a125-c362bd107455",
+			"name": "Done"
+		},
+		{
+			"id": "7cc96c0f-f719-4beb-911f-8b3241ed8cc3",
+			"name": "Cancelled"
+		}
+	],
+	"comment": {
+		"id": "1c0dd481-febc-4684-8d38-1e29a147f800",
+		"marker": "limen:2026-09-15-plane-tracker-write-back-5849fe43:smoke",
+		"verified": true,
+		"rerunSameId": true
+	},
+	"stateWrite": "not performed: no agreed destination",
+	"browserUrl": "not supplied",
+	"pr": {
+		"baseRefName": "main",
+		"headRefName": "limen/2026-09-15-plane-tracker-write-back-5849fe43",
+		"number": 11,
+		"state": "OPEN",
+		"url": "https://github.com/kulfix/limen/pull/11"
+	},
+	"link": {
+		"id": "0e8037bc-a591-4023-bde7-168091808074",
+		"marker": "limen:2026-09-15-plane-tracker-write-back-5849fe43:pr",
+		"url": "https://github.com/kulfix/limen/pull/11",
+		"verified": true,
+		"rerunSameId": true
+	},
+	"outcome": {
+		"id": "56e7d605-a770-4936-9bb2-616f8b658161",
+		"marker": "limen:2026-09-15-plane-tracker-write-back-5849fe43:outcome",
+		"verified": true,
+		"text": "<p>Implementation PR: https://github.com/kulfix/limen/pull/11. REZ convention, dependency-free REST client and 30 passing stub tests are delivered for review. Native TypeScript passed; repository check stopped on six untouched formatting errors. Native tests: 440/443 passed, three template-history failures. Live WI/states GET and marked comment read-back/rerun succeeded; PR link write-back is being verified separately. No workflow state change, merge or feature acceptance. Canonical browser WI URL and agreed live state transition remain outstanding. This is a candidate, not Done.</p><p>[limen:2026-09-15-plane-tracker-write-back-5849fe43:outcome]</p>"
+	},
+	"finalState": "976c22aa-3e76-4dda-ba6d-9c67f4709682",
+	"stateUnchanged": true
+}
