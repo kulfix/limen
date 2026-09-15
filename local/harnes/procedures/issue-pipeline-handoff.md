@@ -19,7 +19,7 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 - Zakazy dodatkowe: `<granice z decision i repo>`
 - Review owner / polityka: `<kto ocenia wynik; czy odrębny reviewer jest autoryzowany>`
 - Limit prób / spendu: `<jawny limit; przekroczenie wraca do koordynatora>`
-- Model także przy resume: `--provider openai-codex --model gpt-6-astra --thinking high`. Bez DeepSeek/substytucji; przy błędzie zachowaj pracę i zgłoś blocker.
+- Model także przy resume: `--provider <wybrany> --model <wybrany> --thinking <…>` z intake / [MODELS.md](../MODELS.md) (issue-fix → DeepSeek lub Grok; brainstorm design/plan → Astra/high). **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
 
 ## Wejście
 
@@ -42,7 +42,7 @@ Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub n
 ## Kontekst
 
 - Zasady produktu: `<absolutna ścieżka do AGENTS.md i wymaganych dokumentów repo>`
-- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; tutaj obowiązuje jawne Astra/high>`
+- Modele: `<absolutna ścieżka do local/harnes/MODELS.md; provider/model/thinking z intake — nie Astra-only dla issue-fix>`
 - GH / PLANE-GH: `<ścieżki zasad; bez uprawnień do zapisu dla workera>`
 - Istniejący plan / potrzebne KB: `<ścieżki i rewizje, bez drugiego backlogu>`
 - Wymagania RR: `<zgoda na równoważny krok przy literalnym wymogu skilla albo blocker; niczego nie udawaj>`

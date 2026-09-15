@@ -43,9 +43,27 @@ Istniejący plan produktu wskazuj zamiast tworzyć konkurencyjną kopię. `plan.
 
 ## Modele i miejsce uruchomienia
 
-Na tej ścieżce koordynator, worker i autoryzowany reviewer używają jawnie `openai-codex` / `gpt-6-astra` / thinking `high`, również przy wznowieniu. To jawny wyjątek od taniego researchu w [MODELS.md](../MODELS.md). Błąd modelu/quota: zachowaj pracę i zgłoś blocker, bez DeepSeek ani cichej substytucji.
+Koordynator **wybiera model przy intake** (zapis w `source.md` / `notes.md`) zgodnie z [MODELS.md](../MODELS.md) i wybranym torem — nie „zawsze Astra” i nie „zawsze DeepSeek”. Wybrany provider/model/thinking przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume. **Bez cichej substytucji** przy błędzie modelu/quota: zachowaj pracę i zgłoś blocker.
 
-Grok przy nowym, autoryzowanym wake ustawia środowisko poniżej. `LIMEN_WORKER_MODEL` ma przy wake pierwszeństwo przed `LIMEN_MODEL`: ma zawierać samo `gpt-6-astra`, nie sklejkę provider/model ani sufiks thinking.
+| Tor / etap | Model (domyślnie) | Thinking |
+| --- | --- | --- |
+| **issue-fix** / jednoznaczne małe patche, smoke, mechanika | DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash`) **lub** Grok (`xai` / `grok-4.6`) — wg MODELS i handoffu | `low` (DeepSeek) / `medium`–`high` (Grok) |
+| **brainstorm** design/plan, architektura, trudna diagnoza | Astra (`openai-codex` / `gpt-6-astra`) — **tylko** te etapy, nie cały tor | `high` |
+| Execute / verify na issue-fix | Ten sam model co przy intake (zwykle DeepSeek/Grok), chyba że decision jawnie eskaluje | jak wyżej |
+
+Astra **nie** jest wyjątkiem dla całej ścieżki issue-pipeline. Zawężaj ją do design/plan (i hard diagnosis), gdy tor=`brainstorm` albo gdy decision jawnie wymaga ciężkiego reasoningu. Tor `issue-fix` (w tym kolejne przebiegi po #4148) **nie** może być Astra-only; bieżący run #4148 może dokończyć na Astrze, ale następne issue-fix muszą wybrać DeepSeek/Grok per MODELS.
+
+Grok przy nowym, autoryzowanym wake ustawia środowisko **wybranego** modelu. `LIMEN_WORKER_MODEL` ma przy wake pierwszeństwo przed `LIMEN_MODEL`: samo ID modelu (np. `deepseek/deepseek-v4.1-flash` albo `gpt-6-astra`), bez sklejki provider/model ani sufiksu thinking.
+
+Przykład wake dla issue-fix (DeepSeek):
+
+```bash
+LIMEN_PROVIDER=openrouter LIMEN_MODEL=deepseek/deepseek-v4.1-flash \
+LIMEN_WORKER_MODEL=deepseek/deepseek-v4.1-flash LIMEN_THINKING=low \
+limen inbound accept --wake /ABS/TEMAT/to-limen.md
+```
+
+Przykład wake, gdy design/plan wymaga Astry (brainstorm):
 
 ```bash
 LIMEN_PROVIDER=openai-codex LIMEN_MODEL=gpt-6-astra \
@@ -55,16 +73,25 @@ limen inbound accept --wake /ABS/TEMAT/to-limen.md
 
 Job produktu uruchamiaj **z checkoutu produktu**, nigdy z repo narzędzia `/srv/limen/tools/limen`. Zachowaj środowisko sesji/subskrypcji koordynatora. `limen spawn --repo` nie przyjmuje dowolnej ścieżki z Git checkoutu narzędzia; służy przygotowanemu nie-Git workspace parent i jego repozytoriom.
 
-Przykład jednego zlecenia, dopiero po zgodzie i sprawdzeniu ścieżek:
+Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem:
+
+```bash
+(cd /ABS/CHECKOUT-PRODUKTU && \
+  limen spawn --provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low \
+    --label 'issue-fix diagnostyka wybranego issue' \
+    --task-file /ABS/TEMAT/outbox/RUN/handoffs/issue-fix-1.md)
+```
+
+Przykład brainstorm/design (Astra tylko na ten etap):
 
 ```bash
 (cd /ABS/CHECKOUT-PRODUKTU && \
   limen spawn --provider openai-codex --model gpt-6-astra --thinking high \
-    --label 'projekt rozwiązania wybranego issue' \
+    --label 'brainstorm design wybranego issue' \
     --task-file /ABS/TEMAT/outbox/RUN/handoffs/brainstorm-1.md)
 ```
 
-To nie skrypt całego pipeline'u. Kolejny etap wymaga osobnej decyzji koordynatora. Spawn jest hosted w Herdr; bez Herdr zatrzymaj się, bez cichego detached ([HERDR.md](../HERDR.md)). Autoryzowany review używa `--review --detached --branch <branch>` i tych samych jawnych flag modelu; zgoda na zwykły etap nie autoryzuje review.
+To nie skrypt całego pipeline'u. Kolejny etap wymaga osobnej decyzji koordynatora. Spawn jest hosted w Herdr; bez Herdr zatrzymaj się, bez cichego detached ([HERDR.md](../HERDR.md)). Autoryzowany review używa `--review --detached --branch <branch>` i **tych samych jawnych flag wybranego modelu**; zgoda na zwykły etap nie autoryzuje review.
 
 ## Etapy i warunki przejścia
 
@@ -97,7 +124,7 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
 - Job zapisuje wynik i dowody w swoim worktree. Koordynator zachowuje potrzebne artefakty **poza worktree przed następnym spawnem**, także review lub naprawą: spawn może sprzątać zakończone worktree. Sprawdź zachowane pliki i ich rewizje przed przekazaniem.
 - Po wake sprawdź `state`, `finished-at`, log, wynik i Git. Job zakończony bez artefaktu nie pozwala przejść dalej. `notes.md` aktualizuje koordynator: przyjęta rewizja, podstawa decyzji, aktualny job/blocker, następny dozwolony krok i writer.
 - Po utracie sesji przeczytaj notes i istniejący job w repo produktu; przy autoryzowanym przejęciu użyj `limen watch <id>`. Brak powiadomienia nie upoważnia do duplikatu.
-- Przed resume odczytaj ponownie źródło i obejrzyj zachowany worktree. Autoryzowany finish/repair na `spawn --branch <branch>` zachowuje właściwą bazę oraz jawne Astra/high; nie restartuje całej sekwencji. Zmiana issue, planu lub SHA wymaga oceny zależnych dowodów.
+- Przed resume odczytaj ponownie źródło i obejrzyj zachowany worktree. Autoryzowany finish/repair na `spawn --branch <branch>` zachowuje właściwą bazę oraz jawne flagi **wybranego** modelu; nie restartuje całej sekwencji. Zmiana issue, planu lub SHA wymaga oceny zależnych dowodów.
 
 ## GH: jeden writer, sprawdzalny odbiór
 
