@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, type FSWatcher, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, watch, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { readRoutingRecord } from "../src/project-slot.ts";
 
 type PiApi = {
 	on(event: "session_start" | "session_shutdown", handler: (event: unknown, context: unknown) => void): void;
@@ -46,8 +47,11 @@ export default function limenSteering(pi: PiApi): void {
 		const root = process.env.LIMEN_CONTEXT_ROOT;
 		const id = process.env.LIMEN_JOB_ID;
 		if (!root || !id) return;
-		const job = join(root, ".limen", "jobs", id);
+		const explicit = process.env.LIMEN_JOB_DIR?.trim();
+		if (process.env.LIMEN_PROJECTS_CONFIG && !explicit) throw new Error("steering project-slot hook requires LIMEN_JOB_DIR");
+		const job = explicit || join(root, ".limen", "jobs", id);
 		if (!existsSync(job)) return;
+		if (process.env.LIMEN_PROJECTS_CONFIG) readRoutingRecord(job);
 		try {
 			mkdirSync(join(job, "steer", "inbox"), { recursive: true });
 			mkdirSync(join(job, "steer", "delivered"), { recursive: true });

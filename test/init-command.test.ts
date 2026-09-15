@@ -104,7 +104,10 @@ test("init names a stale copy and --drop-leftovers leaves it", async (context) =
 	const lines = execFileSync("git", ["log", "-2", "--format=%H %cs", "--", "templates/reviewer.md"], { cwd: ROOT, encoding: "utf8" }).trim().split("\n");
 	const latest = lines[0];
 	const previous = lines[1];
-	assert.ok(latest && previous, "need two revisions of templates/reviewer.md");
+	if (!latest || !previous) {
+		context.skip("checkout has fewer than two reviewer template revisions");
+		return;
+	}
 	const old = execFileSync("git", ["show", `${previous.slice(0, 40)}:templates/reviewer.md`], { cwd: ROOT, encoding: "utf8" });
 	await writeFile(join(scratch.root, ".agents/limen/reviewer.md"), old);
 	const named = limen(scratch, "init");

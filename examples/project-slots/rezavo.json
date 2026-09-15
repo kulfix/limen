@@ -1,0 +1,15 @@
+{
+	"schema_version": 1,
+	"slot_id": "rezavo",
+	"project_root": "/srv/limen/projects/rezavo",
+	"app_root": "/srv/limen/apps/limen/current",
+	"code_root": "/srv/limen/projects/rezavo/code",
+	"context_root": "/srv/limen/projects/rezavo/context",
+	"inbound_root": "/srv/limen/projects/rezavo/context/inbound",
+	"models_policy": "/srv/limen/projects/rezavo/context/MODELS.md",
+	"cabinet_root": "/srv/limen/projects/rezavo/state/.limen",
+	"sessions_root": "/srv/limen/projects/rezavo/state/pi-sessions",
+	"worktrees_root": "/srv/limen/projects/rezavo/worktrees",
+	"herdr_namespace": "rezavo",
+	"finish_webhook_env": "/srv/limen/projects/rezavo/state/finish-webhook.env"
+}

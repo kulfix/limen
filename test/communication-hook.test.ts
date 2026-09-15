@@ -452,17 +452,21 @@ test("a stale copy is named with both dates in the drift section", async (contex
 		if (inherited.contextRoot === undefined) delete process.env.LIMEN_CONTEXT_ROOT;
 		else process.env.LIMEN_CONTEXT_ROOT = inherited.contextRoot;
 	});
-	const [latest, previous] = gitLogPair("templates/reviewer.md");
+	const pair = gitLogPair("templates/reviewer.md");
+	if (!pair) {
+		context.skip("checkout has fewer than two reviewer template revisions");
+		return;
+	}
+	const [latest, previous] = pair;
 	await writeFile(join(root, ".agents/limen/reviewer.md"), execFileSync("git", ["show", `${previous.hash}:templates/reviewer.md`], { cwd: ROOT, encoding: "utf8" }));
 	const content = start(root).message?.content ?? "";
 	assert.equal(content.includes(`stale (package text as of ${previous.date}; package changed ${latest.date}): .agents/limen/reviewer.md`), true);
 });
 
-function gitLogPair(source: string): readonly [{ readonly hash: string; readonly date: string }, { readonly hash: string; readonly date: string }] {
+function gitLogPair(source: string): readonly [{ readonly hash: string; readonly date: string }, { readonly hash: string; readonly date: string }] | undefined {
 	const lines = execFileSync("git", ["log", "-2", "--format=%H %cs", "--", source], { cwd: ROOT, encoding: "utf8" }).trim().split("\n");
 	const parsed = lines.map((line) => ({ hash: line.slice(0, 40), date: line.slice(41) }));
 	const latest = parsed[0];
 	const previous = parsed[1];
-	assert.ok(latest && previous, `need two revisions of ${source}`);
-	return [latest, previous];
+	return latest && previous ? [latest, previous] : undefined;
 }

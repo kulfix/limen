@@ -4,6 +4,7 @@ import { basename, dirname } from "node:path";
 import { hostedAgentName } from "./commands/spawn.ts";
 import { processAlive, processInfo } from "./contain.ts";
 import { hostedAgentStatus, locateHostedAgent } from "./herdr.ts";
+import { activeProjectSlot, readRoutingRecord, routingFingerprint } from "./project-slot.ts";
 import { ownerAlive } from "./reap.ts";
 import { atomicWrite, launchHostedSupervisor, textFile } from "./wrapper.ts";
 
@@ -63,6 +64,8 @@ export async function recoveryTarget(jobDir: string): Promise<string | "missing"
 
 export async function recoverHostedOwner(jobDir: string): Promise<void> {
 	const id = basename(jobDir);
+	const slot = activeProjectSlot();
+	const routing = readRoutingRecord(jobDir, slot);
 	// The detached candidate claims in its own process, so a dead caller can never strand
 	// a launch-to-handshake ownership transfer. Losing candidates exit without a handshake.
 	const pid = await launchHostedSupervisor({
@@ -75,7 +78,16 @@ export async function recoverHostedOwner(jobDir: string): Promise<void> {
 		LIMEN_LABEL: (await textFile(`${jobDir}/label`)) || id,
 		LIMEN_ROLE: (await textFile(`${jobDir}/role`)) || "worker",
 		LIMEN_AGENT_NAME: (await textFile(`${jobDir}/agent-name`)) || hostedAgentName(id),
-		LIMEN_CONTEXT_ROOT: dirname(dirname(dirname(jobDir))),
+		LIMEN_CONTEXT_ROOT: routing?.context_root ?? dirname(dirname(dirname(jobDir))),
+		...(slot
+			? {
+					LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+					LIMEN_SLOT_ID: slot.slot_id,
+					LIMEN_ROUTING_FINGERPRINT: routingFingerprint(slot),
+					LIMEN_SESSION_PATH: routing?.session_path ?? "",
+					LIMEN_PACKAGE: slot.app_root,
+				}
+			: {}),
 	});
 	const deadline = Date.now() + 5_000;
 	while (Date.now() < deadline && processAlive(pid) && (await textFile(`${jobDir}/state`)) === "running" && !(await ownerAlive(jobDir))) {

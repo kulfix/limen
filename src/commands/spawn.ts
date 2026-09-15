@@ -1,8 +1,8 @@
 import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { basename, dirname, resolve } from "node:path";
+import { basename, delimiter, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { signalProcessGroup, waitForProcessGroup } from "../contain.ts";
 import { finishWebhookEnv } from "../finish-webhook.ts";
@@ -12,16 +12,19 @@ import {
 	addNewWorktree,
 	branchCommit,
 	branchExists,
+	gitCommonDir,
 	headCommit,
 	repoRoot,
+	slotRepository,
 	workspaceRepository,
 	workspaceRoot,
 	worktreeForBranch,
 } from "../git.ts";
 import { herdrAvailable, openHostedTab, openWatchTab } from "../herdr.ts";
 import { parseDuration } from "../job.ts";
+import { activeProjectSlot, assertSlotPath, makeRoutingRecord, readRoutingRecord, routingFingerprint } from "../project-slot.ts";
 import { liveJob } from "../reap.ts";
-import { appendLimenLog, atomicWrite, finalizeJob, launchHostedSupervisor, launchWrapper } from "../wrapper.ts";
+import { appendLimenLog, atomicWrite, finalizeJob, launchHostedSupervisor, launchWrapper, sanitizedSlotEnvironment } from "../wrapper.ts";
 import { hunkBinary } from "./diff.ts";
 import { pruneFinishedWorktrees } from "./prune.ts";
 
@@ -44,7 +47,12 @@ type SpawnOptions = {
 };
 const PACKAGE_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 export function resolvePreamble(root: string, role: string): string {
-	for (const path of [`${root}/.agents/limen/${role}.md`, `${PACKAGE_ROOT}/templates/${role}.md`]) if (existsSync(path)) return path;
+	const slot = activeProjectSlot();
+	for (const path of [`${root}/.agents/limen/${role}.md`, `${slot?.app_root ?? PACKAGE_ROOT}/templates/${role}.md`]) {
+		if (!existsSync(path)) continue;
+		if (slot) assertSlotPath(slot, path, path.startsWith(slot.app_root) ? "app-template" : "context-input");
+		return path;
+	}
 	throw new Error(`no preamble for role ${role}`);
 }
 export const HOSTED_NOTE =
@@ -69,6 +77,9 @@ const HANDSHAKE_POLL_MS = 20;
 const handshakeMs = (): number => (Number(process.env.LIMEN_HANDSHAKE_MS) > 0 ? Number(process.env.LIMEN_HANDSHAKE_MS) : 10_000);
 export async function spawnCommand(args: readonly string[], cwd: string): Promise<void> {
 	const parsed = parseSpawnArgs(args);
+	const slot = activeProjectSlot();
+	if (slot && parsed.engine === "claude") throw new Error("Claude project-slot workers are deferred until their complete input can be isolated");
+	if (slot && parsed.taskFile && parsed.taskFile !== "-") assertSlotPath(slot, resolve(cwd, parsed.taskFile), "context-input");
 	if (parsed.tab && parsed.detached) throw new Error("--tab and --detached cannot be combined");
 	const herdr = herdrAvailable();
 	// Patch 2: default is hosted in Herdr. Detached only with an explicit --detached — never a silent fallback.
@@ -76,38 +87,46 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	if (tab && parsed.timeoutMs) throw new Error("hosted jobs have no timeout; omit --timeout or use --detached");
 	if (tab && parsed.engine === "claude") throw new Error("claude is not hosted in Herdr; pass --detached explicitly");
 	if (tab && !herdr) throw new Error("spawn defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
+	const workspace = slot ? slot.project_root : workspaceRoot(cwd);
+	const root = slot ? slot.context_root : (workspace ?? repoRoot(cwd));
+	if (workspace && !parsed.repo) throw new Error("workspace spawn requires --repo <immediate-child>");
+	if (!workspace && parsed.repo) throw new Error("--repo is available only from a non-Git workspace coordinator");
+	const repository = slot ? slotRepository(slot, parsed.repo ?? "") : workspace ? workspaceRepository(root, parsed.repo ?? "") : root;
 	const loaded = await readSpawnTask(parsed.task, parsed.taskFile, cwd);
 	const options = { ...parsed, tab, task: loaded.text, label: parsed.label ?? (loaded.text.trim().split(/\r?\n/, 1)[0]?.trim().slice(0, 80) || "job") };
 	const engine = options.engine ?? "pi";
 	const model =
 		options.model ?? (engine === "claude" ? undefined : process.env[options.review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
 	if (engine === "claude" && (options.provider || options.thinking)) throw new Error("--provider and --thinking are Pi options; omit them for --engine claude");
+	const task = loaded.raw ? loaded.text : workspace ? workspaceTask(options.task, root, options.repo ?? "") : options.task;
+	const role = options.review ? "reviewer" : (options.role ?? "worker");
+	const preamble = resolvePreamble(root, role);
 	if (engine === "claude") preflightClaude();
 	else preflightPi(model, options.provider);
 	const notificationSession = currentNotificationSession();
 	const coordinatorTab = process.env.HERDR_TAB_ID?.trim();
-	const workspace = workspaceRoot(cwd);
-	const root = workspace ?? repoRoot(cwd);
-	if (workspace && !options.repo) throw new Error("workspace spawn requires --repo <immediate-child>");
-	if (!workspace && options.repo) throw new Error("--repo is available only from a non-Git workspace coordinator");
-	const repository = workspace ? workspaceRepository(root, options.repo ?? "") : root;
-	const task = loaded.raw ? loaded.text : workspace ? workspaceTask(options.task, root, options.repo ?? "") : options.task;
-	const role = options.review ? "reviewer" : (options.role ?? "worker");
-	const preamble = resolvePreamble(root, role);
 	const id = makeJobId(options.label);
-	const jobsRoot = `${root}/.limen/jobs`;
+	const jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${root}/.limen/jobs`;
 	await mkdir(jobsRoot, { recursive: true });
 	let running = 0,
 		held = false;
 	for (const entry of await readdir(jobsRoot, { withFileTypes: true })) {
+		if (slot && entry.isDirectory()) {
+			try {
+				readRoutingRecord(`${jobsRoot}/${entry.name}`, slot);
+			} catch {
+				continue;
+			}
+		}
 		if (entry.isDirectory() && (await liveJob(`${jobsRoot}/${entry.name}`))) (running += 1), (held ||= (await text(`${jobsRoot}/${entry.name}/label`)) === options.label);
 	}
 	if (running > 0) console.log(`note: ${running} job${running === 1 ? "" : "s"} already running; starting another`);
 	if (/^F\d{3,}$/i.test(options.label)) console.log("warning: label is only a feature number");
 	if (held) console.log("warning: a live job already holds this label");
 	const branch = options.branch ?? `limen/${id}`;
-	const worktreeRoot = `${dirname(repository)}/.${basename(repository)}-limen-worktrees`;
+	const worktreeRoot = slot ? slot.worktrees_root : `${dirname(repository)}/.${basename(repository)}-limen-worktrees`;
 	const requestedPath = `${worktreeRoot}/${id}`;
+	if (slot) assertSlotPath(slot, requestedPath, "worktree", true);
 	await mkdir(worktreeRoot, { recursive: true });
 	const worktree = executeWorktree(
 		repository,
@@ -128,6 +147,15 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	await mkdir(jobDir);
 	try {
 		await mkdir(`${jobDir}/notify/subscribers`, { recursive: true });
+		if (slot) {
+			const routing = makeRoutingRecord(slot, {
+				repository_root: repository,
+				repository_common_dir: gitCommonDir(repository),
+				worktree: realpathSync(worktree),
+				session_path: `${jobDir}/session`,
+			});
+			await writeFile(`${jobDir}/routing.json`, `${JSON.stringify(routing, null, 2)}\n`, { flag: "wx", mode: 0o600, flush: true });
+		}
 		const taskBody = loaded.raw ? loaded.bytes : candidate ? `${task.trim()}\n\nCandidate commit: ${candidate}.\n` : `${task.trim()}\n`;
 		await Promise.all([
 			writeFile(`${jobDir}/task.md`, taskBody, { flag: "wx", flush: true }),
@@ -155,7 +183,7 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 				: []),
 			...(coordinatorTab ? [writeFile(`${jobDir}/origin-tab`, `${coordinatorTab}\n`, { flag: "wx", flush: true })] : []),
 		]);
-		const finishConfig = finishWebhookEnv(root, cwd);
+		const finishConfig = slot?.finish_webhook_env ?? finishWebhookEnv(root, cwd);
 		if (finishConfig) await writeFile(`${jobDir}/finish-webhook-env`, `${finishConfig}\n`, { flag: "wx", mode: 0o600, flush: true });
 		await writeFile(`${jobDir}/notify/ready`, "1\n", { flag: "wx", flush: true });
 		await runPrepare(jobDir, worktree, parsed.prepare ?? process.env.LIMEN_PREPARE?.trim());
@@ -193,6 +221,15 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 		LIMEN_JOB_ID: id,
 		LIMEN_LABEL: options.label,
 		LIMEN_CONTEXT_ROOT: root,
+		...(slot
+			? {
+					LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+					LIMEN_SLOT_ID: slot.slot_id,
+					LIMEN_ROUTING_FINGERPRINT: routingFingerprint(slot),
+					LIMEN_SESSION_PATH: `${jobDir}/session`,
+					LIMEN_PACKAGE: slot.app_root,
+				}
+			: {}),
 	};
 	if (engine !== "pi") environment.LIMEN_ENGINE = engine;
 	environment.LIMEN_PROVIDER = options.provider ?? "";
@@ -237,7 +274,9 @@ export async function startHosted(input: {
 }): Promise<void> {
 	const agentName = hostedAgentName(input.id);
 	try {
-		await openHostedTab({
+		const slot = activeProjectSlot();
+		const launcher = slot ? `${input.jobDir}/launcher` : undefined;
+		const place = await openHostedTab({
 			jobDir: input.jobDir,
 			label: input.label,
 			cwd: input.worktree,
@@ -250,8 +289,20 @@ export async function startHosted(input: {
 				LIMEN_JOB_LABEL: input.label,
 				LIMEN_CONTEXT_ROOT: input.root,
 				LIMEN_ROLE: input.role,
+				...(launcher ? { PATH: `${launcher}${delimiter}${process.env.PATH ?? ""}` } : {}),
+				...(process.env.LIMEN_SLOT_ID
+					? {
+							LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+							LIMEN_SLOT_ID: process.env.LIMEN_SLOT_ID,
+							LIMEN_ROUTING_FINGERPRINT: process.env.LIMEN_ROUTING_FINGERPRINT ?? "",
+							LIMEN_JOB_DIR: input.jobDir,
+							LIMEN_SESSION_PATH: `${input.jobDir}/session`,
+							LIMEN_PACKAGE: process.env.LIMEN_PACKAGE ?? "",
+						}
+					: {}),
 			},
 		});
+		if (launcher) await writeHostedLauncher(launcher, place, input);
 		const supervisorPid = await launchHostedSupervisor({
 			LIMEN_JOB_DIR: input.jobDir,
 			LIMEN_WORKTREE: input.worktree,
@@ -261,6 +312,15 @@ export async function startHosted(input: {
 			LIMEN_LABEL: input.label,
 			LIMEN_CONTEXT_ROOT: input.root,
 			LIMEN_ROLE: input.role,
+			...(process.env.LIMEN_SLOT_ID
+				? {
+						LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+						LIMEN_SLOT_ID: process.env.LIMEN_SLOT_ID,
+						LIMEN_ROUTING_FINGERPRINT: process.env.LIMEN_ROUTING_FINGERPRINT ?? "",
+						LIMEN_SESSION_PATH: `${input.jobDir}/session`,
+						LIMEN_PACKAGE: process.env.LIMEN_PACKAGE ?? "",
+					}
+				: {}),
 			LIMEN_AGENT_NAME: agentName,
 			LIMEN_HOSTED_START: "1",
 			LIMEN_MODEL: input.model ?? "",
@@ -274,6 +334,40 @@ export async function startHosted(input: {
 		await finalizeJob(input.jobDir, "failed", `hosted start failed: ${message}`);
 		throw error;
 	}
+}
+async function writeHostedLauncher(
+	directory: string,
+	place: { readonly workspace: string; readonly tab: string; readonly pane: string },
+	job: { readonly jobDir: string; readonly id: string; readonly label: string; readonly role: string },
+): Promise<void> {
+	await mkdir(directory, { recursive: true });
+	const environment = sanitizedSlotEnvironment({
+		LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG ?? "",
+		LIMEN_SLOT_ID: process.env.LIMEN_SLOT_ID ?? "",
+		LIMEN_ROUTING_FINGERPRINT: process.env.LIMEN_ROUTING_FINGERPRINT ?? "",
+		LIMEN_CONTEXT_ROOT: process.env.LIMEN_CONTEXT_ROOT ?? "",
+		LIMEN_PACKAGE: process.env.LIMEN_PACKAGE ?? "",
+		LIMEN_JOB_DIR: job.jobDir,
+		LIMEN_SESSION_PATH: `${job.jobDir}/session`,
+		LIMEN_JOB: "1",
+		LIMEN_HOSTED: "1",
+		LIMEN_JOB_ID: job.id,
+		LIMEN_JOB_LABEL: job.label,
+		LIMEN_ROLE: job.role,
+		HERDR_ENV: "1",
+		HERDR_WORKSPACE_ID: place.workspace,
+		HERDR_TAB_ID: place.tab,
+		HERDR_PANE_ID: place.pane,
+	});
+	const assignments = Object.entries(environment)
+		.filter((entry): entry is [string, string] => entry[1] !== undefined)
+		.map(([name, value]) => `${name}=${shellQuote(value)}`)
+		.join(" ");
+	const binary = process.env.LIMEN_PI?.trim() || "pi";
+	await writeFile(`${directory}/pi`, `#!/bin/sh\nexec env -i ${assignments} ${shellQuote(binary)} "$@"\n`, { flag: "wx", mode: 0o700, flush: true });
+}
+function shellQuote(value: string): string {
+	return `'${value.replaceAll("'", `'\\''`)}'`;
 }
 async function planWorktree(input: {
 	readonly root: string;
@@ -432,6 +526,13 @@ export function currentNotificationSession(): string | undefined {
 async function liveJobUsesBranch(jobsRoot: string, branch: string, repo?: string): Promise<boolean> {
 	for (const entry of await readdir(jobsRoot, { withFileTypes: true })) {
 		const jobDir = `${jobsRoot}/${entry.name}`;
+		if (entry.isDirectory() && activeProjectSlot()) {
+			try {
+				readRoutingRecord(jobDir);
+			} catch {
+				continue;
+			}
+		}
 		if (entry.isDirectory() && (await text(`${jobDir}/branch`)) === branch && (!repo || (await text(`${jobDir}/repo`)) === repo) && (await liveJob(jobDir))) return true;
 	}
 	return false;

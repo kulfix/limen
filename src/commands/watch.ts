@@ -1,15 +1,21 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { limenRoot } from "../git.ts";
 import { resolveJob } from "../lookup.ts";
+import { activeProjectSlot, readRoutingRecord } from "../project-slot.ts";
 export const watchCommand = (args: readonly string[], cwd: string): Promise<void> => changeSubscriptions(args, cwd, true);
 export const unwatchCommand = (args: readonly string[], cwd: string): Promise<void> => changeSubscriptions(args, cwd, false);
 async function changeSubscriptions(args: readonly string[], cwd: string, watching: boolean): Promise<void> {
 	const session = notificationSession();
 	const bulk = args.length === 1 && args[0] === (watching ? "--running" : "--all");
 	if (!bulk && args.length !== 1) throw new Error(`${watching ? "watch" : "unwatch"} requires one job${watching ? " or --running" : " or --all"}`);
-	const root = limenRoot(cwd);
-	const jobs = bulk ? await jobDirectories(`${root}/.limen/jobs`, watching) : [(await resolveJob(cwd, args[0] ?? "")).jobDir];
-	for (const job of jobs) await setSubscription(job, session, watching);
+	const slot = activeProjectSlot();
+	const root = slot?.context_root ?? limenRoot(cwd);
+	const jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${root}/.limen/jobs`;
+	const jobs = bulk ? await jobDirectories(jobsRoot, watching) : [(await resolveJob(cwd, args[0] ?? "")).jobDir];
+	for (const job of jobs) {
+		readRoutingRecord(job, slot);
+		await setSubscription(job, session, watching);
+	}
 	console.log(`${watching ? "watching" : "unwatched"} ${jobs.length} job${jobs.length === 1 ? "" : "s"}`);
 }
 async function jobDirectories(root: string, runningOnly: boolean): Promise<string[]> {

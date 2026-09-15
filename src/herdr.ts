@@ -2,6 +2,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { appendFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
+import { activeProjectSlot, readRoutingRecord } from "./project-slot.ts";
 
 export type HerdrPlace = { readonly workspace: string; readonly tab: string; readonly pane: string; readonly mode: "watch" | "log" | "hosted" | "diff" };
 export type HostedAgentStatus = "idle" | "working" | "blocked" | "done" | "unknown" | "missing";
@@ -363,11 +364,20 @@ export async function closeFeatureTabs(input: { readonly root: string; readonly 
 	const herdr = herdrBinary();
 	if (!herdr) throw new Error("herdr is not available");
 	const coordinator = process.env.HERDR_TAB_ID?.trim();
-	const entries = await readdir(`${input.root}/.limen/jobs`, { withFileTypes: true }).catch(() => []);
+	const slot = activeProjectSlot();
+	const jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${input.root}/.limen/jobs`;
+	const entries = await readdir(jobsRoot, { withFileTypes: true }).catch(() => []);
 	let closed = 0;
 	for (const entry of entries) {
 		if (!entry.isDirectory()) continue;
-		const jobDir = `${input.root}/.limen/jobs/${entry.name}`;
+		const jobDir = `${jobsRoot}/${entry.name}`;
+		if (slot) {
+			try {
+				readRoutingRecord(jobDir, slot);
+			} catch {
+				continue;
+			}
+		}
 		if (!new RegExp(`\\b${feature}\\b`, "i").test(`${await text(`${jobDir}/label`)}\n${entry.name}`)) continue;
 		const places = await Promise.all([readPlace(jobDir), readPlace(jobDir, "diff")]);
 		for (const place of places) {
@@ -441,7 +451,8 @@ function requireHerdr(): string {
 
 /** A created workspace is seeded with one empty tab; `seeded` names it so the first job tab can replace it. */
 function ensureWorkspace(herdr: string, cwd: string, role: string): { readonly workspace: string; readonly seeded?: string } {
-	const name = `${basename(cwd)} ${role}s`;
+	const slot = activeProjectSlot();
+	const name = slot ? `${slot.herdr_namespace}:${role}` : `${basename(cwd)} ${role}s`;
 	const listed = asRecord(call(herdr, ["workspace", "list"])).workspaces;
 	if (Array.isArray(listed)) {
 		for (const item of listed) {

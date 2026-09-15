@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, type FSWatcher, mkdirSync, readdirSync, rea
 import { dirname, join, resolve } from "node:path";
 import { processGroupAlive } from "../src/contain.ts";
 import { derivePulse, type Pulse, producedNothing } from "../src/job.ts";
+import { activeProjectSlot, readRoutingRecord } from "../src/project-slot.ts";
 import { reapDeadJobs } from "../src/reap.ts";
 import { registerProject } from "./seat.ts";
 
@@ -36,6 +37,7 @@ const TAB_TAIL = /\s*·\s*\d+\s+running$/;
 type HerdrPane = { readonly binary: string; readonly pane: string };
 
 export default function limenWake(pi: PiApi): void {
+	const projectSlot = activeProjectSlot();
 	let watcher: FSWatcher | undefined;
 	let statusTimer: NodeJS.Timeout | undefined;
 	let sweepTimer: NodeJS.Timeout | undefined;
@@ -396,7 +398,20 @@ export default function limenWake(pi: PiApi): void {
 				ownsJobs = undefined;
 				cacheExpiresAt = Date.now() + CACHE_REFRESH_MS;
 			}
-			const { observe: ids, running } = collectSweep(jobs, settled);
+			const collected = collectSweep(jobs, settled);
+			const valid = (ids: readonly string[]) =>
+				projectSlot
+					? ids.filter((id) => {
+							try {
+								readRoutingRecord(join(jobs, id), projectSlot);
+								return true;
+							} catch {
+								return false;
+							}
+						})
+					: ids;
+			const ids = valid(collected.observe);
+			const running = valid(collected.running);
 			if (initialSweep) {
 				initialSweep = false;
 				for (const id of running) {
@@ -429,22 +444,22 @@ export default function limenWake(pi: PiApi): void {
 	};
 	pi.on("session_start", (_event, context) => {
 		if (process.env.LIMEN_JOB === "1" || process.env.LIMEN_WAKE === "0") return;
-		const root = projectRoot(context.cwd);
+		const root = projectSlot?.context_root ?? projectRoot(context.cwd);
 		if (!root) return;
 		stopTimers();
 		const id = context.sessionManager.getSessionId();
 		if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(id)) return;
-		const jobs = join(root, ".limen", "jobs");
+		const jobs = projectSlot ? join(projectSlot.cabinet_root, "jobs") : join(root, ".limen", "jobs");
 		try {
 			mkdirSync(jobs, { recursive: true });
 		} catch {
 			return;
 		}
-		void registerProject(root).catch(() => {});
+		if (!projectSlot) void registerProject(root).catch(() => {});
 		active = true;
 		session = context;
 		jobsDir = jobs;
-		limenDir = join(root, ".limen");
+		limenDir = projectSlot?.cabinet_root ?? join(root, ".limen");
 		sessionId = id;
 		lastSweepAt = 0;
 		initialSweep = true;
@@ -462,6 +477,13 @@ export default function limenWake(pi: PiApi): void {
 		const tab = process.env.HERDR_TAB_ID?.trim();
 		for (const jobId of readdirSync(jobs)) {
 			const job = join(jobs, jobId);
+			if (projectSlot) {
+				try {
+					readRoutingRecord(job, projectSlot);
+				} catch {
+					continue;
+				}
+			}
 			if (stateOf(jobs, jobId) !== "running") continue;
 			if (!routable(job)) enrollLegacyRunning(job);
 			if (tab && text(join(job, "origin-tab")) === tab) subscribeSession(job, id);

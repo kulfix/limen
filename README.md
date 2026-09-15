@@ -144,6 +144,10 @@ Precedence is `--model`, then `LIMEN_WORKER_MODEL`, then the package default. A 
 
 The `--engine claude` path keeps its own CLI default unless `--model` is supplied. Pi's `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` describe the current session; they do not configure a child Pi launch.
 
+## Opt-in seat project slots
+
+Project slots are disabled unless `LIMEN_PROJECTS_CONFIG` points to an absolute, operator-controlled map directory. Once enabled for a process, use the global form `limen --slot <id> <command>`; `--repo` still names an immediate child repository and is checked against that slot's approved code/context roots. Preparing maps is not seat cutover, archive migration, or a Unix sandbox. See [Seat project slots](docs/seat-project-slots.md) and the inert [example maps](examples/project-slots/).
+
 ## Adjacent-repository workspaces
 
 A non-Git parent can hold several independent Git children. You initialize once at the parent (`limen workspace init`) and map the children in `spec/workspace.md`. After that, tell the coordinator which repo the work belongs in. It passes exactly one `--repo` per job. Tickets stay under the parent; branches, worktrees, diffs, and review stay in the selected child.
@@ -184,6 +188,7 @@ The coordinator does this. You only need it if you are looking at a stuck tab yo
 limen init
 limen init --drop-leftovers
 limen workspace init
+limen --slot ID spawn --repo R "instruction"       # only with LIMEN_PROJECTS_CONFIG; disabled by default
 limen spawn "instruction" [--label L] [--provider P] [--model M] [--thinking T] [--branch B] [--role NAME] [--engine pi|claude] [--timeout 20m] [--task-file F|-] [--prepare CMD]
 limen spawn --repo R "instruction" [--label L] [--model M]
 limen spawn --review --branch B --label L "instruction"
