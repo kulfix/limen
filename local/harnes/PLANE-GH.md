@@ -75,3 +75,16 @@ The original handoff targeted `kulinski/limen`, which returned **404** while the
 The same correction declared Plane auth ready and explicitly authorized write smoke on REZ-138 using the named Ops environment file. GET WI/states, marked comments and the [implementation PR](https://github.com/kulfix/limen/pull/11) link have now succeeded with read-back; comment/link reruns returned their existing IDs. This job is the delegated, sole smoke writer; ordinary tracker delivery remains coordinator-owned. No destination state was agreed, so live PATCH is intentionally not performed; state transitions are stub-tested. The coordinator must obtain the canonical browser URL and an agreed transition before that remaining live check. Stub tests do not prove owner acceptance, deployed concurrency guarantees or GitHub issue delivery.
 
 API contract sources are the [decision](research/limen-plane-gh/to-limen.md) and [research plan, sections 2 and 4](research/limen-plane-gh/outbox/limen-plane-gh-plan.md): Plane REST `/api/v1/workspaces/{workspace}/projects/{project}/work-items/`, `states/`, `comments/`, `links/`, `X-API-Key`, and cursor pagination. The implementation does not infer `/issues/` from older documentation page names.
+
+## Orchestration vs product (2026-09-15)
+
+The original convention above remains for **product** work on REZ + GitHub Issues. Orchestration of Grok Bot / Router / Limen jobs is a **separate** Plane project:
+
+| Project | UUID | Use |
+| --- | --- | --- |
+| **REZ** | `47b7d43a-9fc1-4dce-9c51-863e09c108c1` | Rezavo product: features, decisions, acceptance |
+| **GROK** | `63032344-df48-46cc-87d4-9f714b169bb7` | Agent orchestration, docs/inventory handoff, job write-back |
+
+Day-one cabinet pack + repo inventory writes back to **GROK-1** (`31a4848c-486d-479d-97aa-3f4fc33b2113`), not REZ-139. Override `PLANE_PROJECT_ID` and `PLANE_WORK_ITEM_ID` when using `plane.ts --env`. Do not mark GROK-1 Done without owner acceptance. Do not treat REZ work items as the Limen job tracker.
+
+Cabinet pointer (not a second copy of this file): `/srv/limen/projects/rezavo/docs/research/PLANE-GH.md`.
