@@ -49,6 +49,12 @@ DeepSeek **nie** jest domyślnym modelem „research”. To **opcjonalny**, najt
 4. Menu assignment: OpenAI Luna→Terra→Sol→Astra, **Grok (first-class)**, opcjonalnie DeepSeek off-sub. Issue-fix: Luna, Terra albo Grok (DeepSeek tylko gdy assignment jawnie wybiera off-sub). Trudny brainstorm: Sol albo Astra; Astra nie jest domyślnym modelem dla każdego zadania.
 5. Flat frontmatter jest wymagany: parser inbound przyjmuje `model_provider`, `model_id`, `model_thinking`, a nie zagnieżdżony YAML.
 
+
+## Sukces issue-fix / PR
+
+Issue-fix z PR jest skończony dopiero gdy PR jest mergeable i required checks są zielone — nie przy RED Summary ze skip/braku full.
+Koordynator/worker sami dodają `ci:run-full` (lub równoważnik repo) i czekają; do Routera/Pawła tylko green-ready albo realny fail/decyzja, nie „missing label”.
+
 ## Przykłady spawn
 
 ```bash
