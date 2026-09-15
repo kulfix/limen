@@ -35,6 +35,10 @@ Wejścia są zachowane poza worktree i niezmienne podczas joba. Brak pliku lub n
 
 Brief design joba musi wymagać `design.md` zgodnego z kontraktem w [issue-pipeline.md](issue-pipeline.md#kontrakt-designmd-day-one): problem, 2–3 opcje + rekomendacja, decyzje, elementy, GWT lub N/A, ops lub N/A, poza zakresem/odroczone (aim disposition), pytania product-only, źródła/SHA; opcjonalnie słabe miejsca zamiast ratingów. Aim day-one: skrót **15→10** (rr-codex) w tym samym jobie — najpierw szersze możliwości, potem luki w wybranym scope. Bez kodu, bez branchy produktu, bez layoutu seat.
 
+## Plan / plan-write (gdy etap = plan)
+
+Brief plan joba musi wymagać `plan.md` zgodnego z kontraktem w [issue-pipeline.md](issue-pipeline.md#kontrakt-planmd-day-one): outcome+scope IN/OUT, design baseline (ścieżka+rewizja+werdykt), decyzje materialne bez rediscovery, global constraints lub N/A, self-contained jednostki (pliki/symbole, kroki, acceptance, komenda weryfikacji + oczekiwany wynik), **zero** TBD/placeholder/ciał funkcji, ryzyka/rollback lub N/A, jak weryfikować + co wolno na GH, slot na plan-review, pytania product-only. Wejście: zaakceptowany `fix.md`/`design.md` + werdykt design-review. Bez kodu, bez branchy produktu, bez layoutu seat, bez spawn execute. Preferuj model **Terra** lub **Sol** (nie Astra-only).
+
 ## Zadanie
 
 - Outcome: `<jeden obserwowalny wynik tego etapu>`
