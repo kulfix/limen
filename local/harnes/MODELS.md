@@ -1,57 +1,49 @@
 # Modele — polityka New Bot / research
 
-Koordynator (i Router w handoffie) **wybierają model do zadania** — nie ślepe „zawsze DeepSeek” i nie „zawsze Astra”.
+Model wybiera się **przy przypisaniu zadania**: w handoffie Router → Limen, w decision albo w task-file. Koordynator nie improwizuje wyboru później.
 
-## Tabela
+## OpenAI Codex ladder
 
-| Rola | Provider / model | Thinking | Kiedy |
+Kolejność rosnącej trudności i kosztu:
+
+| Model | Provider | Thinking | Kiedy |
 | --- | --- | --- | --- |
-| **Research / tanie / smoke / mechanika** | OpenRouter · DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash` lub aktualny flash na seat) | `low` | Factografia, grep, krótkie ustalenia, smoke, jasno wyspecyfikowane małe patche |
-| **Plan / architektura / trudna diagnoza** | OpenAI Codex · Astra (`openai-codex` / `gpt-6-astra`) | `high` | Plan, layout, diagnostyka blokerów, handoffy z decyzjami, review ryzyka — gdy trzeba ciężkiego reasoningu |
-| **Grok (subskrypcja seat)** | xAI · Grok (`xai` / `grok-4.6`; katalog Pi: też `grok-4.5`, `grok-4.3`) | wg zadania (`medium`–`high`) | Gdy pasuje do zadania; nie blokuj się na DeepSeek/Astra-only. Auth: `pi auth check --provider xai` (OAuth ready na seat) |
-| **Advisor (Claude)** | `--engine claude` + jawne `--detached` | n/a | Perspektywa, nie merge; CCS `LIMEN_CLAUDE=claude-aN` — [CCS.md](./CCS.md); nigdy cichy detached — [HERDR.md](./HERDR.md) |
+| `gpt-5.6-luna` | `openai-codex` | wg przypisania | Duży wolumen, proste poprawki, mechanika i codzienna praca. |
+| `gpt-5.6-terra` | `openai-codex` | wg przypisania | Zrównoważona implementacja i diagnoza o średniej trudności. |
+| `gpt-5.6-sol` (alias `gpt-5.6`) | `openai-codex` | wg przypisania | Złożona praca profesjonalna, architektura i trudniejsze decyzje. |
+| `gpt-6-astra` | `openai-codex` | wg przypisania | Najcięższy reasoning, gdy zadanie naprawdę go wymaga. |
 
-## Jak odpalać
+Nazwy `luna`, `terra` i `sol` mogą też oznaczać persony agentów RR. Nie myl tych person z identyfikatorami modeli OpenAI: używaj pełnych ID `gpt-5.6-luna`, `gpt-5.6-terra` i `gpt-5.6-sol`.
 
-### DeepSeek (tanio)
+## Inne modele
+
+| Rola | Provider / model | Kiedy |
+| --- | --- | --- |
+| **Claude Sonnet/Opus** | CCS, `LIMEN_CLAUDE=claude-a1` (lub `a2`/`a3`) | Advisor albo niezależna perspektywa. Zawsze jawne `--detached`; nie merge'uje. |
+| **Grok** | `xai` / `grok-4.6` | Gdy pasuje zadanie, szczególnie praca na seat OAuth. Nie ograniczaj wyboru do DeepSeek/Astra. |
+| **DeepSeek flash** | `openrouter` / `deepseek/deepseek-v4.1-flash` | Tylko tani research, smoke i mechanika. Nie zastępuje całej drabiny OpenAI. |
+
+## Reguły przypisania
+
+1. Każde przypisanie ma jawne płaskie pola `model_provider`, `model_id` i `model_thinking` — w handoffie, decision albo task-file.
+2. Brak modelu jest blockerem. Można wybrać model przed spawnem, ale trzeba zapisać wybór w notes i handoffie; nigdy nie uruchamiaj zadania bez modelu.
+3. Spawn, continue i resume dziedziczą dokładnie ten sam provider, model i thinking. Nie zmieniaj ich po cichu przy błędzie lub quota; zachowaj pracę i zgłoś blocker.
+4. Dla issue-fix wybór może paść na Luna, Terra, DeepSeek albo Grok zgodnie z przypisaniem. Trudny brainstorm może użyć Sol albo Astra; Astra nie jest domyślnym modelem dla każdego zadania.
+5. Flat frontmatter jest wymagany: parser inbound przyjmuje `model_provider`, `model_id`, `model_thinking`, a nie zagnieżdżony YAML.
+
+## Przykłady spawn
 
 ```bash
-limen spawn --provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low "…"
+# OpenAI Codex ladder
+limen spawn --provider openai-codex --model gpt-5.6-luna --thinking low '…'
+limen spawn --provider openai-codex --model gpt-5.6-terra --thinking medium '…'
+limen spawn --provider openai-codex --model gpt-5.6-sol --thinking high '…'
+limen spawn --provider openai-codex --model gpt-6-astra --thinking high '…'
+
+# Inne jawne przypisania
+limen spawn --provider openrouter --model deepseek/deepseek-v4.1-flash --thinking low '…'
+limen spawn --provider xai --model grok-4.6 --thinking medium '…'
+LIMEN_CLAUDE=claude-a1 limen spawn --engine claude --detached '…'
 ```
 
-### Astra (ciężkie)
-
-```bash
-limen spawn --provider openai-codex --model gpt-6-astra --thinking high "…"
-```
-
-Pi default na seatcie bywa `openai-codex`/`gpt-6-astra` — nie traktuj defaultu jako „zawsze Astra na research”.
-
-### Grok (subskrypcja xAI na seatcie)
-
-```bash
-# preflight
-pi auth check --provider xai --model grok-4.6
-
-# limen hosted worker (Herdr-only default)
-limen spawn --provider xai --model grok-4.6 --thinking high "…"
-
-# albo bezpośrednio Pi
-pi --provider xai --model grok-4.6 --thinking high -p "…"
-```
-
-Limen przekazuje `LIMEN_PROVIDER` z `--provider`. OpenRouter ma też `x-ai/grok-*`, ale **preferuj native `xai`** (OAuth subskrypcji na seatcie).
-
-## Handoff / Router
-
-1. Router może narzucić model w `to-limen.md`.
-2. Brak narzucenia → koordynator wybiera z tabeli powyżej.
-3. `limen inbound accept --wake …` — treść w `@to-limen.md`, nie BRIDGE.
-
-## Zakazy
-
-- Nie eskaluj do Astry milcząco „bo pewniej”.
-- Nie trzymaj się DeepSeek, gdy zadanie to plan/architektura/decyzja.
-- Nie myl finish-webhook HTTP 2xx z dowodem wake.
-- Praca: **seat + `gh`**, nie Cursor Cloud Agents.
-- `.131` / prod rezavo poza scope mostu limen.
+Claude jest ścieżką advisorską, nie ścieżką merge. Spawn hosted jest domyślny w Herdr; `--detached` dodawaj tylko wtedy, gdy przypisanie wyraźnie tego wymaga (Claude wymaga go zawsze).

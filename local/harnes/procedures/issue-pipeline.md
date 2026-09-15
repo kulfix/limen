@@ -43,15 +43,15 @@ Istniejący plan produktu wskazuj zamiast tworzyć konkurencyjną kopię. `plan.
 
 ## Modele i miejsce uruchomienia
 
-Koordynator **wybiera model przy intake** (zapis w `source.md` / `notes.md`) zgodnie z [MODELS.md](../MODELS.md) i wybranym torem — nie „zawsze Astra” i nie „zawsze DeepSeek”. Wybrany provider/model/thinking przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume. **Bez cichej substytucji** przy błędzie modelu/quota: zachowaj pracę i zgłoś blocker.
+Model **musi** być wybrany przy assignment (Router→limen handoff / decision / task-file): płaskie pola `model_provider`, `model_id`, `model_thinking`. Koordynator **nie** improwizuje wyboru później. Brak modelu = blocker albo wybór **przed** spawnem z zapisem do `notes.md` i task-file — nigdy spawn bez modelu. Wybór jest zgodny z [MODELS.md](../MODELS.md) i torem — nie „zawsze Astra” ani „zawsze DeepSeek". Te same wartości przekazuj jawnie w wake env oraz w każdym `limen spawn` / `continue` / resume (dziedziczenie bez cichej zmiany). **Bez cichej substytucji** przy błędzie modelu lub quota: zachowaj pracę i zgłoś blocker.
 
-| Tor / etap | Model (domyślnie) | Thinking |
+| Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
-| **issue-fix** / jednoznaczne małe patche, smoke, mechanika | DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash`) **lub** Grok (`xai` / `grok-4.6`) — wg MODELS i handoffu | `low` (DeepSeek) / `medium`–`high` (Grok) |
-| **brainstorm** design/plan, architektura, trudna diagnoza | Astra (`openai-codex` / `gpt-6-astra`) — **tylko** te etapy, nie cały tor | `high` |
-| Execute / verify na issue-fix | Ten sam model co przy intake (zwykle DeepSeek/Grok), chyba że decision jawnie eskaluje | jak wyżej |
+| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`), DeepSeek flash (`openrouter` / `deepseek/deepseek-v4.1-flash`) albo Grok (`xai` / `grok-4.6`) — wg assignment | jawna wartość z assignment |
+| **brainstorm** design/plan, architektura, trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność tego wymaga | jawna wartość z assignment |
+| Execute / verify | Ten sam provider/model/thinking co przy intake, chyba że nowy decision jawnie wybiera inaczej | dziedziczone bez zmian |
 
-Astra **nie** jest wyjątkiem dla całej ścieżki issue-pipeline. Zawężaj ją do design/plan (i hard diagnosis), gdy tor=`brainstorm` albo gdy decision jawnie wymaga ciężkiego reasoningu. Tor `issue-fix` (w tym kolejne przebiegi po #4148) **nie** może być Astra-only; bieżący run #4148 może dokończyć na Astrze, ale następne issue-fix muszą wybrać DeepSeek/Grok per MODELS.
+Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry; issue-fix może użyć Luny, Terry, DeepSeek albo Groka. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
 
 Grok przy nowym, autoryzowanym wake ustawia środowisko **wybranego** modelu. `LIMEN_WORKER_MODEL` ma przy wake pierwszeństwo przed `LIMEN_MODEL`: samo ID modelu (np. `deepseek/deepseek-v4.1-flash` albo `gpt-6-astra`), bez sklejki provider/model ani sufiksu thinking.
 
