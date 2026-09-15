@@ -16,7 +16,7 @@ test("architecture stays small, pure, direct, and dependency-free", async () => 
 	assert.deepEqual((await readdir(join(ROOT, "bin"))).sort(), ["limen", "tony-finish-ping.sh"]);
 	const source = await filesBelow(join(ROOT, "src"));
 	const sourceLines = (await Promise.all(source.map((path) => readFile(path, "utf8")))).reduce((sum, text) => sum + text.split("\n").length - 1, 0);
-	assert.ok(sourceLines <= 4300, `src has ${sourceLines} lines; includes inbound accept under local/harnes/research/`);
+	assert.ok(sourceLines <= 4500, `src has ${sourceLines} lines; includes inbound accept and wake=@file`);
 	assert.doesNotMatch(await readFile(join(ROOT, "src/job.ts"), "utf8"), /from ["']node:/);
 	assert.deepEqual((await readdir(join(ROOT, "src/commands"))).sort(), [
 		"close.ts",

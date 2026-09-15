@@ -132,13 +132,13 @@ in_reply_to: ${handoff.id}
 ---
 
 ## Dla użytkownika
-Handoff \`${handoff.id}\` przyjęty (ack). Ręczny start Herdr/Pi na \`to-limen.md\` jest OK — bez auto-wake.
+Handoff \`${handoff.id}\` przyjęty (ack). Wake: \`limen inbound wake\` (świeża sesja Pi z @to-limen.md w Herdr).
 
 ## Stan tematu
 Zapisano odbiór pod \`.limen/inbound/\`; bez spawn i bez F-ticketów.
 
 ## Następny krok po stronie Groka
-Czekaj na result po ręcznym starcie, albo zbierz decyzję użytkownika.
+Uruchom wake (lub \`accept --wake\`), poczekaj na result/blocked w to-grok.md, zamknij tab. Bez BRIDGE:/agent prompt.
 `;
 }
 
