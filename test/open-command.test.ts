@@ -51,7 +51,7 @@ test("open creates a log tab for a job spawned without herdr", async (context) =
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--label", "F012 late", "make commit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F012 late", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	await assert.rejects(readFile(join(scratch.root, ".limen/jobs", id, "herdr/tab")));
 	const herdr = await installFakeHerdr(scratch.root, scratch.fakeBin);

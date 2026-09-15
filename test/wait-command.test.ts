@@ -8,7 +8,7 @@ setTimeout(() => console.log("finished"), 400);
 `);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--label", "F001 implementation", "do work").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F001 implementation", "do work").stdout);
 	const started = Date.now();
 	const suffix = id.slice(-4);
 	const result = limen(scratch, "wait", suffix);

@@ -45,7 +45,7 @@ test("steer reaches a running worker and leaves durable evidence", async (contex
 	const scratch = await scratchRepo(steeringPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--label", "F009 steer", "wait for steer").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F009 steer", "wait for steer").stdout);
 	const first = limen(scratch, "steer", id, "stay on the session test");
 	assert.equal(first.status, 0, first.stderr);
 	assert.match(first.stdout, /steered .* · 0001/);
@@ -75,7 +75,7 @@ test("steer refuses a finished job and writes nothing", async (context) => {
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "make commit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	const job = join(scratch.root, ".limen/jobs", id);
 	const before = await snapshot(job);
@@ -90,9 +90,9 @@ test("steer --running places the same message in every live watched inbox", asyn
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
 	const session = "coordinator-f080";
-	const first = onlyJobId(limenWithSession(scratch, session, "spawn", "--label", "one", "wait for steer").stdout);
-	const second = onlyJobId(limenWithSession(scratch, session, "spawn", "--label", "two", "wait for steer").stdout);
-	const unwatched = onlyJobId(limen(scratch, "spawn", "--label", "other", "wait for steer").stdout);
+	const first = onlyJobId(limenWithSession(scratch, session, "spawn", "--detached", "--label", "one", "wait for steer").stdout);
+	const second = onlyJobId(limenWithSession(scratch, session, "spawn", "--detached", "--label", "two", "wait for steer").stdout);
+	const unwatched = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "other", "wait for steer").stdout);
 	const result = limenWithSession(scratch, session, "steer", "--running", "same correction");
 	assert.equal(result.status, 0, result.stderr);
 	assert.match(result.stdout, new RegExp(`steered ${first}`));
@@ -120,7 +120,7 @@ test("steer --running reports a job that ended between selection and delivery", 
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
 	const session = "coordinator-f080";
-	const live = onlyJobId(limenWithSession(scratch, session, "spawn", "--label", "live", "wait for steer").stdout);
+	const live = onlyJobId(limenWithSession(scratch, session, "spawn", "--detached", "--label", "live", "wait for steer").stdout);
 	const ended = "ended-before-delivery";
 	const endedDir = join(scratch.root, ".limen/jobs", ended);
 	await mkdir(join(endedDir, "notify/subscribers"), { recursive: true });
@@ -138,7 +138,7 @@ test("steer reports unavailable when the worker extension never loaded", async (
 	const scratch = await scratchRepo(waitingPi);
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "wait").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "wait").stdout);
 	const job = join(scratch.root, ".limen/jobs", id);
 	const before = await snapshot(job);
 	const result = limen(scratch, "steer", id, "should not land");

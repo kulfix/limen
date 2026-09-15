@@ -8,7 +8,7 @@ test("diff resolves a pruned job and prints its exact recorded changeset", async
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
 	limen(scratch, "init");
-	const id = onlyJobId(limen(scratch, "spawn", "--label", "F050 fallback", "make commit").stdout);
+	const id = onlyJobId(limen(scratch, "spawn", "--detached", "--label", "F050 fallback", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	assert.equal(limen(scratch, "prune").status, 0);
 	const job = join(scratch.root, ".limen/jobs", id);
@@ -37,7 +37,7 @@ else fs.appendFileSync(${JSON.stringify(calls)}, process.argv.slice(2).join(" ")
 	);
 	await chmod(hunk, 0o755);
 	const env = { LIMEN_HUNK: hunk };
-	const id = onlyJobId(limenWithEnv(scratch, env, "spawn", "--label", "F050 no tty", "make commit").stdout);
+	const id = onlyJobId(limenWithEnv(scratch, env, "spawn", "--detached", "--label", "F050 no tty", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	const job = join(scratch.root, ".limen/jobs", id);
 	assert.match(await readFile(join(job, "versions"), "utf8"), /^pi 0\.0\.0-test\nhunk 0\.20\.0-test\n$/);
@@ -55,7 +55,7 @@ test("diff opens one Herdr review tab, focuses it again, and close sweeps it", a
 	const hunk = join(scratch.fakeBin, "hunk");
 	await writeFile(hunk, "#!/usr/bin/env node\nif (process.argv[2] === '--version') console.log('0.20.0-test');\n");
 	await chmod(hunk, 0o755);
-	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_HUNK: hunk }, "spawn", "--label", "F050 review", "make commit").stdout);
+	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_HUNK: hunk }, "spawn", "--detached", "--label", "F050 review", "make commit").stdout);
 	await waitForState(scratch.root, id, "done");
 	assert.equal(limen(scratch, "prune").status, 0);
 	const job = join(scratch.root, ".limen/jobs", id);
@@ -97,7 +97,7 @@ setInterval(() => {}, 1000);
 	const hunk = join(scratch.fakeBin, "hunk");
 	await writeFile(hunk, "#!/usr/bin/env node\nif (process.argv[2] === '--version') console.log('0.20.0-test');\n");
 	await chmod(hunk, 0o755);
-	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_HUNK: hunk }, "spawn", "--label", "F050 live", "long work").stdout);
+	const id = onlyJobId(limenWithEnv(scratch, { LIMEN_HUNK: hunk }, "spawn", "--detached", "--label", "F050 live", "long work").stdout);
 	const job = join(scratch.root, ".limen/jobs", id);
 	const base = (await readFile(join(job, "base"), "utf8")).trim();
 	const worktree = (await readFile(join(job, "worktree"), "utf8")).trim();

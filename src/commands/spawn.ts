@@ -69,12 +69,13 @@ const HANDSHAKE_POLL_MS = 20;
 const handshakeMs = (): number => (Number(process.env.LIMEN_HANDSHAKE_MS) > 0 ? Number(process.env.LIMEN_HANDSHAKE_MS) : 10_000);
 export async function spawnCommand(args: readonly string[], cwd: string): Promise<void> {
 	const parsed = parseSpawnArgs(args);
-	const herdr = herdrAvailable();
-	const tab = parsed.detached ? false : parsed.tab || herdr;
 	if (parsed.tab && parsed.detached) throw new Error("--tab and --detached cannot be combined");
+	const herdr = herdrAvailable();
+	// Patch 2: default is hosted in Herdr. Detached only with an explicit --detached — never a silent fallback.
+	const tab = !parsed.detached;
 	if (tab && parsed.timeoutMs) throw new Error("hosted jobs have no timeout; omit --timeout or use --detached");
-	if (tab && parsed.engine === "claude") throw new Error("a claude job has no interactive tab; pass --detached");
-	if (tab && !herdr) throw new Error("hosted spawn requires Herdr (HERDR_ENV=1); use --detached for an ordinary job");
+	if (tab && parsed.engine === "claude") throw new Error("claude is not hosted in Herdr; pass --detached explicitly");
+	if (tab && !herdr) throw new Error("spawn defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
 	const loaded = await readSpawnTask(parsed.task, parsed.taskFile, cwd);
 	const options = { ...parsed, tab, task: loaded.text, label: parsed.label ?? (loaded.text.trim().split(/\r?\n/, 1)[0]?.trim().slice(0, 80) || "job") };
 	const engine = options.engine ?? "pi";
