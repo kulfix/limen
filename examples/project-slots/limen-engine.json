@@ -1,0 +1,15 @@
+{
+	"schema_version": 1,
+	"slot_id": "limen-engine",
+	"project_root": "/srv/limen/projects/limen-engine",
+	"app_root": "/srv/limen/apps/limen/current",
+	"code_root": "/srv/limen/projects/limen-engine/code",
+	"context_root": "/srv/limen/projects/limen-engine/context",
+	"inbound_root": "/srv/limen/projects/limen-engine/context/inbound",
+	"models_policy": "/srv/limen/projects/limen-engine/context/MODELS.md",
+	"cabinet_root": "/srv/limen/projects/limen-engine/state/.limen",
+	"sessions_root": "/srv/limen/projects/limen-engine/state/pi-sessions",
+	"worktrees_root": "/srv/limen/projects/limen-engine/worktrees",
+	"herdr_namespace": "limen-engine",
+	"finish_webhook_env": "/srv/limen/projects/limen-engine/state/finish-webhook.env"
+}

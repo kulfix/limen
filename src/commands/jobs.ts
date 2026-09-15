@@ -5,6 +5,7 @@ import { limenRoot, liveDiffstat, workspaceRepository } from "../git.ts";
 import { hostedAgentStatus } from "../herdr.ts";
 import { derivePulse, parseJob, producedNothing, renderJob } from "../job.ts";
 import { resolveJob } from "../lookup.ts";
+import { activeProjectSlot, readRoutingRecord } from "../project-slot.ts";
 import { confirmDeadJobs } from "../reap.ts";
 import { colorWanted, humanDetail, humanSnapshot, type JobRecord, paintWhen, resolveView, tallyStates } from "../view.ts";
 
@@ -13,14 +14,26 @@ export async function jobsCommand(args: readonly string[], cwd: string): Promise
 	const tty = process.stdout.isTTY === true;
 	const human = resolveView(process.env.LIMEN_VIEW, tty) === "human";
 	const paint = paintWhen(human && colorWanted(tty, process.env.NO_COLOR, process.env.TERM));
-	const root = limenRoot(cwd),
-		jobsRoot = `${root}/.limen/jobs`;
-	await confirmDeadJobs(jobsRoot);
+	const slot = activeProjectSlot();
+	const root = slot?.context_root ?? limenRoot(cwd),
+		jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${root}/.limen/jobs`;
+	if (!slot) await confirmDeadJobs(jobsRoot);
 	const entries = await readdir(jobsRoot, { withFileTypes: true }).catch((error: unknown) => {
 		if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") return [];
 		throw error;
 	});
-	const ids = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+	const ids = entries
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name)
+		.filter((id) => {
+			if (!slot) return true;
+			try {
+				readRoutingRecord(`${jobsRoot}/${id}`, slot);
+				return true;
+			} catch {
+				return false;
+			}
+		});
 	if (ids.length === 0) {
 		console.log("no jobs");
 		return;
@@ -77,6 +90,7 @@ async function orderedJobs(ids: readonly string[], jobsRoot: string): Promise<Re
 }
 async function renderJobDirectory(root: string, jobsRoot: string, id: string, detailed: boolean, human = false): Promise<{ compact: string; record: JobRecord }> {
 	const jobDir = `${jobsRoot}/${id}`;
+	const routing = readRoutingRecord(jobDir);
 	const [
 		state = "",
 		label = "",
@@ -130,7 +144,7 @@ async function renderJobDirectory(root: string, jobsRoot: string, id: string, de
 		const recordedTools = toolCalls ? recordedCount(toolCalls) : undefined;
 		const liveFiles = job.phase === "running" && changedFilesText ? { changedFiles: recordedCount(changedFilesText, "changed-files") } : {};
 		const empty = job.phase !== "running" && producedNothing(recordedTools, commitsStat ? commits : undefined);
-		const diffstat = detailed ? liveDiffstat(repo ? workspaceRepository(root, repo) : root, branch) : "";
+		const diffstat = detailed ? liveDiffstat(routing?.repository_root ?? (repo ? workspaceRepository(root, repo) : root), branch) : "";
 		const rendered = renderJob(job, {
 			elapsedMs: observedAt - startedAt.getTime(),
 			silentMs: observedAt - logStat.mtimeMs,

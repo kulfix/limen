@@ -1,27 +1,40 @@
 import * as fs from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { installSeatSweep, showSeatNotification, uninstallSeatSweep, updateRegisteredProjects } from "../../hook/seat.ts";
+import { activeProjectSlot, readRoutingRecord } from "../project-slot.ts";
 import { confirmDeadJobs } from "../reap.ts";
 
 const text = (path: string) => (fs.existsSync(path) ? fs.readFileSync(path, "utf8").trim() : "");
 const modified = (path: string) => (fs.existsSync(path) ? fs.statSync(path).mtimeMs : 0);
 
 export async function sweepCommand(args: readonly string[], _cwd: string): Promise<void> {
+	const slot = activeProjectSlot();
 	if (args.length === 1 && args[0] === "--install") return installSeatSweep();
 	if (args.length === 1 && args[0] === "--uninstall") return uninstallSeatSweep();
 	if (args.length) throw new Error("sweep accepts no arguments, --install, or --uninstall");
+	if (slot) {
+		await sweepProject(slot.cabinet_root, true);
+		return;
+	}
 	const living = updateRegisteredProjects((projects) => projects.filter((project) => isAbsolute(project) && fs.existsSync(project) && fs.statSync(project).isDirectory()));
-	await Promise.all(living.map(sweepProject));
+	await Promise.all(living.map((root) => sweepProject(root, false)));
 }
-async function sweepProject(root: string): Promise<void> {
-	const jobs = join(root, ".limen", "jobs"),
+async function sweepProject(root: string, slotted: boolean): Promise<void> {
+	const jobs = slotted ? join(root, "jobs") : join(root, ".limen", "jobs"),
 		threshold = positive("LIMEN_SEAT_RING_MS", 5 * 60_000);
-	await confirmDeadJobs(jobs);
+	if (!slotted) await confirmDeadJobs(jobs);
 	if (Date.now() - modified(join(root, ".limen", "last-sweep")) < threshold) return;
 	for (const entry of fs.existsSync(jobs) ? fs.readdirSync(jobs, { withFileTypes: true }) : []) {
 		if (!entry.isDirectory()) continue;
-		const job = join(jobs, entry.name),
-			state = text(join(job, "state"));
+		const job = join(jobs, entry.name);
+		if (slotted) {
+			try {
+				readRoutingRecord(job);
+			} catch {
+				continue;
+			}
+		}
+		const state = text(join(job, "state"));
 		const delivered = fs.existsSync(join(job, "notify", "delivered")) ? fs.readdirSync(join(job, "notify", "delivered")) : [];
 		const advisory = state === "running",
 			stamp = advisory ? join(job, "advisory") : join(job, "finished-at");

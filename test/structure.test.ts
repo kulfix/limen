@@ -16,7 +16,7 @@ test("architecture stays small, pure, direct, and dependency-free", async () => 
 	assert.deepEqual((await readdir(join(ROOT, "bin"))).sort(), ["limen", "tony-finish-ping.sh"]);
 	const source = await filesBelow(join(ROOT, "src"));
 	const sourceLines = (await Promise.all(source.map((path) => readFile(path, "utf8")))).reduce((sum, text) => sum + text.split("\n").length - 1, 0);
-	assert.ok(sourceLines <= 4500, `src has ${sourceLines} lines; includes inbound accept and wake=@file`);
+	assert.ok(sourceLines <= 5200, `src has ${sourceLines} lines; includes inbound accept, wake=@file, and project-slot routing`);
 	assert.doesNotMatch(await readFile(join(ROOT, "src/job.ts"), "utf8"), /from ["']node:/);
 	assert.deepEqual((await readdir(join(ROOT, "src/commands"))).sort(), [
 		"close.ts",
@@ -54,7 +54,7 @@ test("strict TypeScript and templates preserve the capability-judgment line", as
 	const tsconfig = await readFile(join(ROOT, "tsconfig.json"), "utf8");
 	for (const option of ["strict", "noUncheckedIndexedAccess", "exactOptionalPropertyTypes", "erasableSyntaxOnly"]) assert.match(tsconfig, new RegExp(`"${option}": true`));
 	const sourceAndHook = await Promise.all((await filesBelow(join(ROOT, "src"))).concat(await filesBelow(join(ROOT, "hook"))).map((path) => readFile(path, "utf8")));
-	assert.doesNotMatch(sourceAndHook.join("\n"), /contentHash|watchdog|schema/);
+	assert.doesNotMatch(sourceAndHook.join("\n"), /contentHash|watchdog/);
 	assert.doesNotMatch((await Promise.all((await filesBelow(join(ROOT, "src"))).map((path) => readFile(path, "utf8")))).join("\n"), /registerCommand/);
 	assert.deepEqual((await readdir(join(ROOT, "templates/.history"))).sort(), [
 		"advisor.md",

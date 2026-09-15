@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
 import { basename, dirname, relative, resolve } from "node:path";
+import type { ResolvedProjectSlot } from "./project-slot.ts";
 export type GitWorktree = { readonly path: string; readonly branch?: string; readonly detached: boolean };
 type GitResult = { readonly stdout: string; readonly stderr: string; readonly status: number };
 export function repoRoot(cwd: string): string {
@@ -20,6 +21,24 @@ export function workspaceRepository(workspace: string, name: string): string {
 	if (!name || basename(name) !== name || name === "." || name === "..") throw new Error("--repo must name one immediate child repository");
 	const repository = resolve(workspace, name);
 	if (repoRoot(repository) !== repository) throw new Error(`--repo ${JSON.stringify(name)} must be a Git repository directly below the workspace`);
+	return repository;
+}
+export function gitCommonDir(cwd: string): string {
+	return realpathSync(requireGit(cwd, ["rev-parse", "--path-format=absolute", "--git-common-dir"]).stdout.trim());
+}
+export function slotRepository(slot: ResolvedProjectSlot, name: string): string {
+	if (!name || basename(name) !== name || name === "." || name === "..") throw new Error("--repo must name one immediate child repository");
+	let repository: string;
+	try {
+		repository = realpathSync(resolve(slot.project_root, name));
+	} catch {
+		throw new Error(`--repo ${JSON.stringify(name)} is unavailable for slot ${slot.slot_id}`);
+	}
+	const allowed = [slot.code_root, slot.context_root].filter((path): path is string => path !== null);
+	const selected = allowed.find((path) => path === repository);
+	if (!selected) throw new Error(`--repo ${JSON.stringify(name)} is not an approved repository for slot ${slot.slot_id}`);
+	if (repoRoot(repository) !== repository) throw new Error(`--repo ${JSON.stringify(name)} must be a Git repository directly below the project root`);
+	if (gitCommonDir(repository) !== gitCommonDir(selected)) throw new Error(`--repo ${JSON.stringify(name)} has the wrong Git common directory`);
 	return repository;
 }
 export function branchExists(cwd: string, branch: string): boolean {

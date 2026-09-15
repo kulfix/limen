@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { activeProjectSlot, readRoutingRecord } from "../src/project-slot.ts";
 import { assistantStopReason } from "../src/stream.ts";
 import { formatDrift, inheritFile, listDrift, readOptional } from "./inherit.ts";
 import { registerSpeak, type SpeakPiApi } from "./speak.ts";
@@ -35,6 +36,11 @@ type ReminderKind = "specs" | "style" | "vision";
 
 /** Stable guidance rides the system prompt once per call. The per-turn note is a short cue; tool results recall the rule that applies. */
 export default function limenCommunication(pi: PiApi): void {
+	if (process.env.LIMEN_PROJECTS_CONFIG) {
+		const jobDir = process.env.LIMEN_JOB_DIR?.trim();
+		if (process.env.LIMEN_JOB === "1" && !jobDir) throw new Error("communication project-slot hook requires LIMEN_JOB_DIR");
+		if (jobDir) readRoutingRecord(jobDir);
+	}
 	registerSpeak(pi);
 	let lastTouch: string | undefined;
 	let lastFailure: string | undefined;
@@ -85,6 +91,11 @@ function guidancePrompt(cwd: string, job: boolean): string {
 	}
 	const register = readRegister(cwd);
 	if (register) parts.push(register);
+	const modelsPolicy = activeProjectSlot()?.models_policy;
+	if (modelsPolicy) {
+		const policy = readOptional(modelsPolicy);
+		if (policy) parts.push(boundText(policy, modelsPolicy, "Models policy"));
+	}
 	if (!job) {
 		const vision = boundFile(cwd, "spec/vision.md", "Vision");
 		if (vision) parts.push(vision);
@@ -187,7 +198,7 @@ function markdownSection(text: string, heading: string): string {
 function jobTicket(cwd: string): string {
 	const id = process.env.LIMEN_JOB_ID?.trim();
 	if (!id) return "";
-	const task = readOptional(join(cwd, ".limen/jobs", id, "task.md"));
+	const task = readOptional(process.env.LIMEN_JOB_DIR ? join(process.env.LIMEN_JOB_DIR, "task.md") : join(cwd, ".limen/jobs", id, "task.md"));
 	if (task === undefined) return "";
 	const match = task.match(/Ticket:\s+(\S+)/);
 	return (match?.[1] ?? "").replace(/[.,;]+$/, "");

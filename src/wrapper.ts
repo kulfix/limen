@@ -1,10 +1,12 @@
 import { spawn } from "node:child_process";
 import { appendFile, open, readdir, readFile, rename, rm } from "node:fs/promises";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { containEscapedDescendants, discoverEscapedDescendants, processAlive, processInfo, signalProcessGroup } from "./contain.ts";
 import { deliverFinishWebhook } from "./finish-webhook.ts";
 import { changedFileCount, commitList } from "./git.ts";
 import { settleJobTab } from "./herdr.ts";
+import { activeProjectSlot, assertSlotPath, readRoutingRecord } from "./project-slot.ts";
 import { createClaudeStreamParser, createStreamParser, type StreamEvent } from "./stream.ts";
 
 const STOP_GRACE_MS = 5_000;
@@ -36,12 +38,40 @@ export async function launchWrapper(environment: Readonly<Record<string, string>
 export async function launchHostedSupervisor(environment: Readonly<Record<string, string>>): Promise<number> {
 	return launchDetached({ LIMEN_HOSTED_RECOVER: "", ...environment, LIMEN_INTERNAL_HOSTED: "1" });
 }
+const SLOT_ENVIRONMENT = new Set([
+	"PATH",
+	"HOME",
+	"USER",
+	"LOGNAME",
+	"SHELL",
+	"TMPDIR",
+	"TMP",
+	"TEMP",
+	"LANG",
+	"TERM",
+	"COLORTERM",
+	"XDG_CONFIG_HOME",
+	"XDG_CACHE_HOME",
+	"XDG_DATA_HOME",
+	"XDG_STATE_HOME",
+	"SSH_AUTH_SOCK",
+	"OPENAI_API_KEY",
+	"ANTHROPIC_API_KEY",
+	"XAI_API_KEY",
+	"OPENROUTER_API_KEY",
+]);
+export function sanitizedSlotEnvironment(extra: Readonly<Record<string, string>>, source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+	if (!source.LIMEN_PROJECTS_CONFIG && !extra.LIMEN_PROJECTS_CONFIG) return { ...source, ...extra };
+	const environment: NodeJS.ProcessEnv = {};
+	for (const [name, value] of Object.entries(source)) if (value !== undefined && (SLOT_ENVIRONMENT.has(name) || name.startsWith("LC_"))) environment[name] = value;
+	return { ...environment, ...extra };
+}
 async function launchDetached(environment: Readonly<Record<string, string>>): Promise<number> {
 	const executable = fileURLToPath(new URL("../bin/limen", import.meta.url));
 	const child = spawn(process.execPath, [executable], {
 		detached: true,
 		stdio: "ignore",
-		env: { ...process.env, ...environment },
+		env: sanitizedSlotEnvironment(environment),
 	});
 	await new Promise<void>((resolve, reject) => {
 		child.once("spawn", resolve);
@@ -58,6 +88,18 @@ export async function runInternalJob(): Promise<void> {
 	const preambleFile = requiredEnvironment("LIMEN_PREAMBLE");
 	const jobId = requiredEnvironment("LIMEN_JOB_ID");
 	const label = process.env.LIMEN_LABEL || jobId;
+	const slot = activeProjectSlot();
+	if (slot) {
+		const routing = readRoutingRecord(jobDir, slot);
+		if (routing?.worktree !== worktree || routing.session_path !== requiredEnvironment("LIMEN_SESSION_PATH")) throw new Error("internal job paths do not match routing.json");
+		assertSlotPath(slot, taskFile, "cabinet");
+		if (resolve(taskFile) !== resolve(jobDir, "task.md")) throw new Error("internal task path does not match its job record");
+		try {
+			assertSlotPath(slot, preambleFile, "app-template");
+		} catch {
+			assertSlotPath(slot, preambleFile, "context-input");
+		}
+	}
 	const timeoutMs = process.env.LIMEN_TIMEOUT_MS ? Number(process.env.LIMEN_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
 	const preamble = await readFile(preambleFile, "utf8");
 	let stopRequested = false;
@@ -106,15 +148,26 @@ export async function runInternalJob(): Promise<void> {
 		if (process.env.LIMEN_CONTINUE === "1") args.push("--continue", (await readFile(taskFile, "utf8")).trim());
 		else args.push(`@${taskFile}`);
 	}
-	const childEnvironment: NodeJS.ProcessEnv = {
-		...process.env,
+	const slotEnvironment = process.env.LIMEN_PROJECTS_CONFIG
+		? {
+				LIMEN_PROJECTS_CONFIG: process.env.LIMEN_PROJECTS_CONFIG,
+				LIMEN_SLOT_ID: requiredEnvironment("LIMEN_SLOT_ID"),
+				LIMEN_ROUTING_FINGERPRINT: requiredEnvironment("LIMEN_ROUTING_FINGERPRINT"),
+				LIMEN_JOB_DIR: jobDir,
+				LIMEN_SESSION_PATH: requiredEnvironment("LIMEN_SESSION_PATH"),
+				LIMEN_CONTEXT_ROOT: requiredEnvironment("LIMEN_CONTEXT_ROOT"),
+				LIMEN_PACKAGE: requiredEnvironment("LIMEN_PACKAGE"),
+			}
+		: {};
+	const childEnvironment: NodeJS.ProcessEnv = sanitizedSlotEnvironment({
+		...slotEnvironment,
 		LIMEN_JOB: "1",
 		LIMEN_JOB_ID: jobId,
 		LIMEN_JOB_LABEL: label,
-	};
+	});
 	const privateEnvironment =
 		"LIMEN_INTERNAL_RUN LIMEN_JOB_DIR LIMEN_WORKTREE LIMEN_TASK_FILE LIMEN_PREAMBLE LIMEN_TIMEOUT_MS LIMEN_MODEL LIMEN_PROVIDER LIMEN_THINKING LIMEN_LABEL LIMEN_ENGINE LIMEN_CLAUDE PI_SESSION_ID PI_SESSION_FILE PI_PROVIDER PI_MODEL PI_REASONING_LEVEL";
-	for (const name of privateEnvironment.split(" ")) delete childEnvironment[name];
+	for (const name of privateEnvironment.split(" ")) if (!process.env.LIMEN_PROJECTS_CONFIG || !["LIMEN_JOB_DIR"].includes(name)) delete childEnvironment[name];
 	// A detached job must not inherit the coordinator's Herdr pane.
 	for (const name of Object.keys(childEnvironment)) if (name.startsWith("HERDR_")) delete childEnvironment[name];
 	const parser = engine === "claude" ? createClaudeStreamParser() : createStreamParser();

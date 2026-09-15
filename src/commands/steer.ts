@@ -2,6 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { processGroupAlive } from "../contain.ts";
 import { limenRoot } from "../git.ts";
 import { resolveJob } from "../lookup.ts";
+import { activeProjectSlot, readRoutingRecord } from "../project-slot.ts";
 
 const READY_WAIT_MS = 2_000;
 
@@ -26,6 +27,7 @@ export async function steerCommand(args: readonly string[], cwd: string): Promis
 
 async function deliver(target: { readonly id: string; readonly jobDir: string }, message: string): Promise<string> {
 	const { id, jobDir } = target;
+	readRoutingRecord(jobDir);
 	const state = (await text(`${jobDir}/state`)) || "missing";
 	if (state !== "running") throw new Error(`${id} is already ${state}; not steered`);
 	const pid = Number(await text(`${jobDir}/pid`));
@@ -37,11 +39,13 @@ async function deliver(target: { readonly id: string; readonly jobDir: string },
 async function watchedRunning(cwd: string): Promise<ReadonlyArray<{ readonly id: string; readonly jobDir: string }>> {
 	const session = process.env.PI_SESSION_ID?.trim();
 	if (!session || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(session)) throw new Error("steer --running requires a Pi session; ask the coordinator to steer through its bash tool");
-	const jobsRoot = `${limenRoot(cwd)}/.limen/jobs`;
+	const slot = activeProjectSlot();
+	const jobsRoot = slot ? `${slot.cabinet_root}/jobs` : `${limenRoot(cwd)}/.limen/jobs`;
 	const selected: Array<{ id: string; jobDir: string }> = [];
 	for (const entry of await readdir(jobsRoot, { withFileTypes: true }).catch(() => [])) {
 		if (!entry.isDirectory()) continue;
 		const jobDir = `${jobsRoot}/${entry.name}`;
+		readRoutingRecord(jobDir, slot);
 		if ((await text(`${jobDir}/state`)) === "running" && (await text(`${jobDir}/notify/subscribers/${session}`))) selected.push({ id: entry.name, jobDir });
 	}
 	return selected;

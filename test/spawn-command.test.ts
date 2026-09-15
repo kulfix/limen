@@ -333,7 +333,19 @@ process.exit(0);
 `);
 	context.after(scratch.cleanup);
 	assert.equal(limen(scratch, "init").status, 0);
-	const launched = limenWithEnv(scratch, { LIMEN_PREFLIGHT: "auth" }, "spawn", "--detached", "--provider", "openai-codex", "--model", "gpt-6-astra", "--thinking", "high", "do work");
+	const launched = limenWithEnv(
+		scratch,
+		{ LIMEN_PREFLIGHT: "auth" },
+		"spawn",
+		"--detached",
+		"--provider",
+		"openai-codex",
+		"--model",
+		"gpt-6-astra",
+		"--thinking",
+		"high",
+		"do work",
+	);
 	assert.equal(launched.status, 1);
 	assert.match(launched.stderr, /requested provider refused/);
 	assert.deepEqual(JSON.parse(await readFile(join(scratch.root, "auth-args.json"), "utf8")), ["auth", "check", "--provider", "openai-codex", "--model", "gpt-6-astra"]);

@@ -5,18 +5,22 @@ import { delimiter, dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { finishEvent, parseFinishReceipt } from "./finish-receipt.ts";
 import { listWorktrees, workspaceRoot } from "./git.ts";
-import { appendLimenLog, atomicWrite, textFile } from "./wrapper.ts";
+import { activeProjectSlot, readRoutingRecord } from "./project-slot.ts";
+import { appendLimenLog, atomicWrite, sanitizedSlotEnvironment, textFile } from "./wrapper.ts";
 
 const SENDER = fileURLToPath(new URL("../bin/tony-finish-ping.sh", import.meta.url));
 // Shorter than the detached wrapper's 5s termination grace, including a hung sender.
 const SEND_MS = 3_000;
 export function finishWebhookEnv(root: string, cwd: string, explicit = process.env.LIMEN_FINISH_WEBHOOK_ENV): string {
+	const slot = activeProjectSlot();
+	if (slot) return slot.finish_webhook_env ?? "";
 	if (explicit !== undefined) return explicit.trim() ? resolve(cwd, explicit) : "";
 	const project = workspaceRoot(root) ? root : (listWorktrees(root)[0]?.path ?? root);
 	const path = resolve(project, ".limen/finish-webhook.env");
 	return existsSync(path) ? path : "";
 }
 export async function deliverFinishWebhook(jobDir: string, shutdownDeadline = Number.POSITIVE_INFINITY): Promise<void> {
+	if (process.env.LIMEN_PROJECTS_CONFIG) readRoutingRecord(jobDir);
 	const config = await textFile(`${jobDir}/finish-webhook-env`);
 	if (!config) return;
 	const state = await textFile(`${jobDir}/state`);
@@ -59,7 +63,11 @@ export async function deliverFinishWebhook(jobDir: string, shutdownDeadline = Nu
 function send(jobDir: string, config: string, label: string, state: string, branch: string, timeoutMs: number): Promise<string> {
 	return new Promise((resolve) => {
 		const child = spawn(SENDER, [label, state, branch], {
-			env: { ...process.env, PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ""}`, LIMEN_FINISH_WEBHOOK_ENV: config, LIMEN_FINISH_EVENT: finishEvent(jobDir) },
+			env: sanitizedSlotEnvironment({
+				PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ""}`,
+				LIMEN_FINISH_WEBHOOK_ENV: config,
+				LIMEN_FINISH_EVENT: finishEvent(jobDir),
+			}),
 			stdio: ["ignore", "ignore", "ignore", "pipe"],
 			detached: true,
 		});
