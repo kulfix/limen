@@ -1,0 +1,2631 @@
+[00:00:01] [muzyka]
+[00:00:06] [muzyka]
+[00:02:09] This is for you. The one who [muzyka]
+[00:02:11] stayed late until it finally worked, who
+[00:02:14] shipped it, watched it break, and fixed
+[00:02:17] it before anyone woke up. [muzyka] Who
+[00:02:19] built things nobody asked for just to
+[00:02:22] know if you could.
+[00:02:24] You learned to think in systems.
+[00:02:26] [muzyka]
+[00:02:27] You cared about details no one would
+[00:02:29] ever see. And then almost overnight,
+[00:02:32] [muzyka]
+[00:02:33] everything changed. The machines write
+[00:02:36] the code now faster than [muzyka] any of
+[00:02:38] us can.
+[00:02:40] Some call it the end of the story. We
+[00:02:43] call [muzyka] it the best beginning
+[00:02:45] there's ever been. Because the problems
+[00:02:48] got bigger, the ambitions [muzyka] got
+[00:02:50] wilder, and someone still has to
+[00:02:54] imagine, to judge, to care. Someone has
+[00:02:58] to take [muzyka] all this power and
+[00:03:00] build the digital world we actually want
+[00:03:03] to live in.
+[00:03:09] >> [muzyka]
+[00:03:21] >> Cześć wszystkim. Witam was serdecznie na
+[00:03:24] naszym dzisiejszym wydarzeniu. Na
+[00:03:26] wydarzeniu w ramach którego razem z
+[00:03:28] Adamem Gospodarczykiem spotykamy się,
+[00:03:30] żeby porozmawiać o agentach i
+[00:03:33] autonomiczności, o tym jak ewoluuje
+[00:03:36] praca dewelopera, a może już nawet nie
+[00:03:39] dewelopera. Może ja będę trochę ze
+[00:03:40] strony biznesowej, a Adam dzisiaj ze
+[00:03:42] strony bardziej dewelopmentu.
+[00:03:46] Pokazywał wam różne rzeczy. Jak zwykle
+[00:03:48] to się nagrywa, więc nie musicie robić
+[00:03:51] screenów i nagrywać telefonami. Możecie
+[00:03:53] spokojnie sobie obejrzeć nagranie z tego
+[00:03:55] wydarzenia później.
+[00:03:58] To czego nie możecie zrobić później to
+[00:04:00] jest mała zniżka na mega def, którą
+[00:04:01] będziemy mieli w trakcie i dzisiaj w
+[00:04:03] zasadzie do końca dnia. No więc też
+[00:04:05] trochę później, ale o tym wam powiemy za
+[00:04:07] chwilę. Natomiast w trakcie tego
+[00:04:09] spotkania, które potrwa półtorej
+[00:04:11] godziny, postaramy się pokazać wam nasz
+[00:04:14] workflow, nasze sposoby porozmawiać o
+[00:04:16] tym jak my pracujemy z agentami, jak
+[00:04:19] robimy to autonomicznie. E no i również
+[00:04:23] porozmawiamy potem o tym, czym jest mega
+[00:04:25] i czy jest to coś ciekawego dla was. Jak
+[00:04:29] najbardziej odpowiemy na wszystkie wasze
+[00:04:30] pytania, więc przygotowujcie je i śmiało
+[00:04:33] też zgłaszajcie na czacie. Będziemy cały
+[00:04:35] czas starali się wchodzić w y z wami w
+[00:04:37] jakąś aktywność, interakcję, więc proszę
+[00:04:40] dajcie znać na czacie, czy już
+[00:04:42] korzystacie z agentów autonomicznych.
+[00:04:44] Jestem ciekaw, czy w ogóle jakby macie y
+[00:04:47] takie znacie takie pojęcie, czy w ogóle
+[00:04:50] y uważacie albo wiecie, że korzystacie z
+[00:04:54] agentów autonomicznych. Na razie możecie
+[00:04:56] powiedzieć czy tak czy nie i po prostu
+[00:04:58] może napisać na przykład co robicie albo
+[00:05:00] jaki to agent, z jakiego agenta
+[00:05:02] najbardziej lubicie korzystać, z jakiego
+[00:05:05] od jakiego dostawcy. A my tymczasem
+[00:05:09] będziemy chcieli jakby zrobić taki
+[00:05:11] krótki wstęp, krótkie intro chyba z
+[00:05:13] Adamem do tej do tego trochę nowego
+[00:05:15] podejścia do programowania. A później
+[00:05:18] mamy dla was przygotowany film, nagranie
+[00:05:21] z workflow Adama. Ono potrwa jakieś 20
+[00:05:24] parę minut. My w tym czasie będziemy też
+[00:05:27] na czacie będziemy odpowiadać, więc
+[00:05:28] możecie śmiało zadawać pytania. Nagranie
+[00:05:30] jest po to, żeby też szanować wasz czas
+[00:05:32] i żeby to po prostu nie czekać na
+[00:05:35] inferencję modelu i żeby to było
+[00:05:36] szybciej. A później wrócimy do was i
+[00:05:38] pokażemy też wam ewentualnie jakieś dema
+[00:05:40] z naszego środowiska z i i poodpowiemy
+[00:05:44] na wszystkie wasze pytania. Yyy, także
+[00:05:46] to tyle w zasadzie tytułem wstępu.
+[00:05:48] Bardzo mi miło, że ponad 250 osób już do
+[00:05:51] nas dołączyło i nas ogląda na żywo. No i
+[00:05:54] chyba możemy tak yyy rozpocząć od yyy
+[00:05:58] pewnego wprowadzenia w yyy temat tej
+[00:06:01] autonomiczności, bo Adam mam właśnie do
+[00:06:03] ciebie pytanie o tą autonomiczność.
+[00:06:05] Każdy w zasadzie rozumie ją trochę
+[00:06:06] inaczej. Tutaj osoby na czacie piszą, że
+[00:06:09] korzystają z autonomicznych agentów.
+[00:06:12] Yyy, powiedz mi, jakie jest twoje
+[00:06:13] rozumienie w ogóle autonomiczności na
+[00:06:15] dzisiaj?
+[00:06:16] >> Yyy, rzeczywiście yyy no nie jest to yyy
+[00:06:20] coś, o czym można powiedzieć, że albo
+[00:06:22] jest, albo jej nie ma, tylko może być w
+[00:06:23] jakimś stopniu, nie? I przykładowo,
+[00:06:26] jeżeli wasi agenci pracują poza
+[00:06:29] komputerem, poza laptopem, to jest jakiś
+[00:06:31] stopień autonomiczny autonomii, bo są w
+[00:06:34] stanie reagować na zewnętrzne zdarzenia,
+[00:06:36] nie są uzależnieni od tego, czy macie w
+[00:06:38] danej chwili internet, czy pokrywa
+[00:06:40] laptowa jest otwarta i tak dalej. Nie,
+[00:06:43] no druga rzecz to
+[00:06:47] jak dużo sam agent jest w stanie zrobić.
+[00:06:50] Większość z nas
+[00:06:53] jak pracuje z AI po prostu jest taką
+[00:06:56] jest takim dawcą kontekstu. Przekleja po
+[00:06:59] prostu rzeczy z miejsca na miejsce,
+[00:07:00] pokazuje zrzuty ekranu,
+[00:07:03] no i generalnie podejmuje mnóstwo
+[00:07:04] decyzji. I jak mamy otwartych na
+[00:07:07] przykład 10, 20 agentów, a 20 nie, nie,
+[00:07:10] nie wiem czy w sumie możecie napisać z
+[00:07:13] iloma agentami pracujecie tak w ciągu
+[00:07:16] dnia,
+[00:07:18] no to tak podejmujemy decyzj i oni
+[00:07:21] pingują nas. Tak jak właśnie z
+[00:07:24] Grzegorzem siedzieliśmy i mówiliśmy o
+[00:07:28] dzieciach, które biegną i się
+[00:07:30] przywracają, krzyczą i one są trochę jak
+[00:07:33] takie agenty, któ
+[00:07:35] >> te grogoty jak dzieci krzycza krzyczy,
+[00:07:37] wywraca się: "Tato, tato, pomocy." I ty
+[00:07:39] wchodzisz tam, dobra już synku tam nie
+[00:07:41] płacz, dobra będzie, będzie dobrze.
+[00:07:44] >> Tak. No i coś takiego bywa męczące i em
+[00:07:48] pewnie sami tego doświadczacie, ale też
+[00:07:50] można przeczytać różne historie w
+[00:07:52] internecie, że generalnie programowanie
+[00:07:54] w tym momencie w taki sposób no odbiera
+[00:07:57] to, co było fajne w programowaniu.
+[00:08:00] dodatkowo bardziej obciąża, zarówno my
+[00:08:02] sobie narzucamy takie obciążenia,
+[00:08:04] dodatkowo m biznes też narzuca na nas
+[00:08:07] pewną presję, a czyli no masz AI, to
+[00:08:10] pracuj szybciej, bo ja widziałem,
+[00:08:12] widziałam, że ktoś napisał, nie wiem,
+[00:08:15] wrzucił pięć promptów i wygenerował
+[00:08:17] jakąś zaawansowaną aplikację. No a my
+[00:08:21] rozbijamy się o detale, o szczegóły i
+[00:08:24] nie wiem, o kwestii bezpieczeństwa i
+[00:08:25] mnóstwo rzeczy, o które jako programiści
+[00:08:28] zawsze dbaliśmy, a natomiast teraz mamy
+[00:08:30] je realizować na 510 większej skali.
+[00:08:33] Pytanie jak?
+[00:08:34] >> Mhm. No tak, biznes tego wymaga. Nawet
+[00:08:37] jak ja mam wziąć dzisiaj
+[00:08:38] odpowiedzialność za biznes, to powiem,
+[00:08:40] że ja sobie też w kursorze robię różne
+[00:08:41] rzeczy, nie? I oczywiście
+[00:08:43] >> potem muszę sprzątać.
+[00:08:44] >> No właśnie. Dokładnie. A ja głównie,
+[00:08:46] głównie psuję, ale yyy myślę, że rola
+[00:08:49] programisty i pewnie dojdziemy do
+[00:08:50] takiego wniosku, nawet pokazując
+[00:08:52] autonomiczność agentów i to jak oni mogą
+[00:08:55] sami pracować, kiedy my śpimy, nadal
+[00:08:57] jest bezcenna. Yyy, a dla mnie to jest z
+[00:09:00] jednego prostego yyy powodu. Yyy, no
+[00:09:03] nikt z biznesu nie bierze
+[00:09:05] odpowiedzialności za yyy za ten
+[00:09:07] wytworzony kod, czy tam slop, czy nie.
+[00:09:10] Yyy, no i do tego yyy programiści są
+[00:09:13] potrzebni, żeby wziąć ownership za swoją
+[00:09:15] część, żeby wyjść trochę bardziej yyy z
+[00:09:18] tych dotychczasowych ram i z tego co
+[00:09:20] robili. No i na pewno jeśli jesteś takim
+[00:09:22] programistą, który faktycznie teraz
+[00:09:26] pracuje z agentami, ale polega jego
+[00:09:28] praca na tym, że masz otwarte 10 okien
+[00:09:30] terminala i czekasz tylko, aż któreś się
+[00:09:33] skończy, nawet Open AI zrobił taki
+[00:09:35] device, który moim zdaniem jest super
+[00:09:37] śmieszne. jest nie, że oni zrobili
+[00:09:39] device, że w którym zapala ci się lampka
+[00:09:41] w agencie, w którym który skończy w tym
+[00:09:44] momencie zadanie i zresztą te kropki po
+[00:09:47] w narzędziach też się pojawiają, tylko
+[00:09:49] po to, żebyś mógł wcisnąć tą lampkę,
+[00:09:50] przejść do tego agenta i mu powiedzieć,
+[00:09:52] co ma zrobić dalej. E, no i my już tak
+[00:09:54] nie pracujemy i mamy nadzieję, że wy też
+[00:09:57] nie będziecie już tak pracować. Nie wiem
+[00:09:59] czy po dzisiejszym spotkaniu, może po
+[00:10:01] mega, ale ogólnie koncepcja, gdzie
+[00:10:04] programista siedzi i po prostu przerzuca
+[00:10:06] się z okna na okno dodając jakiś
+[00:10:09] kontekst i cały czas naprawiając
+[00:10:11] to, co robi agent, moim zdaniem jest
+[00:10:14] drenująca jakby z
+[00:10:16] >> emocji, z wiesz, z po prostu z takiej
+[00:10:19] frajdy do pracy
+[00:10:21] później. No
+[00:10:22] >> to szybko prowadzi do sytuacji, gdy no
+[00:10:25] jak jesteśmy zwęczeni, to akceptujemy
+[00:10:27] kolejne zmiany. Już średnio czytamy, co
+[00:10:29] ten agent mówi, zakładamy, że jest okej.
+[00:10:33] On zaczyna żyć własnym życiem, wprowadza
+[00:10:36] jakieś błędy, gdzie nie wiem, po z
+[00:10:39] jakimś opóźnieniem orientujemy się, że
+[00:10:40] coś jest nie tak i musimy to potem
+[00:10:42] odkręcić. A fakt, że korzystaliśmy z AI,
+[00:10:46] które naprodukowało dużo kodu, nie
+[00:10:48] jesteśmy w stanie szybko się w nim
+[00:10:49] odnaleźć, więc znowu próbujemy
+[00:10:51] wykorzystać AI po to, żeby to odkręcić i
+[00:10:53] finalnie zamiast przyspieszać swoją
+[00:10:55] pracę, y, to tak naprawdę pracujemy
+[00:10:58] znacznie znacznie więcej, nie? A, a w
+[00:11:00] tym wszystkim jest jeszcze jakiś taki
+[00:11:01] element, że jak się agenci do nas
+[00:11:03] wracają, to jest to trochę takie
+[00:11:06] uzależniające.
+[00:11:07] >> Trudno skończyć,
+[00:11:07] >> tak, bo jest jeszcze ten efekt jeszcze
+[00:11:10] jednego promptu. No
+[00:11:11] >> jesz tak, tak trudno skończyć. yyy co
+[00:11:13] moim zdaniem też nas wyczerpuje z
+[00:11:15] energii. Yyy ja wiele razy yyy właśnie
+[00:11:19] pracując w ten sposób znalazłem się
+[00:11:20] gdzieś tam w środku nocy w sytuacji,
+[00:11:22] gdzie jeszcze jeden prompt i i później
+[00:11:24] następnego dnia czułem się y kiepsko. E,
+[00:11:27] no i faktycznie biznes teraz przez to
+[00:11:31] też niezrozumienie tej, tej pracy
+[00:11:35] zaczyna wymagać dużo więcej, ale też i
+[00:11:36] programiści mogą zrobić dużo więcej, a
+[00:11:39] nie tylko czuć, że są gdzieś tam
+[00:11:41] popychaczami tych kolejnych okien, nie?
+[00:11:42] >> Tylko ja powiem tak, że jest wiele
+[00:11:46] obszarów, które których już już nie
+[00:11:48] trzeba robić, nie?
+[00:11:49] >> To jest tak, że albo można je całkowicie
+[00:11:52] zdelegować, albo w ogóle nie wykonywać.
+[00:11:54] I yyy tutaj jednym z przykładów jest to,
+[00:11:57] o czym pisałem yyy na megaf yyy na temat
+[00:12:00] yyy podejścia tutaj na przykładzie yyy
+[00:12:03] MCP Kenta yyy który współtworzy z nami
+[00:12:06] Mega yyy który podszedł do na przykład
+[00:12:09] tematu integracji w taki sposób, że
+[00:12:11] zamiast yyy tworzyć dziesiątki
+[00:12:13] integracji, potem je utrzymywać,
+[00:12:16] zbudował prymitywy
+[00:12:19] i którymi obudował swojego agenta, który
+[00:12:22] następnie projektuje
+[00:12:24] integrację i zamiast
+[00:12:27] kendodać
+[00:12:28] połączenie z ma lightem czy jakąś inną
+[00:12:32] usługą, tak naprawdę mówi swojemu
+[00:12:34] agentowi: "Ej, teraz połącz się z tym, a
+[00:12:36] teraz z tamtym". A on dokładnie wie jaki
+[00:12:38] sposób zarządzać sekretami, jakimiś
+[00:12:43] kluczami i tak dalej. A w jaki sposób
+[00:12:45] potem odnajdywać te umiejętności? W jaki
+[00:12:47] sposób łączyć je ze sobą? Yyy, no i to
+[00:12:50] jest przykład, gdzie rzeczywiście, no ja
+[00:12:52] znam programistów yyy, w przypadku
+[00:12:54] których większość prasy polegała na tym,
+[00:12:56] że na przykład podłączamy yyy 50
+[00:12:59] operatorów płatności na cały świat, a
+[00:13:01] potem siedzimy i je utrzymujemy, jeżeli
+[00:13:04] coś się zmieni, nie?
+[00:13:05] >> Dobra, to yyy Kamilka mówi, że dawajcie
+[00:13:08] ten Limen i Groka na tapet. Tutaj są
+[00:13:11] jakieś jeszcze fajne komentarze. Widzę,
+[00:13:14] że korzystacie od o do 18 agentów.
+[00:13:16] Przynajmniej na razie tak wynika z
+[00:13:18] czatu. Toże dajemy jeszcze yyy drugi
+[00:13:21] wymiar yyy ankiety. Jak się z tym
+[00:13:24] czujesz? [śmiech]
+[00:13:25] >> Tak dokładnie, czy ogarniasz, czy nie i
+[00:13:27] czy chodzisz z niedomkniętym laptopem po
+[00:13:30] po świecie, bo widziałem y wiele y wiele
+[00:13:33] takich osób, które po prostu nie
+[00:13:35] domykają laptopa, a my mówiąc dzisiaj o
+[00:13:37] autonomiczności chcemy właśnie pokazać,
+[00:13:40] że jest inna droga niż niedomykanie
+[00:13:42] laptopa i praca na 20 aktywnych oknach
+[00:13:46] terminala.
+[00:13:47] >> Totalnie. i że to nie jest do końca
+[00:13:49] agencyjność, o którą nam chodzi, o którą
+[00:13:51] yyy którą możemy teraz mieć. Także ja
+[00:13:54] was zapraszam teraz do tego, żebyście
+[00:13:56] yyy zobaczyli na przykładzie yyy setupu
+[00:13:59] Adama, o którym porozmawiamy sobie
+[00:14:00] jeszcze trochę więcej po yyy y po tym
+[00:14:02] filmiku właśnie jak to wygląda. On
+[00:14:04] potrwa około 20 minut, yyy więc yyy
+[00:14:07] puścimy wam go teraz, a my jesteśmy na
+[00:14:09] czacie. Yyy, no i będziemy starali się
+[00:14:12] wam odpowiadać na pytania, ale też
+[00:14:13] śmiało zadawajcie je po to, żebyśmy
+[00:14:15] mogli odpowiedzieć po filmie, bo potem
+[00:14:16] sobie jeszcze więcej pogadamy o tym.
+[00:14:19] Także możemy włączać.
+[00:14:22] To zaczynamy teraz sesję, którą nagrałem
+[00:14:24] wcześniej po to, aby teraz być z wami na
+[00:14:27] czacie. W tym warsztacie przejdziemy
+[00:14:30] przez serię kroków, które pokażą moją
+[00:14:32] perspektywę na temat kierowania się ku
+[00:14:35] autonomii przy rozwoju produktów, przy
+[00:14:37] zachowaniu ludzkiego pierwiastka.
+[00:14:39] wszędzie tam, gdzie nie tylko jest to
+[00:14:41] wymagane, ale przede wszystkim tam,
+[00:14:44] gdzie chcemy. W tym miejscu przyznam
+[00:14:46] także, że na potrzeby dzisiejszego
+[00:14:48] warsztatu nie przygotowałem żadnego
+[00:14:50] przykładu. W zamian jednak zabiorę was w
+[00:14:53] centrum mojej pracy, dzięki czemu
+[00:14:55] zobaczycie nie tylko z jakich narzędzi
+[00:14:56] korzystam, ale także w jaki sposób z
+[00:14:59] nimi pracuję oraz jakie mam
+[00:15:01] skonfigurowane. Liczę na to, że taka
+[00:15:03] obserwacja pomoże wam samodzielnie
+[00:15:05] zdecydować o tym, które z tych rzeczy
+[00:15:07] warto przełożyć na swój kontekst.
+[00:15:10] Oczywiście należy pamiętać o tym, że to
+[00:15:12] co za chwilę pokażę jest dopasowane do
+[00:15:14] mnie, a nie do waszego stylu prasy i
+[00:15:17] waszych projektów. Jednocześnie dobrą
+[00:15:19] wiadomością jest fakt, że mamy do
+[00:15:21] dyspozycji AI, które dziś jest w stanie
+[00:15:24] nawet na bardzo zaawansowanym poziomie
+[00:15:26] konfigurować i dopasowywać narzędzia,
+[00:15:29] które za chwilę zobaczymy. Pierwszym z
+[00:15:31] narzędzi, z których korzystam jest Cmax.
+[00:15:34] I tutaj oczywiście można wybrać dowolny
+[00:15:36] inny terminal, który po prostu spełnia
+[00:15:38] nasze oczekiwania. Wewnątrz terminala
+[00:15:40] uruchamiam agenta PI, czyli taką
+[00:15:43] alternatywę dla Codex CLI, Cloud Code
+[00:15:46] czy na przykład Open Code. Tutaj
+[00:15:48] naturalnie mogę wysyłać wiadomości do
+[00:15:50] agenta, ale nie przepadam za faktem, że
+[00:15:53] w przypadku dłuższych zadań muszę
+[00:15:55] oczekiwać na odpowiedź kilka,
+[00:15:57] kilkanaście minut, a niekiedy nawet
+[00:15:59] kilka godzin. To szybko prowadzi nas do
+[00:16:01] sytuacji, gdy otwieramy kolejne okna
+[00:16:04] terminala i tym samym kolejnych agentów.
+[00:16:07] Zarządzanie ich pracą bardzo szybko
+[00:16:09] staje się obciążające, ponieważ wracają
+[00:16:11] do nas w różnych momentach, nie
+[00:16:13] pozwalają absolutnie skupić się na
+[00:16:15] czymkolwiek i dodatkowo wymagają od nas
+[00:16:17] tego, aby ciągle być na bieżąco z tym,
+[00:16:20] nad czym w danej chwili pracują. No bo
+[00:16:22] tylko dzięki temu jesteśmy w stanie
+[00:16:24] podejmować decyzje oraz dostarczać im
+[00:16:26] niezbędny kontekst. Jeżeli nic z tym nie
+[00:16:29] zrobimy, to coraz częściej będziemy po
+[00:16:31] prostu akceptować sugerowane przez nich
+[00:16:33] zmiany. Początkowo może to przełożyć się
+[00:16:35] na dobry rezultat, natomiast dość szybko
+[00:16:38] przekłada się to na rozbieżności
+[00:16:40] względem naszych oczekiwań bądź wymagań
+[00:16:42] i to wszystko to my musimy odkręcać. A w
+[00:16:45] związku z tym, że sama praca została
+[00:16:47] wykonana przez agentów, tutaj również
+[00:16:49] wykorzystujemy AI. W efekcie zamiast
+[00:16:52] pracować bardziej efektywnie i podnosić
+[00:16:55] jakość naszej pracy, pracujemy więcej,
+[00:16:58] jesteśmy znacznie bardziej obciążeni, a
+[00:17:00] rezultaty naszej pracy no bywają różne.
+[00:17:03] Między innymi w związku z tym problemem
+[00:17:05] zaczęliśmy obserwować rozwój narzędzi
+[00:17:07] takich jak kursor w kierunku
+[00:17:09] interfejsów, które pozwalają zarządzać
+[00:17:11] pracą wieloma agentów jednocześnie. I
+[00:17:14] tak przykładowo możemy tutaj nawiązać
+[00:17:16] kontakt z agentem i od razu wiedzieć,
+[00:17:18] kiedy dany wątek został zakończony.
+[00:17:21] Niestety nawet w tym przypadku mówimy
+[00:17:23] tutaj o potrzebie kontroli każdego z
+[00:17:25] tych agentów poprzez bezpośrednio nasze
+[00:17:27] zaangażowanie. Zaczęły pojawiać się
+[00:17:29] tutaj na przykład możliwości
+[00:17:31] wprowadzenia automatyzacji, dzięki czemu
+[00:17:34] agenci przynajmniej część zadań
+[00:17:36] zaczynają realizować bez naszego
+[00:17:37] bezpośredniego zaangażowania, a
+[00:17:39] nierzadko także w tle, bez konieczności
+[00:17:42] dostępu do naszego komputera.
+[00:17:44] No i teraz jeśli wrócimy do terminala to
+[00:17:47] zobaczymy, że wygląda to nieco inaczej.
+[00:17:49] Mianowicie mam tutaj uruchomione
+[00:17:51] narzędzie Herdr, które dba o to, aby
+[00:17:54] zorganizować mi przestrzenie w terminalu
+[00:17:56] i uruchomić różnych agentów P. Rzecz w
+[00:18:00] tym, że to co się dzieje teraz na
+[00:18:01] ekranie to aktywności zarządzane przez
+[00:18:04] innych agentów. Oznacza to, że w
+[00:18:06] momencie, gdy nagrywam dla was ten
+[00:18:08] materiał, agenci w tym przypadku pracują
+[00:18:11] nad poprawkami UI, które zleciłem jakiś
+[00:18:13] czas temu i do których albo wrócę
+[00:18:15] samodzielnie, albo to inni agenci zajmą
+[00:18:18] się ich weryfikacją poprzez przeklikanie
+[00:18:20] aplikacji, porobienie zrzutów ekranu, a
+[00:18:23] następnie zdecydowanie o tym, czy moje
+[00:18:25] wymagania zostały spełnione. Oznacza to
+[00:18:27] więc, że pomimo tego, że mam tutaj do
+[00:18:29] czynienia z trzema narzędziami, czyli
+[00:18:32] Smax jako terminal, Pie jako agent oraz
+[00:18:35] Herd jako narzędzie do zarządzania
+[00:18:37] agentami, tak naprawdę ja w ogóle z nimi
+[00:18:39] nie pracuję, a przynajmniej nie
+[00:18:41] bezpośrednio. One są pomocne tylko i
+[00:18:43] wyłącznie do tego, że gdy mam taką
+[00:18:45] potrzebę i pytam głównego agenta o
+[00:18:48] jakieś konkretne zadanie, to on
+[00:18:49] dokładnie zna przestrzeń, do której
+[00:18:51] powinien zajrzeć, a następnie albo
+[00:18:53] poprosić o coś danego agenta, albo po
+[00:18:55] prostu zajrzeć do jego historii. I w ten
+[00:18:58] oto sposób tutaj w tle jedna z zakładek
+[00:19:00] została zamknięta, ponieważ zadanie
+[00:19:02] zostało zakończone i najwyraźniej
+[00:19:05] zaakceptowane, ale ja i tak w każdej
+[00:19:07] chwili mogę do niego wrócić. Oznacza to,
+[00:19:09] że z jednej strony posiadam wgląd w
+[00:19:11] różne obszary procesu, a z drugiej
+[00:19:14] strony zupełnie nie interesuje mnie to,
+[00:19:16] które zakładki są w danej chwili otwarte
+[00:19:19] oraz jakiego kontekstu potrzebują. I
+[00:19:21] dlaczego mnie to nie interesuje, powiem
+[00:19:23] za chwilę. Tymczasem pokażę wam jak to
+[00:19:26] się dzieje, że okna, które tutaj widzimy
+[00:19:29] zarządzają się same. I odpowiedzią w tym
+[00:19:31] przypadku jest Grockbot, czyli jedno z
+[00:19:34] nowszych narzędzi, które obecnie bardzo
+[00:19:36] zyskuje na popularności ze względu
+[00:19:38] głównie na swoją prostotę. Mianowicie
+[00:19:41] mamy tutaj boty, które posiadają swój
+[00:19:43] komputer, ale także są podłączone z moim
+[00:19:46] oraz także z wybranymi serwerami, które
+[00:19:48] posiadam. To właśnie z tymi botami
+[00:19:51] prowadzę rozmowę, gdzie głównie nagrywam
+[00:19:53] im wiadomości, korzystając z wbudowanej
+[00:19:55] funkcjonalności dostępnej tutaj, albo
+[00:19:57] uruchamiając sobie w Super Whisper. W
+[00:20:00] obu przypadkach to jedno pole pozwala mi
+[00:20:02] zarządzać wszystkimi agentami, którzy
+[00:20:05] pracują tutaj w tle. No i tutaj
+[00:20:06] przykładowo otrzymałem informację o tym,
+[00:20:09] że że refaktoryzacja, która właśnie ma
+[00:20:11] miejsce, nie obejmuje pewnego pliku, o
+[00:20:13] którym rozmawialiśmy wcześniej i w
+[00:20:15] związku z tym agent do tego nawiązuje.
+[00:20:18] No i tutaj oczywiście mogę zgłaszać
+[00:20:20] różnego rodzaju błędy oraz dyktować
+[00:20:22] zmiany, które potrzebuję wprowadzić.
+[00:20:25] Jednak sam ten fakt centralizacji inputu
+[00:20:27] nie rozwiązuje mi większości problemów
+[00:20:29] związanych z zarządzaniem całym
+[00:20:31] projektem. Ale jeżeli spojrzymy sobie na
+[00:20:33] wiadomość, którą mamy tutaj, to w tym
+[00:20:36] miejscu zapytałem o zmiany, które miały
+[00:20:37] miejsce w ciągu ostatnich trzech godzin.
+[00:20:40] Na podstawie tej wiadomości agent był w
+[00:20:42] stanie dokładnie rozpisać mi, co się
+[00:20:44] wydarzyło oraz co zostało zakończone,
+[00:20:47] ale nie trafiło jeszcze do repozytorium.
+[00:20:49] Można tutaj powiedzieć, że nie ma w tym
+[00:20:51] nic szczególnego. W końcu agenci są w
+[00:20:54] stanie czytać pliki i repozytorium Git,
+[00:20:56] aby odkryć zmiany, które ostatnio
+[00:20:58] zostały wprowadzone. Jednak tutaj mamy
+[00:21:00] do czynienia z udzieleniem odpowiedzi
+[00:21:02] nie tylko na podstawie kodu, ale także
+[00:21:04] bardzo skrupulatnie prowadzonych
+[00:21:06] specyfikacji, w których znajdują się
+[00:21:08] zarówno zadania, które zostały ostatnio
+[00:21:10] zakończone, oraz te, które są z jakiegoś
+[00:21:13] powodu wciąż otwarte, ale także
+[00:21:15] wszystkie decyzje oraz zewnętrzny
+[00:21:17] kontekst, które zostały omówione w
+[00:21:19] ramach danego zadania. To wszystko w
+[00:21:22] praktyce oznacza mniej więcej tyle, że
+[00:21:24] agent nie tylko wie o tym, co się
+[00:21:26] wydarzyło, ale także o tym, co dopiero
+[00:21:28] ma się wydarzyć. Jak widać tutaj
+[00:21:30] zapytałem o to, co wymaga mojej uwagi i
+[00:21:33] co zostało zaplanowane. Jak widać tutaj
+[00:21:35] większość zadań została zakończona, ale
+[00:21:38] z różnych powodów wymaga mojej uwagi.
+[00:21:40] Następnie mamy tutaj także scenariusze
+[00:21:42] do wykonania dla mnie, a także
+[00:21:44] zaplanowane funkcjonalności, które
+[00:21:46] możemy podjąć w dalszej kolejności. No i
+[00:21:49] w tym miejscu odpada mi dokładnie ten
+[00:21:51] ciężar kognitywny, o którym mówiłem
+[00:21:53] przed chwilą, dotyczący tego, że w
+[00:21:56] międzyczasie mogę zająć się całkowicie
+[00:21:58] inną rzeczą i nie muszę bezpośrednio
+[00:22:00] myśleć o tym, czym zajmuje się dany
+[00:22:02] agent, ponieważ tymi agentami zarządza
+[00:22:04] sam Grock. Poza tym, jeżeli tylko
+[00:22:06] potrzebuję się przyjrzeć wybranemu
+[00:22:08] tematowi, no to naturalnie jestem w
+[00:22:10] stanie o nim po prostu porozmawiać. Na
+[00:22:13] przykład tutaj interesuje mnie protokół
+[00:22:15] MCP, o którym za chwilę będę sobie z
+[00:22:17] Grokiem rozmawiać. Tymczasem może
+[00:22:19] pojawić się tutaj pewne pytanie
+[00:22:21] dotyczące tego, co powiedziałem przed
+[00:22:23] chwilą na temat rozjeżdżenia się wizji
+[00:22:25] naszych oczekiwań oraz implementacji
+[00:22:27] agentów, którzy mają możliwość
+[00:22:29] podejmowania własnych decyzji. Pytanie
+[00:22:32] więc jak sobie z tym radzę? Otóż robię
+[00:22:34] to na kilka różnych sposobów. Po
+[00:22:36] pierwsze mamy tutaj specyfikacje
+[00:22:38] poszczególnych funkcjonalności oraz
+[00:22:40] zmian, które przeprowadziliśmy, które
+[00:22:42] naturalnie także pokazują historię
+[00:22:44] podjętych decyzji. Natomiast poza nimi
+[00:22:47] znajduje się tutaj także plik wizji,
+[00:22:49] który nakreśla takie wysokopoziomowe
+[00:22:52] spojrzenie na aplikację oraz jej
+[00:22:54] najważniejsze zasady. Zasady te mogą być
+[00:22:57] aktualizowane w czasie, natomiast ich
+[00:22:59] główne zadanie polega na tym, aby
+[00:23:01] dostarczyć agentom maksimum wiedzy,
+[00:23:04] którą normalnie ja bym posiadał. Zatem
+[00:23:06] przykładowo, jeżeli będziemy
+[00:23:08] implementować powiedzmy moduł
+[00:23:10] onboardingu w projekcie, to każdy agent,
+[00:23:12] który będzie się tym zajmował, będzie
+[00:23:14] posiadał szerokie spojrzenie na sam
+[00:23:16] projekt oraz także wąskie spojrzenie na
+[00:23:19] bieżące zadanie. Dodatkowo agent
+[00:23:21] otrzymuje także plik build, który
+[00:23:23] informuje go nie tylko o tym, co on
+[00:23:26] robi, ale także o tym, co przed chwilą
+[00:23:28] się wydarzyło oraz tym, co ma się
+[00:23:30] wydarzyć. to również dodaje dodatkowego
+[00:23:33] kontekstu, który normalnie pochodziłby
+[00:23:35] ode mnie. No a jeśli mówimy już o
+[00:23:37] kontekście, który pochodzi od człowieka,
+[00:23:40] to musimy również pomyśleć o wszystkim,
+[00:23:42] co jest związane z działaniem aplikacji
+[00:23:44] i tym, jak zwykle wygląda praca z
+[00:23:46] agentami. No bo przykładowo, nawet jeśli
+[00:23:49] sami pracujemy, załóżmy nad jakimiś
+[00:23:51] elementami aplikacji, to często
+[00:23:53] przechodzimy do konsoli, aby sprawdzić
+[00:23:56] style bądź logi w przeglądarce albo logi
+[00:23:59] na serwerze. W przypadku pracy z
+[00:24:01] agentami, którzy działają autonomicznie,
+[00:24:03] musimy zadbać też o to, aby to oni mieli
+[00:24:05] możliwość na przykład podłączenia się do
+[00:24:08] instancji aplikacji, a następnie pełnej
+[00:24:11] interakcji z nią. W zależności od
+[00:24:13] rodzaju oprogramowania, nad którym
+[00:24:14] pracujemy, coś takiego może być prostsze
+[00:24:17] albo trudniejsze. No bo przykładowo
+[00:24:19] tutaj mam aplikację desktopową, z którą
+[00:24:21] integracja również musiała być zbudowana
+[00:24:24] po to, aby agent mógł robić zrzuty
+[00:24:26] ekranu i obserwować to, jak zachowuje
+[00:24:29] się interfejs. Poza tym widzimy tutaj,
+[00:24:31] że agent pisze skrypty, które za chwilę
+[00:24:34] będą wchodzić w interakcję z aplikacją i
+[00:24:36] pozwolą mu nie tylko wykonywać zadania,
+[00:24:38] ale także obserwować poszczególne
+[00:24:40] elementy aplikacji i tym samym uzyskiwać
+[00:24:43] bardzo jakościowy kontekst do dalszych
+[00:24:45] zadań. No i widzimy tutaj jak jedna z
+[00:24:47] wiadomości została przesłana, a agent
+[00:24:49] wykonał zrzut ekranu. No i na ten moment
+[00:24:52] zostawimy go sobie, bo tymczasem
+[00:24:54] chciałbym zwrócić także uwagę na fakt,
+[00:24:56] że samo dostarczenie kontekstu nie jest
+[00:24:59] jedyną rzeczą, która wpływa na
+[00:25:00] zachowanie agentów, którzy działają w
+[00:25:03] tle. No bo do tej pory mówiłem o tym
+[00:25:05] globalnym kontekście wiedzy o tym co
+[00:25:07] zostało zrealizowane i co będzie
+[00:25:09] zrealizowane, ale także mamy tutaj do
+[00:25:11] czynienia z autonomicznym zarządzaniem
+[00:25:14] sesjami. Sesje te zwykle są osadzone w
+[00:25:17] bardzo wąskim zakresie. Oznacza to, że
+[00:25:20] model jest skupiony wyłącznie na jednym
+[00:25:22] zadaniu i w danej sesji nie dochodzi do
+[00:25:24] realizacji więcej niż jednego zadania
+[00:25:26] jednocześnie, bo nawet jeżeli tutaj
+[00:25:29] dojdzie do różnego rodzaju problemów,
+[00:25:31] które nie mogą zostać rozwiązane, to
+[00:25:33] agent jest poinstruowany, aby zostawić
+[00:25:35] po sobie notatkę, którą następnie
+[00:25:37] przejmuje kolejny agent. To właśnie z
+[00:25:39] tego powodu niektóre specyfikacje mają
+[00:25:41] tutaj więcej notatek, do których wgląd
+[00:25:44] mają oczywiście inni agenci. Taka praca
+[00:25:47] zentami sprawia, że kontekst, który
+[00:25:49] tutaj mamy, raczej nigdy nie przekracza
+[00:25:51] na przykład 50% okna kontekstowego.
+[00:25:54] Jeżeli poczytamy sobie statystyki na
+[00:25:56] temat skuteczności działania modeli, to
+[00:25:58] zobaczymy, że ich największy poziom
+[00:26:00] znajduje się właśnie w pierwszej części
+[00:26:02] okna kontekstowego. Dodatkowo część z
+[00:26:04] nas zapewne wie, że na pewnym etapie
+[00:26:07] wątek będzie musiał zostać
+[00:26:08] skompresowany, a to oznacza, że część
+[00:26:11] informacji zostanie utracona. Jeżeli nie
+[00:26:13] będziemy do tego dopuszczać i w tym
+[00:26:15] przypadku dzieje się to automatycznie,
+[00:26:17] to naturalnie wykorzystujemy te
+[00:26:18] największe możliwości modelu właśnie z
+[00:26:21] tego powodu, że skupiamy jego uwagę na
+[00:26:23] danym zadaniu. To zwiększa nie tylko
+[00:26:25] skuteczność w dowie rezultatu, ale także
+[00:26:28] szansę na to, że na przykład agent,
+[00:26:29] który zakończy swoje zadanie, zapisze
+[00:26:32] tak jak tutaj dokumenty, o którego
+[00:26:33] prosiliśmy. Jeżeli chodzi o samo
+[00:26:36] sterowanie agentami, to coś takiego
+[00:26:38] idzie nieco dalej, bo mianowicie to nie
+[00:26:40] jest tylko tak, że Grockbot zarządza
+[00:26:43] bezpośrednio instancjami Pi, ale
+[00:26:45] korzysta z mojego rozszerzenia, w ramach
+[00:26:47] którego moje polecenia w ramach którego
+[00:26:50] moje polecenia Grok odpowiednio
+[00:26:51] kształtuje i ewentualnie wzbogaca,
+[00:26:53] jeżeli to jest potrzebne, a następnie
+[00:26:55] przekazuje do koordynatora. Jednak
+[00:26:58] koordynator otrzymuje nie tylko to, co
+[00:27:00] przekazał mu Grok, ale także wizję oraz
+[00:27:02] tablicę projektu. Poza tym, jeżeli Grok
+[00:27:05] zleca mu konkretne zadanie, to
+[00:27:07] automatycznie dostaje wszystkie
+[00:27:09] informacje, które są z nim związane,
+[00:27:11] które na przykład były dostarczone przez
+[00:27:13] innych agentów. I dokładnie ta sekcja
+[00:27:15] sprawia, że nawet proste polecenia Groka
+[00:27:18] w praktyce zostają przełożone na bardzo
+[00:27:20] bogaty, a jednocześnie bardzo
+[00:27:22] sprecyzowany kontekst, który pomaga
+[00:27:25] koordynatorowi zarządzić workerami. No i
+[00:27:27] właśnie tutaj dochodzi też do sytuacji,
+[00:27:30] w której to nie koordynator zarządza tym
+[00:27:32] zadaniem, lecz przekazuje zadanie do
+[00:27:34] workerów. Workery są więc oddzielnymi
+[00:27:37] instancjami P, które dostają bardzo
+[00:27:40] ściśle sprecyzowane zadanie i są
+[00:27:42] obserwowane przez koordynatora. A zatem
+[00:27:44] gdy jeden z workerów zakończy swoją
+[00:27:46] pracę, informacja o tym nie trafia do
+[00:27:48] Groka ani do mnie, tylko wraca z
+[00:27:50] powrotem do koordynatora. Ten z kolei
+[00:27:53] zapoznaje się z rezultatami i podejmuje
+[00:27:55] decyzję o tym, czy uruchomić kolejnego
+[00:27:57] workera, który będzie wyspecjalizowany w
+[00:28:00] review, czy po prostu wykonać merch.
+[00:28:02] Alternatywnie taki koordynator może
+[00:28:04] skontaktować się z człowiekiem, który w
+[00:28:06] tym przypadku ma postać Groka, który to
+[00:28:08] podejmuje decyzję o tym, czy
+[00:28:10] skontaktować się ze mną, czy pomóc
+[00:28:12] koordynatorowi podjąć decyzję o tym, co
+[00:28:14] dalej. I tutaj jeszcze mamy bardziej
+[00:28:17] szczegółową wizualizację co do tego, jak
+[00:28:20] wygląda modyfikacja promptów
+[00:28:22] poszczególnych workerów i komunikacji
+[00:28:24] pomiędzy nimi. Jak widać normalnie Pi
+[00:28:27] otrzymałby bardzo proste instrukcje
+[00:28:29] pochodzące bezpośrednio z ustawień oraz
+[00:28:32] oczywiście wiadomość użytkownika.
+[00:28:34] Natomiast w moim przypadku otrzymuje
+[00:28:36] serię dodatkowych informacji, które
+[00:28:38] wspierają go w utrzymaniu odpowiedniego
+[00:28:41] poziomu, zarówno specyfikacji, jak i
+[00:28:43] samego kodu. Dodatkowo mówimy tutaj
+[00:28:45] także o podniesieniu efektywności
+[00:28:47] komunikacji oraz także jakości pisania
+[00:28:50] samego kodu, ponieważ przykładowo sam
+[00:28:52] worker dostaje informacje na temat
+[00:28:55] stylu, który chcemy utrzymać w samym
+[00:28:56] kodzie, ale też regularnie przypominamy
+[00:28:59] mu o tym, aby zaglądał do tego pliku,
+[00:29:01] aby dodatkowo potwierdzić, czy
+[00:29:03] wygenerowany kod jest zgodny z naszymi
+[00:29:05] oczekiwaniami. I właśnie takie
+[00:29:08] modyfikacje sprawiają, że autonomia
+[00:29:10] zostaje przesuwana jeszcze bardziej.
+[00:29:12] >> [parsknięcie]
+[00:29:12] >> I ja oczywiście nie twierdzę tutaj, że
+[00:29:14] obecny status tych modyfikacji jest
+[00:29:16] najlepszą możliwą opcją. Z pewnością w
+[00:29:19] moim przypadku podnosi on skuteczność
+[00:29:21] agentów w moich projektach. Natomiast i
+[00:29:24] tak pomimo tego regularnie każdego dnia
+[00:29:27] dostaję raport zawierający sugestie co
+[00:29:29] do tego, co można poprawić w samym
+[00:29:31] systemie po to, aby usunąć problemy, z
+[00:29:33] którym borykali się agenci poprzedniego
+[00:29:35] dnia. W ten sposób podejmujemy decyzję o
+[00:29:38] modyfikacji na przykład tych
+[00:29:40] wstrzykiwanych formuł, a następnie w
+[00:29:42] dalszych cyklach weryfikujemy postępy. W
+[00:29:45] związku z tym, że sam ten proces
+[00:29:47] wykorzystuje ten sam sposób zarządzania
+[00:29:48] specyfikacjami, mówimy tutaj nie tylko o
+[00:29:51] jednorazowym usprawnieniu, ale także
+[00:29:53] posiadaniu historii zmian na przykład na
+[00:29:55] przestrzeni ostatniego tygodnia. Dzięki
+[00:29:57] temu unikamy powtarzania tych samych
+[00:29:59] błędów, choć oczywiście nie oznacza to
+[00:30:01] całkowitego wyeliminowania ryzyka
+[00:30:03] ponownego ich wystąpienia. No to teraz
+[00:30:06] przejdźmy jeszcze na chwilę do
+[00:30:07] terminala, bo chciałbym pokazać coś
+[00:30:10] jeszcze. Oczywiście w międzyczasie
+[00:30:12] widzimy jak agenci pracują nad dalszym
+[00:30:14] rozwojem mojego projektu. Natomiast
+[00:30:17] tutaj pojawiła się też zakładka, w
+[00:30:19] której mamy Herdr, ale działający poza
+[00:30:22] moim komputerem. Agenci działający w
+[00:30:24] chmurze są dość logicznym podejściem. W
+[00:30:26] końcu nie chcemy uzależniać
+[00:30:28] autonomicznych agentów od tego, czy nasz
+[00:30:30] komputer jest włączony i czy ma dostęp
+[00:30:32] do sieci. Dlatego będzie nas interesować
+[00:30:34] to, aby przynajmniej część naszych
+[00:30:36] agentów funkcjonowała na zewnętrznym
+[00:30:39] serwerze albo nawet serwerach. Sama
+[00:30:41] konfiguracja takiego serwera w moim
+[00:30:43] przypadku odbyła się z pomocą modelu. Po
+[00:30:45] prostu wpuściłem go na VPS dedykowany
+[00:30:48] programowaniu i zadbałem tylko o
+[00:30:50] odpowiednie zabezpieczenie tego
+[00:30:52] połączenia, wykorzystując serwis tile
+[00:30:54] scale. No i tutaj oczywiście agenci
+[00:30:56] funkcjonujący zdalnie na serwerze
+[00:30:58] również są zarządzani z poziomu tego
+[00:31:01] samego Grockbota. Dzięki temu to
+[00:31:03] Grockbot może decydować, które zadania
+[00:31:05] uruchomić na moim komputerze, a które
+[00:31:07] zdalnie. W praktyce obserwuję trend, w
+[00:31:10] którym coraz więcej zadania, a w
+[00:31:11] zasadzie cały dewelopment przesuwa się w
+[00:31:14] moim przypadku w chmurę. Dzięki temu
+[00:31:16] agenci są w stanie pracować całą dobę i
+[00:31:18] nie tylko wykonywać zadania, które
+[00:31:20] znajdują się w danym momencie na liście,
+[00:31:22] ale także reagować na zewnętrzne
+[00:31:24] zdarzenia, czego konfiguracja jest
+[00:31:26] niezwykle prosta. Powodem tego jest
+[00:31:28] fakt, że Grockbot posiada możliwość
+[00:31:30] ustawiania harmonogramów oraz webhooków,
+[00:31:33] które mogą podłączyć się do naszego
+[00:31:35] GitHua albo działać, tak jak
+[00:31:36] wspomniałem, każdego dnia o ustalonej
+[00:31:39] porze. Aby je ustawić, wystarczy tak
+[00:31:41] naprawdę porozmawiać z Grokiem. No
+[00:31:44] dobrze, myślę, że mamy już takie
+[00:31:46] komponenty autonomii, ale byliśmy bardzo
+[00:31:48] skupieni na programowaniu i rozwoju
+[00:31:51] samego produktu pod kątem
+[00:31:52] funkcjonalności. Natomiast to wszystko,
+[00:31:54] co do tej pory pokazałem oczywiście nie
+[00:31:57] musi adresować tylko i wyłącznie
+[00:31:59] programistycznych zadań. No bo
+[00:32:01] przykładowo tutaj mamy nową stronę
+[00:32:03] Alice, która w tym przypadku nie jest
+[00:32:05] już tworzona we framerze, tylko z pomocą
+[00:32:08] frameworka Astro. Dzięki temu cały chang
+[00:32:11] oraz dokumentacja może być zarządzana z
+[00:32:14] pomocą agentów, którzy mają teraz
+[00:32:16] swobodny dostęp do całej infrastruktury.
+[00:32:19] Poza tym bez problemu mogą zmodyfikować
+[00:32:21] każdy, mogą zmodyfikować dowolny
+[00:32:23] element, więc w zasadzie o cokolwiek bym
+[00:32:25] tutaj nie poprosił może zostać
+[00:32:27] zrealizowane, a dodatkowo duża część
+[00:32:30] zadań może być realizowana w ogóle bez
+[00:32:32] mojego udziału. Na przykład w momencie,
+[00:32:34] gdy pojawia się nowa funkcjonalność,
+[00:32:36] może pojawić się nowy wpis, który będzie
+[00:32:38] ją dokumentował. Ja osobiście zawsze
+[00:32:41] miałem problem z utrzymaniem
+[00:32:42] dokumentacji, zarówno pod kątem jej
+[00:32:44] rozwoju, jak i późniejszego pilnowania
+[00:32:47] tego, czy każdy z wpisów jest aktualny.
+[00:32:50] Natomiast teraz duża część tych
+[00:32:51] obowiązków po prostu została ze mnie
+[00:32:53] zdjęta. Co więcej, zastosowałem tutaj
+[00:32:55] pewien element, który być może część z
+[00:32:57] was będzie interesował. Otóż to, co
+[00:33:00] tutaj widzimy, to nie jest wygenerowana
+[00:33:02] animacja bądź screenshot, tylko po
+[00:33:05] prostu fragment interfejsów pochodzący
+[00:33:07] bezpośrednio z Alis. Coś takiego przy
+[00:33:09] możliwościach obecnych modeli oznacza
+[00:33:12] mniej więcej tyle, że dokumentacja może
+[00:33:14] być rozwijana nie tylko w postaci
+[00:33:16] tekstu, ale w tym miejscu będą pojawiać
+[00:33:18] się również wizualizacje prezentujące
+[00:33:21] poszczególne funkcjonalności aplikacji.
+[00:33:23] Sam ten pomysł może zostać płchnięty
+[00:33:25] nawet dalej, ponieważ przykładowo jeśli
+[00:33:28] użytkownik byłby zalogowany, to
+[00:33:30] wizualizacje mogłyby dostosować się do
+[00:33:32] jego indywidualnego przypadku. Coś
+[00:33:34] takiego oczywiście nie musi być zawsze
+[00:33:36] wymagane, ale jednocześnie pokazuje
+[00:33:38] pewnego rodzaju nowe możliwości, po
+[00:33:40] które możemy sięgnąć. Oczywiście
+[00:33:42] przesuwając to jeszcze bardziej należy
+[00:33:44] zadać sobie pytanie, czy w ogóle
+[00:33:45] kiedykolwiek jakiś człowiek będzie
+[00:33:47] czytał tą dokumentację, czy powinna ona
+[00:33:50] zostać stworzona w pierwszej kolejności
+[00:33:52] z myślą o agentach. A jeżeli tak, to co
+[00:33:54] to dokładnie oznacza? Tutaj jeszcze
+[00:33:56] wspomniałem o design systemie, który
+[00:33:59] również opracowałem z pomocą AI. Wspiera
+[00:34:01] on, jak widać, różne wersje
+[00:34:03] kolorystyczne oraz porusza w zasadzie
+[00:34:05] wszystkie elementy aplikacji. Dzięki
+[00:34:07] temu otwiera mi przestrzeń nie tylko do
+[00:34:09] zachowania spójności przy tworzeniu
+[00:34:11] nowych funkcjonalności, ale także
+[00:34:13] otwiera przestrzeń do samodzielnie
+[00:34:15] dostosowującej się aplikacji do danego
+[00:34:17] użytkownika. I dokładnie ten obszar będę
+[00:34:20] teraz eksplorował. Podsumowując teraz co
+[00:34:23] udało mi się zrobić z pomocą tych
+[00:34:25] wszystkich narzędzi w ciągu ostatnich 5
+[00:34:27] dni, to tutaj mamy wizualizację
+[00:34:29] istniejącego systemu, który rozwijałem
+[00:34:32] przez 4 lata. Wszystko co tutaj widzimy
+[00:34:34] zostało przeze mnie usunięte i w
+[00:34:37] zasadzie zostało mi tam tylko kilka
+[00:34:38] plików konfiguracyjnych. Natomiast
+[00:34:40] funkcjonalności, które mamy teraz
+[00:34:42] odwzorowało nie tylko praktycznie
+[00:34:44] wszystkie możliwości, które mieliśmy do
+[00:34:46] tej pory, ale także rozwinęło aplikacje
+[00:34:48] o dodatkowe, które wcześniej nie były
+[00:34:50] dostępne, a także przygotowały ją do
+[00:34:53] dalszego rozwoju w sposób nie tylko
+[00:34:55] elastyczny, ale przede wszystkim w dużym
+[00:34:57] stopniu autonomiczny. Także to, co
+[00:34:59] widzimy tutaj, to praca jednego
+[00:35:01] człowieka wyposażona w system, który już
+[00:35:04] nie tylko jest w stanie wchodzić
+[00:35:05] autonomicznie w rozwój oprogramowania,
+[00:35:08] ale także dotykać obszarów komunikacji,
+[00:35:10] marketingu, modelu biznesowego czy
+[00:35:13] mapowania dostępnych opcji pod kątem
+[00:35:15] dalszego rozwoju. No i myślę, że tym
+[00:35:18] sposobem zbliżyliśmy się do końca mojej
+[00:35:20] sesji. Zatem chciałbym tylko krótko
+[00:35:22] podsumować, że mieliśmy tutaj do
+[00:35:24] czynienia z konfiguracją narzędzia PI
+[00:35:26] zarówno na moim komputerze, jak i na
+[00:35:28] serwerze zdalnym, który w obu
+[00:35:30] przypadkach jest całkowicie zarządzany z
+[00:35:33] pomocą Grockbota oraz dedykowanej logiki
+[00:35:35] w postaci rozszerzeń do Pie, które
+[00:35:38] dopasowują się do mojego projektu,
+[00:35:40] zwiększając szansę na to, że
+[00:35:42] specyfikacje oraz jakość samego
+[00:35:44] oprogramowania będzie utrzymywana na
+[00:35:46] satysfakcjonującym mnie poziomie. Poza
+[00:35:49] tym zwracam tutaj uwagę na fakt, że na
+[00:35:51] przykład logi albo możliwość
+[00:35:53] samodzielnego przeklikiwania aplikacji,
+[00:35:55] w tym także posiadanie własnego
+[00:35:57] urządzenia, na którym w zasadzie agent
+[00:35:59] może robić wszystko, jest niezwykle
+[00:36:01] ważne. Tak samo jak dodatkowe elementy,
+[00:36:03] takie jak na przykład design system,
+[00:36:05] ponieważ to wszystko w połączeniu
+[00:36:07] otwiera nam ogromne możliwości
+[00:36:09] współpracy nawet z dziesiątkami agentów,
+[00:36:11] którzy nie muszą wcale działać
+[00:36:13] równocześnie. mogą funkcjonować według
+[00:36:15] harmonogramów, dbając o procesy, na
+[00:36:17] które do tej pory jako ludzie nie
+[00:36:19] mieliśmy czasu i jednocześnie dając nam
+[00:36:21] przestrzeń do tego, abyśmy mogli robić
+[00:36:23] rzeczy, które rzeczywiście mają
+[00:36:25] znaczenie, zarówno z punktu widzenia
+[00:36:27] rozwoju produktu, jak i z punktu
+[00:36:29] widzenia naszych użytkowników oraz
+[00:36:31] klientów. To wszystko co do tej pory
+[00:36:33] pokazałem to jeden z elementów
+[00:36:35] stanowiących moją wizję koncepcji
+[00:36:37] megaprogramisty bądź programistki,
+[00:36:39] którzy wykorzystują sztuczną
+[00:36:41] inteligencję nie tylko do tego, aby
+[00:36:43] wyłącznie przyspieszać to, co znaliśmy
+[00:36:45] do tej pory, ale pokonywać też przy tym
+[00:36:47] różnego rodzaju bariery, w tym także
+[00:36:49] rozwijać umiejętności szukania
+[00:36:50] możliwości, które do tej pory nawet w
+[00:36:53] ogóle nie istniały.
+[00:36:59] No i jak widzicie,
+[00:37:02] to jest Adam, to jest prawda.
+[00:37:03] Odtworzenie aplikacji w tydzień, którą
+[00:37:06] budowaliśmy w zasadzie
+[00:37:08] >> c [śmiech] lata.
+[00:37:09] >> Inaczej nie innych rzeczy nie mówię. No
+[00:37:11] nie. [wciągnięcie powietrza]
+[00:37:13] Tak to jest. To znaczy ja przyznam wam,
+[00:37:16] że mnie to też zaskoczyło jak daleko
+[00:37:19] można to posunąć, nie? Nawet ten design
+[00:37:21] system, wiecie, to był eksperyment,
+[00:37:24] gdzie miałem po po prostu luźną
+[00:37:27] subskrypcję Clotcoda, którego akurat w
+[00:37:29] tym pie nie można uruchomić, tak jak
+[00:37:31] tutaj
+[00:37:32] chyba Mateusz zauważył,
+[00:37:34] >> tak?
+[00:37:34] >> I puściłem go na noc i powiedziałem:
+[00:37:37] "Okej, tu masz aplikację". No generalnie
+[00:37:39] ustawiłem proces, ustawiłem cele i
+[00:37:42] puściłem go w trybie ultra code. No i
+[00:37:45] wygenerował mi design system na
+[00:37:47] podstawie istniejącego projektu oraz
+[00:37:49] moich założeń.
+[00:37:51] I ten design system nie był perfekcyjny.
+[00:37:54] Ja musiałem go jeszcze iterować i tak
+[00:37:55] naprawdę to dalej się dzieje, bo design
+[00:37:57] system też no nigdy nie jest martwy.
+[00:37:59] Tak, on zawsze żyje i się rozwija,
+[00:38:02] więc nie zmienia to faktu. Teraz to dało
+[00:38:06] mi taką świadomość, że właśnie niektóre
+[00:38:08] zadania rzeczywiście mogą być puszczone
+[00:38:10] tak dość luźno, żeby model nawet nie
+[00:38:14] według ściśle naszych oczekiwań, ale
+[00:38:16] według gdzieś tam swojego widzimisia
+[00:38:18] oraz jakiegoś kierunku dochodził do
+[00:38:21] takich rzeczy, na których potem my
+[00:38:22] możemy pracować. To samo się dzieje z
+[00:38:25] review, jak tutaj ktoś napisał, że
+[00:38:26] właśnie trzeba zarządzać bezpieczeństwem
+[00:38:28] i yyy i jakością yyy samej aplikacji. No
+[00:38:33] to powiedzcie mi tak szczerze, nie,
+[00:38:36] kiedy robiliście taki porządny yyy
+[00:38:40] review swoje swoich aplikacji pod kątem
+[00:38:43] bezpieczeństwa, nie? Sami kiedy ma jak
+[00:38:46] dużo macie czasu na robienie takich
+[00:38:48] rzeczy? Czy macie to wpisane w proces?
+[00:38:50] Jeżeli tak, to super. Jeżeli to jest
+[00:38:53] praca taka adh albo od audytu do audytu,
+[00:38:56] no to wiecie, błędy się zdarzają i to
+[00:38:59] nawet nie bezpośrednio z naszego powodu.
+[00:39:01] Natomiast y
+[00:39:04] w wyniku no różnych y sytuacji, które
+[00:39:08] mają miejsce przy rozwoju
+[00:39:09] oprogramowania. No i teraz jak mamy
+[00:39:10] agentów, którzy są w stanie się
+[00:39:12] zespinować poza naszym komputerze
+[00:39:15] komputerem na przykład po przy większych
+[00:39:17] zmianach albo na przykład według
+[00:39:19] harmonogramu obserwować nie tylko to co
+[00:39:22] zostało zmienione, ale co się dzieje w
+[00:39:24] aplikacji, no to to dużo zmienia i jak
+[00:39:26] no ktoś mówi, że praca z agentami obniża
+[00:39:29] jakość oprogramowania, no tak, no jeżeli
+[00:39:31] pracujemy z nimi bezpośrednio nie mamy
+[00:39:33] czasu na to, żeby czekać aż zrobią
+[00:39:35] review, to tak, to obniża. Natomiast
+[00:39:37] jeżeli robią to w tle, a potem my
+[00:39:41] podejmujemy decyzję
+[00:39:43] co do tego, co ma być posprzątane, co ma
+[00:39:45] być przeorganizowane albo co trzeba
+[00:39:48] przekazać komuś dalej, aby się temu
+[00:39:50] przyjrzał, no to wtedy oprogramowanie
+[00:39:54] jest lepsze, nie? Albo tutaj w tym
+[00:39:56] design systemie robiłem animację samego,
+[00:40:00] samego logotypu i jakiś takich detali,
+[00:40:02] na które też normalnie w
+[00:40:04] przeprogramowaniu nie miałem czasu i to
+[00:40:06] nawet pracując.
+[00:40:07] A, bo po prostu trzeba to przeiterować
+[00:40:09] wiele razy, a agent, który jest
+[00:40:11] zapuszczony w pętli,
+[00:40:13] przeliteruje to sobie i zwróci nam na
+[00:40:16] przykład pięć różnych rezultatów, z
+[00:40:18] których wybierzemy sobie ten, który
+[00:40:20] odpowiada nam najbardziej. A no i to
+[00:40:23] jest ścieżka do lepszego oprogramowania,
+[00:40:25] bardziej bezpiecznego, bardziej
+[00:40:26] skalowalnego, wydajnego i tak dalej.
+[00:40:28] Nie,
+[00:40:28] >> Kamil, Kamilka tutaj mówi, że dobra,
+[00:40:31] czyli zostaje nam stolarz, piekarz,
+[00:40:32] kucharz servisant. O tym, o tym byśmy
+[00:40:35] pogadali też może jeszcze nie teraz. Ja
+[00:40:37] na chwilkę w ramach przerywnika
+[00:40:39] udostępnię wam mój ekran. Yyy, prośbę o
+[00:40:42] jego pokazanie. I tutaj jak wejdziecie
+[00:40:44] sobie na stronę mega.def to y chcę was
+[00:40:48] prosić o to, żebyście kliknęli w
+[00:40:50] przycisk Take assessment. I
+[00:40:53] przygotowaliśmy taki bardzo fajny z
+[00:40:55] Adamem. W ogóle to jest mega długi
+[00:40:56] prompt. Możecie sobie go zobaczyć tutaj
+[00:40:58] klikając na mega death challenge
+[00:41:00] dokładnie jak on wygląda i co robi. Y
+[00:41:03] przygotowaliśmy taki zestaw m właśnie
+[00:41:07] dla waszego agenta. Jeszcze raz tutaj
+[00:41:08] sobie wejdę.
+[00:41:10] Wystarczy, że skopiujecie te instrukcje
+[00:41:13] do agenta i wkleicie. On zajmie się
+[00:41:17] przeszukaniem waszego jakby zbadaniem
+[00:41:20] waszego harnessu, waszej historii,
+[00:41:23] ale pod konkretnym kątem, pod kątem
+[00:41:25] tego, co jakby definiuje mega dewelopera
+[00:41:29] dla nas, bo zrobiliśmy taką definicję na
+[00:41:31] potrzeby mega mega dewelopera i i mamy
+[00:41:34] też taką drabinkę, taki lader dojścia do
+[00:41:36] tych umiejętności. Każdy z tych
+[00:41:39] umiejętności 12 skili ma kilkadziesiąt
+[00:41:42] albo nawet kilkaset różnych takich
+[00:41:44] zagadnień, które warto spełnić. No i
+[00:41:46] właśnie jak kogoś pytamy yyy czy
+[00:41:49] faktycznie pracuje z agentami y no to y
+[00:41:53] odpowiedź tak czy nie jest
+[00:41:54] nieprecyzyjna, bo właśnie po drodze jest
+[00:41:57] te kilkaset rzeczy, które tak naprawdę
+[00:41:58] zdefiniowaliśmy jako wartościowe. Teraz
+[00:42:00] >> ja tylko zaznaczę, jak skopiujecie ten
+[00:42:02] prompt i na przykład pracujecie w
+[00:42:04] klotkodzie, to może się zdarzyć tak, że
+[00:42:08] on powie wam, że to jest prompt
+[00:42:10] injection, bo trochę jest. Y, natomiast
+[00:42:12] ja tam zadbałem o to, yyy, jest tam taka
+[00:42:15] struktura danych, która yyy trafia do
+[00:42:17] nas z powrotem yyy tak żeby nie było tam
+[00:42:20] danych na temat projektu, nad którym
+[00:42:21] pracujecie, tylko bardziej nad yyy
+[00:42:24] charakter charakterystyką waszej pracy z
+[00:42:26] agentami. Na przykład czy zadajecie
+[00:42:29] pytania przed rozpoczęciem zadania, czy
+[00:42:31] korzystacie ze specyfikacji,
+[00:42:34] jak właśnie zarządzacie agentami, czy są
+[00:42:36] tam ślady tego, że to agenci zarządzają
+[00:42:38] agentami i tak dalej. Nie możecie
+[00:42:40] oczywiście tych danych do nas nie
+[00:42:42] wysyłać też yyy bo yyy zgody waszej na
+[00:42:46] sam koniec te dane się do nas nie wyślą,
+[00:42:47] ale będziecie mogli zobaczyć y efekt tej
+[00:42:50] y tego as.
+[00:42:51] >> No ale analiza i tak zostanie wykonana
+[00:42:53] gdzieś tam u nas, ale dopiero po
+[00:42:55] przesłaniu. Natomiast możecie zapoznać
+[00:42:56] się z tym obiektem i rzeczywiście no nie
+[00:42:58] ma tam
+[00:43:00] >> tak tak i ale jak wyślecie to do nas to
+[00:43:03] dodatkowo otrzymacie taką pierwszą kartę
+[00:43:06] mega. Tych kart będzie dużo więcej. E, a
+[00:43:09] tą pierwszą kartę będziecie mogli
+[00:43:10] udostępnić i ponieważ fajnie i nam
+[00:43:14] bardzo miło jest, że jesteście z nami na
+[00:43:15] żywo, to na koniec tego livea wybierzemy
+[00:43:18] jedną osobę, która otrzyma darmowy
+[00:43:20] dostęp do mega albo zwrot, jak już
+[00:43:21] kupiła. Dzięki temu, że udostępni tą
+[00:43:25] swoją kartę na XIE albo na LinkedInie,
+[00:43:28] tylko koniecznie dodajcie proszę #
+[00:43:30] megadef i i na koniec y sprawdzimy co i
+[00:43:34] jak. I polecam wam uruchomić to teraz,
+[00:43:36] bo w zależności od waszego setupu może
+[00:43:38] to potrwać parę minut, a może nawet
+[00:43:39] paręnaście, więc żebyście zdążyli przed
+[00:43:42] końcem tego live'a. No i mamy jeszcze
+[00:43:45] 10% zniżki na mega, ale to też
+[00:43:47] podrzucamy na czacie, więc to te drobne
+[00:43:49] ogłoszenia. A teraz ja, jak już mam swój
+[00:43:51] ekran, to też chcę wam powiedzieć, jak
+[00:43:52] można trochę pójść z tym dalej w
+[00:43:54] kontekście tym biznesowym. Yyy, już nie
+[00:43:57] wspominając o tym, że ja też trochę
+[00:43:59] programuję i każdy z nas już teraz
+[00:44:00] trochę programuje yyy i y ja pracuję
+[00:44:04] sobie z kursorem czy tam czatem GPT na
+[00:44:06] bieżąco podłączając tutaj repozytoria i
+[00:44:09] w momencie gdy na przykład mam do
+[00:44:10] wykonania jakieś proste zmiany, nie
+[00:44:12] wiem, prostą zmianę pricingu na Easy
+[00:44:13] Tools czy coś takiego, to dla mnie taki
+[00:44:16] setup, który pokazał teraz Adam nie jest
+[00:44:18] zupełnie potrzebny, a nadal tak naprawdę
+[00:44:20] mogę te zmiany wykonać, więc
+[00:44:22] >> A jednocześnie prosiłeś mnie o to, żeby
+[00:44:24] ustawić nasz nowy projekt. Tak,
+[00:44:25] >> właśnie w taki sposób, żebyśmy wspólnie
+[00:44:27] nad nim pracowali. No i y powiem ci tak,
+[00:44:31] gdybym jeszcze jakiś czas temu, gdybyś
+[00:44:34] mnie o to poprosił, to bym miał coś
+[00:44:35] takiego, że kurde, no dobra, ale twoje
+[00:44:37] zmiany zrobią więcej zamieszania, to
+[00:44:39] lepiej jak mi powiesz, niż niż będziesz
+[00:44:41] to robił sam. No bo ja wiem jak zadać
+[00:44:43] pytania o architekturę i tak dalej.
+[00:44:45] Natomiast w tym przypadku zarówno ta
+[00:44:48] wizja projektu, jak i cały dashboard,
+[00:44:50] jak i historia specyfikacji i tak dalej
+[00:44:52] jest budowana tak, że ja widzę po sobie,
+[00:44:54] że w dużym stopniu potrzebuję powiedzieć
+[00:44:57] po prostu co chcę, żeby było zrobione
+[00:44:58] albo powiedzieć co nie działa i agent to
+[00:45:01] rozkmini i to zwykle lepiej niż sam bym
+[00:45:03] to zrobił, nie?
+[00:45:05] >> Dokładnie. Bo przechodząc od takich
+[00:45:06] prostych zadań jak na przykład zmiany
+[00:45:08] jakieś na stronie, która zresztą po
+[00:45:10] przeniesieniu jej z jakiegoś zamkniętego
+[00:45:12] systemu typu frameer czy webflow, które
+[00:45:14] mieliśmy wcześniej na jakieś otwarty
+[00:45:16] typu
+[00:45:17] >> w ogóle możemy się zatrzymać tutaj.
+[00:45:19] Rzeczywiście czasem będzie tak, że jak
+[00:45:21] patrzycie sobie na autonomię to to nie
+[00:45:23] jest wiecie tylko tak, że sobie
+[00:45:24] ustawicie Pie na serwerze i elo, tylko
+[00:45:28] rzeczywiście trzeba dostosować sam
+[00:45:30] projekt na przykład pod kątem
+[00:45:32] observability czy chociażby tego co
+[00:45:34] powiedział Grzegorz. mieliśmy stronę na
+[00:45:36] Webflow i przez lata nam to służyło, bo
+[00:45:38] mogliśmy wizualnie wprowadzać zmiany yyy
+[00:45:41] bez znajomości programowania i tak
+[00:45:43] dalej. To po prostu działało. A
+[00:45:44] natomiast teraz stało się ogromnym
+[00:45:46] ograniczeniem, ponieważ nawet
+[00:45:47] wprowadzenie artykułu na bloga, jego
+[00:45:49] ręczne formatowanie, yyy, no po prostu
+[00:45:52] było bardzo ciężkie, tak? Bo nie
+[00:45:54] wszystkie funkcje były dostępne w API i
+[00:45:56] tak dalej. Ja mogę pokazać wprost, jak
+[00:45:58] potężnym unlockiem jest po prostu
+[00:46:00] zrobienie tego, ponieważ to mi pozwoliło
+[00:46:02] nie tylko jakby zrobić jakieś proste
+[00:46:04] wiecie zmiany na stronie, ale ale
+[00:46:06] zbudować cały swój intercom, czyli
+[00:46:09] generalnie sam zbudowałem aplikację
+[00:46:11] intercom, gdzie można zadawać,
+[00:46:13] >> nie wiem czy każdy kojarzy
+[00:46:14] >> pytania, tak? No to jest taki czat yy,
+[00:46:16] który de facto jakby rozpisałem go na
+[00:46:18] szereg etapów i podobnie jak Adam
+[00:46:20] pracuje ze specyfikacją do swoich
+[00:46:22] projektów, tak ja również biznesowo
+[00:46:24] tworzę pliki MD, które stanowią
+[00:46:26] specyfikacj do moich projektów i do tego
+[00:46:28] co robię i dzięki temu y właśnie mogę
+[00:46:31] bardzo dobrze jakby biznesowo
+[00:46:34] przewidzieć kolejne rzeczy, które tutaj
+[00:46:36] nastąpią. No i zobaczcie, że y
+[00:46:38] odtworzenie takiego intercoma to
+[00:46:40] oczywiście jest dosyć duża oszczędność
+[00:46:41] dla nas, no ale ten agent, jak ja zadam
+[00:46:44] mu tutaj pytania, musiałbym to zrobić na
+[00:46:46] produkcyjnej wersji. Więc jeśli wejdę
+[00:46:49] sobie na stronę Easy Tools i zacznę z
+[00:46:51] nim rozmawiać, y to on oczywiście ma
+[00:46:53] całą wiedzę z naszej dokumentacji, ma
+[00:46:55] całą wiedzę z naszej strony, no i
+[00:46:58] generalnie ze wszystkich naszych
+[00:47:00] narzędzi, czyli na przykład y PayPal na
+[00:47:03] przykład coś takiego mu zadam. No i on
+[00:47:05] oczywiście sobie tego to gdzieś znajdzie
+[00:47:06] i wyszuka. Ja byłem w stanie zrobić to
+[00:47:08] sam, całą tą aplikację z jakimś tam code
+[00:47:10] review
+[00:47:12] przez nasz zespół. Natomiast yyy de
+[00:47:15] facto ja byłem w stanie też w niej
+[00:47:17] wprowadzać później wszystkie zmiany, a w
+[00:47:19] moim pliku specyfikacji wymyślić sobie i
+[00:47:21] doprowadzić ją do stanu, gdzie teraz
+[00:47:24] będę mógł pójść jeszcze o krok dalej,
+[00:47:26] czyli yyy ten chili, czyli nasz agent y
+[00:47:28] na stronie Easy Tools będzie mógł
+[00:47:30] komunikować się bezpośrednio z MCP i API
+[00:47:33] naszym i dzięki temu wykonywać dla
+[00:47:34] twórców jakieś na przykład akcje w ich
+[00:47:36] panelu, wysyłać na nich mailingi, bo to
+[00:47:38] już w MCP mamy. Czyli de facto taką
+[00:47:41] funkcjonalność byłem w stanie sam w
+[00:47:43] kursorze, nie w tym procesie Adama
+[00:47:45] wytworzyć.
+[00:47:46] >> Tak. A ja jeszcze dodam, bo wiecie, Easy
+[00:47:48] Tools to jest w zasadzie fintech, nie?
+[00:47:50] Czyli dość poważna aplikacja, na której
+[00:47:53] opierają się no realne biznesy, nasze
+[00:47:55] biznesy również. Yyy i yyy tam nie
+[00:47:58] możemy sobie pozwolić na wiecie jolo yyy
+[00:48:01] na produkcji oraz w tej głównej
+[00:48:03] aplikacji. A no i tam y nad tym czuwa
+[00:48:06] głównie na przykład Piotr, gdzie yyy po
+[00:48:09] prostu dbamy o najmniejsze szczegóły
+[00:48:11] przy, nie wiem, integracjach ksew, czy
+[00:48:13] jakiś innych systemów czy rozwiązań.
+[00:48:15] Yyy, natomiast nic nie stoi na
+[00:48:17] przeszkodzie, żeby wpuścić Grzegorza do
+[00:48:18] tego, żeby zrobił sobie właśnie czat na
+[00:48:21] stronie, który jest podłączony i do
+[00:48:23] działań marketingowych, i do
+[00:48:24] dokumentacji, która wpływa na SEO i tak
+[00:48:26] dalej, nie? Bo jeżeli przykładowo ktoś
+[00:48:28] wyszukuje w internecie, a nie wiem,
+[00:48:31] sprzedaż y produktów y subskrypcyjnych,
+[00:48:34] no to trafia na nas. Dlaczego? Bo teraz
+[00:48:37] mamy czas, a w zasadzie agentów, którzy
+[00:48:39] dbają o to, żeby nowe funkcjonalności
+[00:48:41] pojawiały się w dokumentacji i były
+[00:48:43] odpowiednio opisane.
+[00:48:44] >> Yyy tak samo, czyli jakby przechodząc
+[00:48:46] tego dewelopmentu do biznesu, nie, gdzie
+[00:48:47] są punkty styku, bo myślę, że to jest
+[00:48:49] fajne. Yyy, tak samo ja nie musiałem już
+[00:48:51] robić, y, a w zasadzie przekazywać
+[00:48:53] specyfikacji do dewelopmentu, tylko
+[00:48:54] sobie po prostu sam wrzuciłem do agenta,
+[00:48:56] że chcę teraz mieć takie statystyki,
+[00:48:58] jakie de facto miałem na Intercomie z
+[00:49:00] Resolution Rate. I ogólnie w ogóle to
+[00:49:02] resolution rate nasze w naszym Chilim
+[00:49:04] jest od pierwszego tygodnia już było
+[00:49:05] wyższe nawet niż na intercomie. No ale
+[00:49:07] dlaczego to właśnie dlatego, że po
+[00:49:09] prostu on od razu miał dostęp do całej
+[00:49:12] strony, do całej wiedzy i możemy to w
+[00:49:13] ten sposób rozwijać. No i to jest
+[00:49:15] niesamowite, jak dużo narzędzi można
+[00:49:16] stworzyć w ten sposób na styku właśnie
+[00:49:18] biznesu i dewelopmentu. Yyy i oczywiście
+[00:49:22] yyy, że yyy na koniec dnia jakby istotne
+[00:49:25] jest to, żeby była część tych narzędzi,
+[00:49:27] która jest zrobiona zgodnie z yyy ze
+[00:49:30] sztuką i to najwyższej klasy, to znaczy
+[00:49:33] zabezpieczona w najwyższym stopniu, ale
+[00:49:35] dąży do tego, że część tej
+[00:49:36] infrastruktury i część tych rzeczy może
+[00:49:38] zostać wyeksportowana i i jakby może być
+[00:49:42] robiona trochę inaczej. I na przykład ja
+[00:49:44] też korzystam oczywiście z z Grockbotów.
+[00:49:46] A jeżeli jeszcze nie znacie, bo nie
+[00:49:50] musicie mieć jakby wiedzy, bo to jest
+[00:49:52] dość dość nowa rzecz o Grockbotach, to
+[00:49:54] jest ogólnie super do sprawdzenia. To
+[00:49:55] jest absolutnie coś, co my z Adamem
+[00:49:58] chcieliśmy i robiliśmy w Alis już od
+[00:50:00] tych czterech lat. Natomiast de facto
+[00:50:02] teraz jest to dostępne w postaci
+[00:50:04] grogotów, z których sobie też
+[00:50:05] korzystamy,
+[00:50:06] chociais pewnie też będziemy rozwijać,
+[00:50:08] zobaczymy. Natomiast chodzi tutaj o to,
+[00:50:11] że ja jako biznes mogę bardzo łatwo
+[00:50:13] teraz sobie zespinować też swoje boty,
+[00:50:16] które de facto one u mnie odpowiadają za
+[00:50:19] za różne obszary działalności. Czy tutaj
+[00:50:21] mam na przykład właśnie takiego bota dla
+[00:50:23] easy i ten ten jakby czym to się różni?
+[00:50:26] Jak na przykład prowadzicie konwersacje
+[00:50:27] w clodzie, no to macie wątki rozmowy.
+[00:50:30] Tutaj macie waszych asystentów, którzy
+[00:50:32] mają jakieś funkcje. Ale to co jest
+[00:50:34] ciekawe to jest to, że ja mam jakiegoś
+[00:50:36] asystenta, który jest takim chief of
+[00:50:38] staff easy, natomiast on sobie sam
+[00:50:41] tworzy i zarządza swoją własną całą
+[00:50:44] ekipą innych asystentów. Czyli na
+[00:50:47] przykład stworzył sobie Nie, Sama i AD,
+[00:50:50] z których jedna jest odpowiedzialna za
+[00:50:51] support, druga za se, a trzecia za
+[00:50:53] analitykę. I generalnie Bob jest takim
+[00:50:55] chief of staff i i każdy z tych agentów
+[00:50:58] raportuje do niego, a nie do mnie. Yyy,
+[00:51:00] to znaczy, że codziennie ci agenci
+[00:51:02] marketingowi, supportowi i tak dalej,
+[00:51:04] analitycy wysyłają do Boba yyy jakieś
+[00:51:06] informacje, a on tylko po prostu
+[00:51:08] raportuje do mnie raz w tygodniu albo
+[00:51:10] raz na jakiś czas, jak jest coś ważnego.
+[00:51:12] I ta koncepcja jest niesamowicie ciekawa
+[00:51:14] również w połączeniu właśnie z
+[00:51:15] dewelopmentem, ponieważ yyy przykładowo
+[00:51:18] to co ja mogłem zrobić mając już yyy
+[00:51:20] taką fajną architekturę i to, że na
+[00:51:21] przykład mogłem Piotra, naszego yyy
+[00:51:23] admina z Easy poprosić o to, żeby
+[00:51:25] wystawił mi w postaci webhooka czy tam
+[00:51:27] jakiegoś na przykład komunikatu na Slaka
+[00:51:29] informacje o osobach, które
+[00:51:32] które na przykład używają naszych mają
+[00:51:34] zainstalowany nasz jakiś skrypt na
+[00:51:35] stronie, ale nie mają aktywnej
+[00:51:37] subskrypcji. Dzięki temu mogłem
+[00:51:39] powiedzieć Bobowi, żeby sobie zespinował
+[00:51:40] takiego agenta i taki scheduler tutaj,
+[00:51:43] który będzie wysyłał do tych osób,
+[00:51:45] będzie je wyłapywał i będzie wysyłał do
+[00:51:47] nich wiadomości z informacją o tym, że
+[00:51:49] powinni podpiąć sobie odpowiedni plan. I
+[00:51:51] to jest działanie na pograniczu
+[00:51:53] dewelopmentu oraz tych operacji, które
+[00:51:56] robimy, które de facto po prostu
+[00:51:58] niesamowicie dobrze działa. I takich
+[00:52:00] agentów, którzy załatwiają tego typu
+[00:52:03] rzeczy, mam w tym momencie już
+[00:52:04] dziesiątki, jak nie setki, które sobie
+[00:52:07] nawzajem raportują. I to jest ta
+[00:52:08] koncepcja Adama, moim zdaniem,
+[00:52:10] przełożona właśnie tutaj, że ja nie
+[00:52:12] muszę za każdym razem być w każdym tym
+[00:52:15] prompcie i potwierdzać czegoś,
+[00:52:16] akceptować. Oni po prostu raportują
+[00:52:18] sobie do jednego agenta, a ja na koniec
+[00:52:20] dnia mogę go zapytać jak poszło, ale też
+[00:52:21] nie muszę, bo on mi da z tego raport. Y
+[00:52:24] i tutaj dewelopment bardzo fajnie się
+[00:52:26] dopełnia z biznesem. Y no i moim zdaniem
+[00:52:29] właśnie Grockbot jest y no takim no
+[00:52:31] jednym z najfajniejszych narzędzi, które
+[00:52:32] które tu możemy y możemy wam polecić.
+[00:52:36] Sprawdzimy teraz. Aha. No i jeśli chodzi
+[00:52:38] o tą autonomię jeszcze chciałem tak
+[00:52:40] wrzucić coś tutaj, dlatego że autonomia
+[00:52:44] jakby różnie rozumiemy tą autonomię,
+[00:52:45] nie? I teraz możecie sobie na przykład w
+[00:52:48] clodzie czy w innym narzędziu zrobić
+[00:52:50] jakieś autonomiczne rzeczy, czyli na
+[00:52:53] przykład skonfigurować tak zwane rutyny.
+[00:52:55] No i na przykład ja mam tak
+[00:52:56] skonfigurowany weekly SEO check tylko
+[00:52:58] dlatego, że jeszcze w zasadzie tego na
+[00:52:59] Grockboty nie przyniosłem i zaraz to
+[00:53:00] pewnie zrobię. I mam podpięte do tego
+[00:53:02] narzędzia. Dzięki temu co tydzień
+[00:53:05] otrzymuję bardzo szczegółowy raport
+[00:53:07] dotyczący y zarówno Easy Toolsów, jak i
+[00:53:10] Alis Zencala, który prowadzimy innych
+[00:53:12] projektów ponieważ to się wykonuje po
+[00:53:15] prostu asynchronicznie.
+[00:53:16] ten bot się budzi w chmurze i tam raz w
+[00:53:18] tygodniu korzysta z moich konektorów,
+[00:53:21] korzysta z na przykład Achrewsa i z
+[00:53:24] innych API i zobaczcie, że on ma tutaj
+[00:53:25] taką oznaczoną ikonkę cloud. No i to
+[00:53:27] właśnie chodzi o to, żeby nie trzymać
+[00:53:29] tego kompa otwartego. Więc przechodzimy
+[00:53:31] z tego schematu, gdzie musieliśmy ciągle
+[00:53:33] być przy komputerze lub też mieć otwarty
+[00:53:36] czy nieuśpiony komputer po to, żeby
+[00:53:38] agent coś robił. przechodzimy do rutyn,
+[00:53:41] które na przykład właśnie można w prosty
+[00:53:42] sposób jako biznes ustawić sobie nawet w
+[00:53:44] aplikacji Cloud i tutaj w cloudzie z tym
+[00:53:47] działać. Tak samo rutyny i agentów
+[00:53:50] możemy spinować w chmurze, nawet nie tak
+[00:53:53] jak Adam pokazywał korzystając ze
+[00:53:55] swojego serwera, tylko możemy to robić
+[00:53:57] już teraz w kursorze i w innych
+[00:53:58] narzędziach. Też możemy w pewien sposób
+[00:54:00] to ogarnąć. Oczywiście setup Adama jest
+[00:54:03] najlepszy, ponieważ kontroluje go w
+[00:54:04] pełni i czy Herder, czy Piie działające
+[00:54:07] na serwerze VPN, no po prostu będą dużo
+[00:54:10] łatwiejsze do konfiguracji i utrzymania.
+[00:54:12] Ale co do zasady chodzi tutaj o to samo,
+[00:54:15] że po prostu my nie musimy być. No i
+[00:54:17] dzięki temu też możemy na przykład
+[00:54:18] takiego Grockbota uruchomić sobie na
+[00:54:20] telefonie. No a zaletą tych grockbotów
+[00:54:22] jest to, że one wszystkie mają swój
+[00:54:24] uruchomiony komputer i zobaczcie, że
+[00:54:26] tutaj mają też swoje rutyny, to znaczy
+[00:54:28] mogą się obudzić o tam którejś godzinie.
+[00:54:30] któregoś tygodnia. Y, no i Bob ma jakieś
+[00:54:33] swoje rutuny, ale też różni ci jego
+[00:54:35] pracownicy, którzy jemu raportują, mają
+[00:54:37] swoje rutyny i też się budzą, coś tam
+[00:54:39] sprawdzają. Dzięki temu, że mają swój
+[00:54:41] własny uruchomiony komputer, y, no to
+[00:54:44] mogą to robić bardzo efektywnie. A ja
+[00:54:46] mogę wam podać jeszcze jedną taką
+[00:54:47] biznesową wskazówkę do tej
+[00:54:49] autonomiczności. Mianowicie polega ona
+[00:54:51] na tym, że grocboty można łączyć
+[00:54:54] pomiędzy różnymi komputerami. Czyli
+[00:54:56] możecie postawić sobie drugiego jakiegoś
+[00:54:58] Maca mini albo inny komputer,
+[00:55:00] >> starego laptopa,
+[00:55:01] >> starego laptopa, cokolwiek co macie.
+[00:55:03] Wystarczy uruchomić na nim Grockbota i
+[00:55:04] powiedzieć, żeby dodał ten komputer do
+[00:55:06] waszego harnessu, do do waszego do
+[00:55:09] waszego staku i on generalnie będzie
+[00:55:11] mógł ten komputer podtrzymywany
+[00:55:15] obsługiwać też. Także jak nawet
+[00:55:17] będziecie zdalnie, to wasz komputer może
+[00:55:18] działać i Grockbot z waszego telefonu
+[00:55:20] może wykonywać na nim akcje. No i to
+[00:55:22] jest super. No to jest y naprawdę coś co
+[00:55:26] powoduje, że możemy przejść na pełną
+[00:55:28] autonomię. I zaraz przejdziemy właśnie
+[00:55:31] do waszych pytań. Czy masz coś
+[00:55:32] ciekawego, Adamiusz?
+[00:55:34] >> W sumie staram się na bieżąco odpisywać
+[00:55:37] i tutaj
+[00:55:41] no zadajecie bardzo specyficzne pytania
+[00:55:43] na temat projektów. No bo widzicie,
+[00:55:44] każdy właśnie projekt jest inny. e i
+[00:55:47] zarówno y na przykład dostępność
+[00:55:50] informacji.
+[00:55:51] W niektórym przypadku, w niektórych
+[00:55:53] przypadkach będzie to dokumentacja, w
+[00:55:55] innych przypadkach będą to na przykład
+[00:55:59] zaciemnione logi, czyli logi
+[00:56:01] przefiltrowane pochodzące z serwera,
+[00:56:04] pozbawione na przykład jakieś danych,
+[00:56:06] które normalnie na produkcji gdzieś tam
+[00:56:08] sobie logujecie, a uznajecie albo z
+[00:56:12] jakiegoś innego powodu
+[00:56:14] nie chcecie ich przesyłać do AI. E, tak
+[00:56:17] samo mogą to być dane z issue trackerów
+[00:56:20] albo na przykład tak jak w naszym
+[00:56:22] przypadku e w informacje pochodzące z
+[00:56:26] komunikatorów na wybranych kanałach,
+[00:56:29] nie, na przykład ze Slaka. A więc
+[00:56:31] generalnie y to bardzo zależy od
+[00:56:33] projektu. I tutaj musicie się yyy raczej
+[00:56:37] zastanowić pod kątem tego, czego agent
+[00:56:39] potrzebuje yyy aby wykonać zadanie, aby
+[00:56:43] podjąć decyzję, która będzie no miała
+[00:56:45] szansę na to yyy tak jakby, żeby
+[00:56:48] zwiększyć prawdopodobieństwo tego, że
+[00:56:50] agenci podejmą właściwą decyzję taką jak
+[00:56:52] jak wy byście podjęli. Yyy, także hym to
+[00:56:55] jest taka perspektywa yyy wyeliminowania
+[00:56:59] sytuacji, w których yyy ręcznie
+[00:57:01] dostarczacie jakiś kontekst, najczęściej
+[00:57:04] przekazując go z jakiegoś miejsca, które
+[00:57:06] już istnieje, yyy typu wspomniane logi
+[00:57:09] albo komunikatory, yyy, no albo wasza
+[00:57:12] głowa, czy nie wiem, notatki ze
+[00:57:16] spotkania i tak dalej. Nie no,
+[00:57:17] generalnie im większy dostęp będzie miał
+[00:57:21] wasz agent do informacji, na które
+[00:57:22] możecie sobie pozwolić, tym będzie
+[00:57:25] bardziej skutecznie na nich pracował.
+[00:57:27] Ale to też nie jest tak, że możemy go
+[00:57:29] zasypać cał całym zestawem danych i
+[00:57:33] liczyć na to, że w jak w jakiś sposób
+[00:57:35] się w tym wszystkim odnajdzie. Yyy, w
+[00:57:37] moim przypadku, yym, aktualnie
+[00:57:40] najbardziej sprawdza się taka
+[00:57:41] perspektywa, w której agenci są
+[00:57:43] poinformowani o tym yyy jacy agenci
+[00:57:46] pracują równolegle nad projektem, ale
+[00:57:48] także każdy z nich posiada nie tylko
+[00:57:50] informacje o tym, co robi, ale yyy
+[00:57:53] posiada również yyy taką wizję projektu
+[00:57:56] oraz taki szerszy kontekst tego, nad
+[00:57:57] czym pracuje. Dodatkowo sama praca jest
+[00:58:01] podzielona na wątki, które tak jak
+[00:58:04] pokazałem na wideo
+[00:58:06] są zarządzane z pomocą w tym przypadku
+[00:58:08] Grockbota i dzięki temu to jest tak, że
+[00:58:13] u mnie w ogóle sytuacja, w której wątku
+[00:58:16] dochodzi do kompresowania, tak, do tego
+[00:58:19] kompaktowania presiu
+[00:58:22] coś takiego nie ma miejsca. A jak
+[00:58:24] wiecie, no kompresja z definicji
+[00:58:26] prowadzi do tego, że jakieś dane są
+[00:58:28] utracone i jeżeli pracujecie normalnie z
+[00:58:31] agentem, który no w którym prowadzicie
+[00:58:33] nieskończony wątek, no to musicie się
+[00:58:36] liczyć z tym, że przynajmniej część tych
+[00:58:37] informacji zostanie zapomniana,
+[00:58:40] ewentualnie zostanie ukryta. Tak, no bo
+[00:58:42] teraz też agenci raczej pracują tak, że
+[00:58:44] nawet jeżeli sobie kompresują wątek, to
+[00:58:45] na przykład zostawiają sobie referencje
+[00:58:47] do danych wiadomości i dzięki temu są w
+[00:58:50] stanie do nich wrócić. Natomiast no
+[00:58:51] tutaj już wiecie liczymy na to, że agent
+[00:58:55] zrobi coś, czego tak naprawdę robić nie
+[00:58:57] musi, nie? E, i dodatkowo pojawiło się
+[00:59:01] tutaj też pytanie o to, jak długo, ile
+[00:59:04] czasu wymaga teraz utworzenie takiego
+[00:59:06] setupu i zarządzanie nim, bo wiecie,
+[00:59:10] ustalenie sobie tego, jak będziemy
+[00:59:12] pracować z agentami to jedno, ale
+[00:59:14] pojawiające się błędy w międzyczasie to
+[00:59:16] drugie, albo jakieś pomysły, tak, które
+[00:59:19] mamy. I tutaj jeżeli będziecie coś
+[00:59:23] takiego robić to sugeruję wam
+[00:59:26] myśleć z poziomu natywnych możliwości
+[00:59:29] modeli. Przykładowo modele są świetne w
+[00:59:32] pisaniu kodu. modele są świetne w
+[00:59:34] poruszaniu się po plikach i dodatkowo
+[00:59:38] jeżeli właśnie poruszają się w możliwie
+[00:59:41] małym kontekście, tak, nie są to jakieś
+[00:59:44] mega rozbudowane wątki, to możecie
+[00:59:47] liczyć na to, że będą podążać za
+[00:59:49] instrukcjami, które macie zapisane w
+[00:59:51] instrukcjach systemowych, w skillach, o
+[00:59:53] ile te skille też nie są szczególnie
+[00:59:55] rozbudowane i bardzo skomplikowane.
+[00:59:58] I co za tym idzie, m, zamiast
+[01:00:02] zastanawiać się na przykład nad tym, jak
+[01:00:04] budować zależności pomiędzy
+[01:00:06] specyfikacjami
+[01:00:07] albo jakimś innym kontekstem, możecie
+[01:00:10] rzeczywiście coraz bardziej oddawać
+[01:00:12] takie jakby zaufanie co do tego, że
+[01:00:15] agenci będą unikać na przykład folderu,
+[01:00:18] który
+[01:00:20] powiecie, że no jest dla nich
+[01:00:22] niedostępny. I tutaj też znowu Mateusz
+[01:00:24] zadał pytanie, jak w Groku możemy sobie
+[01:00:27] odseparować agentów. No Grockbot jest
+[01:00:30] przykładem właśnie takiej aplikacji.
+[01:00:32] Nawet jeżeli nie będziecie z niej
+[01:00:33] korzystać, to ja polecam, żebyście ją
+[01:00:36] zainstalowali i żebyście doświadczyli
+[01:00:38] sobie ustalcie nawet jakiś prywatny
+[01:00:41] flow, nie wiem, treningu, diety,
+[01:00:44] cokolwiek was teraz interesuje, żebyście
+[01:00:47] zobaczyli w jaki sposób to narzędzie
+[01:00:49] działa. I to tak naprawdę otworzy albo
+[01:00:52] pokaże wam to, jak mogą pracować agenci,
+[01:00:55] z którymi już przestajecie rozmawiać jak
+[01:00:57] z z agentami, tylko bardziej zaczynacie
+[01:01:00] rozmawiać jak z człowiekiem, jak z drugą
+[01:01:02] osobą.
+[01:01:03] Właśnie w kontekście tego, że no jeżeli
+[01:01:06] powiecie rób coś tyle razy dziennie albo
+[01:01:11] według jakiegoś harmonogramu albo gdy
+[01:01:13] się coś wydarzy to on po prostu jest w
+[01:01:15] stanie sam siebie skonfigurować albo
+[01:01:18] rozdysponować pracą pomiędzy agentami.
+[01:01:20] Coś takiego normalnie raczej nie ma
+[01:01:22] miejsca na przykład w Czat GPT, gdzie po
+[01:01:24] prostu otwieramy wątek i wszystko
+[01:01:26] prowadzimy sami. Tutaj ten agent, jeżeli
+[01:01:29] będzie czegoś potrzebował, to po prostu
+[01:01:30] zapyta drugiego agenta. jeżeli będzie
+[01:01:32] tylko widział,
+[01:01:35] że ten może posiadać informację, która
+[01:01:37] jest mu w danej sytuacji potrzebna, to
+[01:01:39] zmienia takie podejście do programowania
+[01:01:42] czy w ogóle do pracy z AI.
+[01:01:44] >> Tak, to bardzo dużo odblokowuje takich
+[01:01:47] scenariuszy,
+[01:01:49] których wcześniej nie mieliśmy. No bo
+[01:01:50] jak spojrzycie sobie na tą drogę do
+[01:01:53] autonomii, no to ona prowadziła przez
+[01:01:56] promptowanie. yyy później najpierw w
+[01:01:59] jednym oknie, później w wielu oknach,
+[01:02:01] później z pomocą narzędzi, które
+[01:02:02] pozwalały nam gdzieś tam powpinać
+[01:02:05] subskrypcje, ominąć API i tak dalej.
+[01:02:08] Teraz chodzi już o to, że tak naprawdę
+[01:02:10] budowanie skutecznej specyfikacji,
+[01:02:13] oddawanie więcej autonomii agentom,
+[01:02:15] którzy ze sobą współpracują w trybie
+[01:02:17] asynchronicznym i działając w chmurze,
+[01:02:19] czy to na naszym serwerze, czy w
+[01:02:22] usługach, które możemy kupić, powoduje,
+[01:02:25] że tak naprawdę możemy mówić o tej
+[01:02:28] prawdziwej autonomii już teraz. dla nas
+[01:02:30] już teraz tak to działa i pojawiło się
+[01:02:32] sporo pytań właśnie o to, o czym
+[01:02:35] powiedziałeś przed chwilą, czyli czym
+[01:02:37] się różni na przykład ten grokot od
+[01:02:38] klocka i tak dalej. No to czy można
+[01:02:40] sobie tak? No to moim zdaniem właśnie
+[01:02:41] pierwsza zasadnicza różnica jest taka,
+[01:02:44] że nie otwieramy nowego wątku, tylko
+[01:02:47] uruchamiamy nowego pracownika,
+[01:02:48] rozmawiamy z nowym agentem i on może
+[01:02:51] uruchamiać sobie na zasadzie tej
+[01:02:53] koncepcji innych pracowników, którzy mu
+[01:02:54] pomagają.
+[01:02:57] No i ogromną zaletą jest oczywiście
+[01:02:59] jeszcze to, że każdy z nich jako
+[01:03:01] infrastruktura pod spodem ma swój własny
+[01:03:03] komputer, czyli ma nie tylko dostęp do
+[01:03:07] przeglądarki, ale system plików, który
+[01:03:08] też jest potrzebny do tego, żeby
+[01:03:10] pracować skutecznie z AI. No i też
+[01:03:12] pytaliście właśnie o to, jak w takim
+[01:03:14] razie
+[01:03:16] dostarczamy kontekst do tych grockbotów.
+[01:03:19] To też jest właśnie bardzo ciekawe
+[01:03:20] pytanie i moim zdaniem to jest też
+[01:03:23] trochę ta różnica. yyy
+[01:03:26] jeden z tych set punktów, które mamy na
+[01:03:28] przykład na drodze do Mega dewelopera,
+[01:03:30] gdzie dużo osób pracuje już z agentami,
+[01:03:33] ale nie robią z tego w sposób
+[01:03:34] usystematyzowany z pomocą plików MD yyy
+[01:03:37] ze specyfikacjami, które pokazał Adam.
+[01:03:39] Na przykład ja mam taką strukturę
+[01:03:41] danych, która dla każdego mojego
+[01:03:42] projektu zawiera zestaw plików MD, które
+[01:03:45] mam w pewien sposób wyspecyfikowane, co
+[01:03:48] w nich ma się zawierać. Dzisiaj też jak
+[01:03:50] robimy projekt z Adamem to setupujemy to
+[01:03:52] w taki sposób, że najpierw mamy plik z
+[01:03:55] ogólną filozofią projektu, później z
+[01:03:57] wymogami technicznymi i tak dalej, więc
+[01:03:58] mamy pewną specyfikę i strukturę plików,
+[01:04:01] która jest potrzebna, a następnie też
+[01:04:03] cały czas uzupełniamy ten kontekst i
+[01:04:05] dodajemy do niego nowe rzeczy, ale też
+[01:04:07] dbamy o to, żeby agenci, którzy wymyślą
+[01:04:10] coś nowego, zostawili potem ślad w
+[01:04:12] postaci pliku MD. U mnie na przykład w
+[01:04:14] tych bardziej kontekstach biznesowych y
+[01:04:17] to jest pewnie prostsza struktura niż u
+[01:04:19] Adama, bo widziałem, że u niego tych
+[01:04:20] plików jest bardzo dużo i zobaczcie
+[01:04:21] sobie na nagraniu. Natomiast u mnie też
+[01:04:23] ci agenci cały czas zostawiają takie
+[01:04:25] okruszki za sobą y w postaci codziennego
+[01:04:29] na przykład zrzutu tego co się stało i
+[01:04:31] jaką wiedzę, jaką nową wiedzę mamy w
+[01:04:33] projekcie, nie? Tak to ja wykorzystuję
+[01:04:35] to właśnie do usprawnienia istniejącego
+[01:04:38] systemu, gdzie on zostawia sobie notatki
+[01:04:41] z danych weryfikacji, tam podejmujemy
+[01:04:44] decyzję o tym, które z tych sugestii
+[01:04:46] wprowadzić. No i mamy historyczne
+[01:04:48] zmiany, ale historyczne zmiany
+[01:04:50] wynikające nie tylko z kodu, który yyy
+[01:04:52] który agent może sobie przeczytać, yy
+[01:04:54] tylko również yyy samą dyskusję yyy i
+[01:04:57] decyzję, które tam podej podjęliśmy. Yyy
+[01:05:00] także to również jest super wartościowe.
+[01:05:02] I tutaj podrzucam wam na czat y HTML,
+[01:05:05] który pokazywałem w czasie nagrania. yyy
+[01:05:07] on pokazuje to, w jaki sposób różni się
+[01:05:11] akurat mój setup, który tak jak
+[01:05:12] zaznaczam, on jutro pewnie się zmieni
+[01:05:15] albo zmodyfikuje yyy ze względu właśnie
+[01:05:17] na na te cykliczne iteracje. Y natomiast
+[01:05:21] zobaczycie sobie jak zmienia się na
+[01:05:23] przykład sposób wywołania narzędzi. W
+[01:05:25] jaki sposób agent jest y ma wstrzykiwany
+[01:05:28] kontekst, który przypomina mu o na
+[01:05:31] przykład tonie wypowiedzi yyy albo y w
+[01:05:34] jaki sposób yyy odbywa się delegowanie.
+[01:05:37] gdzie agent dostaje opis zadania, ale
+[01:05:39] także szereg innych takich wskazówek,
+[01:05:41] dokumentów, czasem osadzonych
+[01:05:43] bezpośrednio, czasem jako referencje, po
+[01:05:46] to, aby właśnie zwiększać szansę na to,
+[01:05:48] żeby on wiedział, tak jak tutaj
+[01:05:51] doktor Barz napisał, że okej, ale jak
+[01:05:55] uniknąć na przykład rabbit hall, gdzie
+[01:05:57] dajecie agentowi zadanie, a on nie wie
+[01:05:59] gdzie się zatrzymać? Yyy, no jednym z
+[01:06:01] takich yyy odpowiedzi na to pytanie, bo
+[01:06:03] to nie jest definitywna odpowiedź, ale
+[01:06:06] yyy każde działanie zmniejsza ryzyko
+[01:06:08] tego, że coś takiego wystąpi, to jest
+[01:06:10] ograniczenie zakresu, ale nie nie chodzi
+[01:06:12] mi tylko wyłącznie o samo zdefiniowanie
+[01:06:15] zadania w sposób zwięzły, ale na
+[01:06:17] przykład y yyy właśnie sprawienie, żeby
+[01:06:20] dany worker, bo już nawet nie subagent,
+[01:06:23] w sensie według definicji można
+[01:06:25] powiedzieć, że worker jest subaagentem.
+[01:06:27] E, worker, worker w tej definicji to
+[01:06:30] jest po prostu nowa instancja, na
+[01:06:31] przykład Pi. Ona dostaje zupełnie inny
+[01:06:34] model, zupełnie inne ustawienia
+[01:06:37] właśnie ten cały handoff i tak dalej.
+[01:06:39] Yyy, więc generalnie yyy takie yyy
+[01:06:43] sprawienie, że dany agent dostaje
+[01:06:46] zadanie, które jest ograniczone yyy
+[01:06:49] znaczy ograniczone jego specyfikacją yyy
+[01:06:53] yy i tym co ma zrealizować, ale także
+[01:06:55] jest dostarczony tam szerszy kontekst,
+[01:06:57] który pokazuje, gdzie on się mniej
+[01:06:59] więcej porusza, w jakim projekcie, co
+[01:07:01] jest celem i jakie są na przykład
+[01:07:02] zależności. E, no nagle możes w sensie
+[01:07:06] nawet nie nagle, po prostu sam, sam
+[01:07:08] doświadczam tego, że takie sytuacje u
+[01:07:10] mnie już praktycznie nie występują.
+[01:07:13] Jeżeli borykam się z jakimiś problemami,
+[01:07:14] to one najczęściej w tym momencie
+[01:07:17] dotykają ograniczeń sprzętowych,
+[01:07:19] fizycznego dostępu do jakiejś
+[01:07:21] informacji, na przykład możliwości
+[01:07:22] zespinowania aplikacji
+[01:07:25] na VPSie, aplikacji desktopowej,
+[01:07:29] albo jakiś detali dotyczących na
+[01:07:32] przykład interfejsu, ewentualnie edge
+[01:07:34] casów, czyli dobudowujemy jakieś
+[01:07:36] funkcjonalności i na przykład w różnych
+[01:07:38] momentach one na siebie zachodzą i tylko
+[01:07:41] w niektórych przypadkach sprawiają, że
+[01:07:43] na przykład dochodzi tam albo do właśnie
+[01:07:46] na poziomie interfejsów jakiś anomalii,
+[01:07:49] albo na poziomie samej logiki dochodzi
+[01:07:52] do na przykład zduplikowania. Czasem ja
+[01:07:54] to wyłapię, a czasem wyłapie to agent,
+[01:07:56] który skanuje po prostu [parsknięcie]
+[01:07:59] proces na przykład raz dziennie. I teraz
+[01:08:02] istotne tutaj jest także to, że wszystko
+[01:08:05] to, o czym mówimy, nie sprowadza się
+[01:08:07] wyłącznie do programowania, czy nie
+[01:08:09] ogranicza się wyłącznie do
+[01:08:10] programowania, bo tak jak Grzegorz
+[01:08:12] pokazał, te wszystkie
+[01:08:14] zasady i takie spojrzenie można stosować
+[01:08:19] także właśnie w tych procesach
+[01:08:21] okołoproduktowych i na przykład
+[01:08:23] wpuszczać tam właśnie wpuszczać, no
+[01:08:25] brzydko powiedziane, ale tak wpuszczać
+[01:08:28] tam osoby nietchniczne, tak, które nie
+[01:08:30] potrafią podjąć decyzji na temat
+[01:08:32] architektury, ale wiecie na przy zmianie
+[01:08:36] kolorów na landing pageu czy zmianie
+[01:08:38] kopii nie ma tam znaczenia
+[01:08:43] jakaś większa decyzja dotycząca samego
+[01:08:45] projektu. Tak. Yyy, natomiast yyy no
+[01:08:48] możemy tym kontrolować i yyy tutaj
+[01:08:50] przede wszystkim chodzi o ten mindshift
+[01:08:52] dotyczący tego, jakie rzeczy warto
+[01:08:54] budować, yyy, gdzie dać dostęp agentowi,
+[01:08:58] a gdzie go ograniczyć albo w jaki sposób
+[01:09:00] dopuścić go do informacji, do której
+[01:09:03] zwykle no tylko my mieliśmy dostęp, jak
+[01:09:05] to zrobić bezpiecznie i tak dalej, nie?
+[01:09:07] To są pytania, na które no indywidualnie
+[01:09:09] się odpowiada
+[01:09:12] odpowiada
+[01:09:13] względem każdego projektu. Natomiast no
+[01:09:16] trzeba też wiedzieć chociażby yyy to, że
+[01:09:20] możemy w przypadku Pi zmodyfikować
+[01:09:22] sposób w jaki zwracany jest rezultat
+[01:09:25] danego narzędzia, że możemy tam coś
+[01:09:27] dodać. A no i jeżeli możemy to zrobić,
+[01:09:31] to pytanie, co z tym zrobić? No i to są
+[01:09:33] pytania, na które właśnie odpowiadamy
+[01:09:35] sobie w mega. Ja tutaj yyy może właśnie
+[01:09:38] przejdę i udostępnię też jeszcze ekran
+[01:09:39] na chwilę yyy bo przejdę do tego, żeby
+[01:09:42] wam powiedzieć i żebyśmy chwilę
+[01:09:44] porozmawiali chociaż o o tym, czym jest
+[01:09:46] mega y i dlaczego y
+[01:09:50] >> artykuł w ogóle warto sobie przeczytać
+[01:09:52] albo wrzucić nawet do agenta i
+[01:09:54] porozmawiać na temat swojego projektu i
+[01:09:57] jak mogę zastosować to, co napisał tutaj
+[01:09:59] Adam w moim projekcie.
+[01:10:00] >> Dokładnie. Dokładnie tak. I jedną z
+[01:10:03] jednym z fajnych deliverabli
+[01:10:04] dzisiejszego spotkania, tego co możecie
+[01:10:07] zabrać ze sobą jest właśnie system pracy
+[01:10:10] Adama organizacji
+[01:10:12] pod kątem właśnie tych dobrych praktyk i
+[01:10:14] setupowania projektów, które pokazywał
+[01:10:17] na wideo. W związku z tym jak wejdziecie
+[01:10:19] sobie w ten artykuł na mega macie tutaj
+[01:10:22] sekcję limen, w której możecie go pobrać
+[01:10:25] wpisując swój mail. No i my setupując,
+[01:10:28] stawiając nowe projekty właśnie
+[01:10:30] faktycznie no nie chcę sprowadzać się do
+[01:10:32] roli tylko kogoś k tam zmienię kolory
+[01:10:34] prawdopodobnie byłbym w stanie byłbym w
+[01:10:37] stanie zaprojektować też dosyć dobrą
+[01:10:39] architekturę nawet z pomocą agentów, ale
+[01:10:42] chodzi bardziej o to, żebym tego nie
+[01:10:44] robił w celu uzyskania pewnej spójności,
+[01:10:47] nad którą tutaj pracujemy. I były
+[01:10:49] pytania
+[01:10:50] też na czacie dotyczące tego, okej, no
+[01:10:53] to jak to teraz wykorzystać, żeby
+[01:10:55] właśnie do pracy w zespole. No i to jest
+[01:10:57] to jest właśnie faktycznie ważne, żeby
+[01:11:01] mieć taki system jak na przykład limen.
+[01:11:03] Możecie się na tym w pewien sposób
+[01:11:04] wzorować, potem wyprowadzić sobie z tego
+[01:11:07] zasady współpracy w zespole, gdzie po
+[01:11:10] prostu wiele osób może pracować nad
+[01:11:12] takim projektem. Ale wasze wytyczne
+[01:11:15] architektoniczne tego, jak ten kod jest
+[01:11:18] organizowany, w jakich technologiach
+[01:11:20] jest pisany i w jaki sposób, to już są
+[01:11:23] wasze decyzje i możecie to dostosować.
+[01:11:25] Tutaj macie właśnie ten artykuł i
+[01:11:27] polecam wam też sprawdzić właśnie na
+[01:11:29] stronie megadef dropy, które będziemy
+[01:11:31] dla was przygotowywać. Już tych dropów
+[01:11:33] jest kilka od Adama. Mamy też szereg
+[01:11:37] dropów od Olafa, które jeszcze nie
+[01:11:39] zostały opublikowane i zaraz będą i też
+[01:11:42] będziemy dodawać nowe i są to między
+[01:11:43] innymi takie materiały jak dzisiaj i na
+[01:11:46] przykład właśnie ten lim, z którego
+[01:11:47] możecie skorzystać. A ja wam krótko
+[01:11:49] teraz powiem, czym jest mega i dlaczego
+[01:11:52] ją robimy i dlaczego uważamy, że jest to
+[01:11:55] bardzo, bardzo ważne i i że to jest
+[01:11:56] najważniejszy nasz projekt w tym, w tym
+[01:11:58] roku Bravea, przynajmniej ja tak uważam,
+[01:12:01] ponieważ nie tylko wychodzimy globalnie
+[01:12:04] z z tym, aby pracować z agentami i
+[01:12:07] pokazywać deweloperom
+[01:12:10] różne ciekawe takie podejścia i punkty
+[01:12:12] widzenia, ale to jest właśnie też ten
+[01:12:14] moment, w którym moim zdaniem jest
+[01:12:17] najlepiej
+[01:12:18] mówić właśnie o tej autonomii i o tej
+[01:12:20] zmianie całego paradygmatu i sposobu
+[01:12:22] wytwarzania programowania, który do tej
+[01:12:25] pory wykorzystywaliśmy w taki sposób, że
+[01:12:28] zatrudnialiśmy agentów do pracy z tym,
+[01:12:32] co już znamy, czyli dalej myśleliśmy
+[01:12:34] jako programiści o kolejnej funkcji,
+[01:12:37] obiekcie, rzeczy, które musimy napisać i
+[01:12:39] i robiliśmy to z pomocą agenta, nadal
+[01:12:42] robiąc dużo rzeczy manualnie, nadal
+[01:12:45] oglądając dużo kodu czy y czy wykonując
+[01:12:48] testy. Natomiast
+[01:12:51] nasze spojrzenie na to i też osób, z
+[01:12:54] którymi robimy mega jest już trochę
+[01:12:55] inne, jest właśnie bardziej autonomiczne
+[01:12:59] i mega ma stanowić takie podwaliny nie
+[01:13:02] operowania z AI na tym, co już znamy
+[01:13:04] jako programiści, tylko po prostu na
+[01:13:07] zastosowaniu AI do zupełnie nowego
+[01:13:09] sposobu patrzenia na to, jak wytwarzać
+[01:13:12] oprogramowanie. I jest to bardzo
+[01:13:14] ciekawe. Yyy, można powiedzieć, że
+[01:13:16] wpisuje się też bardzo dobrze w cały
+[01:13:19] ekosystem szkoleń, które są w ramach yyy
+[01:13:22] Bravea yyy i bardzo dobrze uzupełnia
+[01:13:24] zarówno AI devs, jak i tenex defs. O tym
+[01:13:26] też możemy pogadać, jeśli macie pytania,
+[01:13:29] yyy, gdzie mega jest y warstwą pewną
+[01:13:32] myślenia, strategii i koncepcji, co nie
+[01:13:34] znaczy, że nie nie ma w nie ma w tym
+[01:13:37] programie praktyki, ponieważ na tym on w
+[01:13:38] zasadzie się opiera. Natomiast jest to
+[01:13:41] bardzo ciekawe, że jest to punkt
+[01:13:43] widzenia osób, które my bardzo, bardzo
+[01:13:45] szanujemy w dewelopmencie, od których
+[01:13:47] przez lata też uczyliśmy się i którzy
+[01:13:49] przede wszystkim są praktykami w
+[01:13:52] korzystaniu z AI i wytwarzają podobnie
+[01:13:53] jak Adam na przykład my z Adamem
+[01:13:55] tworzymy Alice i i też ciągle uczymy się
+[01:13:57] czegoś nowego. Natomiast Kent, John, Ang
+[01:14:01] i Theo też tworzą własne produkty.
+[01:14:04] Zresztą nawet niewal w nieporównywalnej
+[01:14:07] skali co my po prostu robią
+[01:14:11] produkty takie jak na przykład T3 Chat,
+[01:14:13] który robi to czy Tre code, który
+[01:14:16] którego używają setki tysięcy
+[01:14:18] deweloperów i na co dzień spotyka się z
+[01:14:20] problemami wytwarzania oprogramowania na
+[01:14:22] taką skalę. John też robi no świetne
+[01:14:26] rzeczy prowadząc Eghead i polecam też
+[01:14:29] sprawdzić w ogóle jego jego harness. to
+[01:14:31] jak jest zrobione to jest niesamowicie
+[01:14:34] ciekawe
+[01:14:35] i każdy z nich również Kent i NG Kent,
+[01:14:38] który tworzy KOD
+[01:14:40] i i całą infrastrukturę właśnie taką o
+[01:14:42] której mówiliśmy dzisiaj do
+[01:14:43] autonomicznych agentów. To jest w ogóle
+[01:14:45] bardzo ciekawe, bo bardzo duża część
+[01:14:47] mega będzie na ten temat właśnie i i
+[01:14:50] Kent jakby zna to od podszewki, ponieważ
+[01:14:52] tworzy właśnie architekturę, w której
+[01:14:54] autonomiczni agenci mogą przechowywać
+[01:14:56] dane autentykacje, w których mogą
+[01:15:00] wykonywać jakby runtime, współpracować
+[01:15:03] ze sobą. Więc jest to bardzo ciekawe. No
+[01:15:07] i sam program
+[01:15:09] zaczynamy 26 października i potrwa przez
+[01:15:12] cztery tygodnie. ymm jest pełnie
+[01:15:14] onlineowy, asynchroniczny, tak jak
+[01:15:16] prawdopodobnie już znacie yyy programy
+[01:15:18] Brave, jeśli w nich braliście udział.
+[01:15:19] Jest bardzo podobny, ale yyy myślę, że
+[01:15:22] będzie zawierał yy kilka ciekawych
+[01:15:23] smaczków takich pod kątem tego, jak się
+[01:15:26] uczymy. Tutaj też właśnie na czacie yyy
+[01:15:28] pisaliście, yyy, że yyy yyy że że ten
+[01:15:32] assessment i zresztą jeśli jeszcze
+[01:15:34] czekacie na wynik, to po prostu sobie na
+[01:15:35] chwilę za chwilę odświeżcie stronę, bo
+[01:15:37] czasem tam Gemini się trochę wiesza przy
+[01:15:40] generowaniu dużej ilości obrazków.
+[01:15:41] Natomiast ten assessment daje jakieś
+[01:15:44] dane, które
+[01:15:47] tak naprawdę
+[01:15:49] wy możecie zobaczyć gdzie jesteście, na
+[01:15:51] jakim jesteście etapie tej drogi do
+[01:15:54] Megadef. Natomiast my zrobiliśmy bardzo
+[01:15:56] spójny system dochodzenia i jak gdyby
+[01:16:00] zdobywania tych wszystkich umiejętności,
+[01:16:02] który prowadzi was w pewnym sensie przez
+[01:16:04] lekcje, ale też w dużej mierze będzie
+[01:16:06] dopasowany do waszego stylu nauki i do
+[01:16:07] tego y co już umiecie. Yyy, więc będzie
+[01:16:10] to też dosyć ciekawe yyy szkolenie pod
+[01:16:13] yyy kątem y yyy samego yyy dostarczania
+[01:16:16] yyy tego z czego yyy z czego się
+[01:16:18] uczycie. No jest podzielone jak zwykle
+[01:16:20] na cztery tygodnie. Yyy nie jak zwykle,
+[01:16:22] ale w tym przypadku na cztery tygodnie.
+[01:16:24] Możecie przejrzeć agendę każdego z
+[01:16:26] tygodni. W każdym tygodniu będziecie
+[01:16:27] mieli możliwość uczestniczenia w sesji
+[01:16:30] Q&A na żywo z ownerem, osobą, która jest
+[01:16:33] odpowiedzialna za ten konkretny tydzień.
+[01:16:35] W pierwszym tygodniu Tio, w drugim
+[01:16:37] tygodniu jest to tydzień NG, gdzie są te
+[01:16:41] jest budowanie takich systemów
+[01:16:42] agentowych y w dużej skali produkcyjnej,
+[01:16:46] także pod enterprisey bezpiecznych. Y
+[01:16:49] bardzo ciekawe tematy i też spotkanie z
+[01:16:52] NGI. Y później mamy taką część trochę
+[01:16:55] bardziej produktową Kenta, ale to jest
+[01:16:57] też związane z tym z tą z tym
+[01:16:59] autonomicznym systemem, który sam się
+[01:17:02] weryfikuje i i shipuje na produkcję.
+[01:17:07] No a na koniec jest tydzień Johna, który
+[01:17:12] znowu będzie lepiej tłumaczył mechanikę
+[01:17:15] tych autonomicznych systemów i i to jak
+[01:17:18] one mogą ulepszać się w czasie nawet
+[01:17:21] automatycznie. Więc orkiestracja tych
+[01:17:24] wszystkich agentów, to co dzisiaj mniej
+[01:17:26] więcej trochę pokazaliśmy i na demo i o
+[01:17:28] czym porozmawialiśmy i dziesiątki innych
+[01:17:30] tematów są tutaj w Mega w każdym z
+[01:17:32] tygodni. Natomiast Adam czuwa nad tym,
+[01:17:35] aby te wszystkie treści i materiały były
+[01:17:37] spójne, mimo że są tworzone przez
+[01:17:39] czterech autorów i nad tym, aby aby to
+[01:17:43] miało naprawdę taką świetną jakość, jak
+[01:17:45] którą znacie z szkoleń Bravea. Także
+[01:17:48] będzie mega. Ja już się nie mogę
+[01:17:51] doczekać. Y i możecie sobie przejrzeć
+[01:17:54] tutaj jeszcze rzeczy, które znajdują się
+[01:17:57] na stronie, również wykonać sobie ten
+[01:17:58] assessment, zobaczyć
+[01:18:01] jakie karty skil nawet można je tutaj
+[01:18:03] odkrywać, będziecie zdobywać w drodze do
+[01:18:05] certyfikatu, ale to nie będzie jedyna
+[01:18:08] zabawa, którą przygotowaliśmy.
+[01:18:11] No i możecie dołączyć do nas teraz w
+[01:18:13] niższej cenie niż cena regularna. A
+[01:18:14] dzisiaj jeszcze do północy jest zniżka,
+[01:18:16] którą macie specjalnie z okazji naszego
+[01:18:18] dzisiejszego spotkania po to, żeby
+[01:18:20] promować to, że jesteście na żywo. Więc
+[01:18:24] zachęcam was do sprawdzenia. Żeby
+[01:18:26] dołączyć do kohorty, wystarczy kliknąć
+[01:18:28] continue to checkout. Natomiast tutaj
+[01:18:29] macie też cenę w złotówkach i możecie
+[01:18:33] przejść po prostu do koszyka
+[01:18:34] [parsknięcie] w złotówkach i albo kupić
+[01:18:36] w dwóch ratach, albo w jednej i wziąć
+[01:18:40] udział w programie. Oczywiście większość
+[01:18:42] też naszych dostępów jest y dostępami
+[01:18:46] dla zespołów i w Mega też mamy zespoły
+[01:18:49] kilkunastu, kilkudziesięciu, a nawet
+[01:18:51] będą prawdopodobnie kilkuset osobowe.
+[01:18:54] Więc jeżeli chcecie,
+[01:18:56] żeby szef czy wasza firma ufundowała wam
+[01:18:59] dostęp, to to jest dobry pomysł. Tutaj
+[01:19:01] są odpowiednie materiały i możecie też
+[01:19:03] wypełnić formularz i zgłosić deweloperów
+[01:19:06] z waszej firmy. W zasadzie Omega to
+[01:19:09] tyle, chociaż mógłbym jeszcze trochę
+[01:19:10] mówić. Myślę, że jest to bardzo ciekawy
+[01:19:13] projekt i dla nas też niesamowite
+[01:19:16] wyzwanie po to, żeby pokazać wam jak
+[01:19:20] będzie wyglądała przyszłość pracy
+[01:19:22] deweloperów. A ja teraz przenoszę się na
+[01:19:25] czata, widzę, że Adam odpowiada już na
+[01:19:27] sporo wiadomości waszych i pytań.
+[01:19:31] Ale Adam, coś chciałbyś wybrać z czata?
+[01:19:37] No rzeczywiście na większość
+[01:19:39] odpowiedziałem i
+[01:19:42] tutaj
+[01:19:44] jest pytanie, jak zrobić orkiestrator,
+[01:19:46] który sam będzie dobierał narzędzia
+[01:19:47] według problemów pojawiających się w
+[01:19:49] trakcie analizy. Masz cztery narzędzia
+[01:19:51] uzupełniające się nawzajem i masz
+[01:19:53] problem i tak dalej. E,
+[01:19:57] m, powiem ci jak ja bym do tego
+[01:20:00] podszedł, albo przynajmniej jakbym
+[01:20:01] próbował zaadresować taki problem i tak
+[01:20:04] naprawdę jest to wyciągnięte po prostu z
+[01:20:05] mojego, z mojej takiej codziennej pracy.
+[01:20:09] Otóż w takich sytuacjach, gdy dochodzi
+[01:20:11] do jakiegoś poziomu dynamiki,
+[01:20:14] dążę do tego, żeby instrukcja oraz
+[01:20:16] narzędzia, z którymi model ma do
+[01:20:19] czynienia, były możliwie dynamiczne. To
+[01:20:21] to znaczy, żeby dostosowywały się do
+[01:20:24] bieżącej sytuacji, ale tylko według
+[01:20:28] pewnych wytycznych. Jest to taki pewien
+[01:20:30] rodzaj generalizowania,
+[01:20:32] ale ustawiony nie tylko pod to, że
+[01:20:35] tworzysz sobie na przykład właśnie
+[01:20:36] cztery zgeneralizowane narzędzia, tylko
+[01:20:39] bardziej tworzysz framework, który
+[01:20:42] sprawia, że obecne modele kształtują
+[01:20:46] sobie w locie narzędzie, które będą w
+[01:20:48] stanie sobie zastosować. E, i z tymi
+[01:20:51] najnowszymi modelami, które dzisiaj są
+[01:20:53] dostępne, typu GPT6, no takie podejście
+[01:20:56] działa jeszcze lepiej niż tak jak
+[01:20:58] korzystałem z niego w przypadku, nie
+[01:21:01] wiem, modeli typu wczesny opus i tak
+[01:21:04] dalej, nie? Tutaj to myślenie takie
+[01:21:07] właśnie wykraczające poza sam prompt,
+[01:21:10] poza ustalone schematy wypada coraz
+[01:21:12] lepiej i można się zaskoczyć tym, jaką
+[01:21:17] ścieżkę wybierze model. Czasem stosuje
+[01:21:19] się też takie podejścia, że prosi się o
+[01:21:22] ukształtowanie na przykład trzech
+[01:21:24] niezależnych yyy takich ścieżek albo yy
+[01:21:29] nawet też y Grock y już nie Grockbot,
+[01:21:32] tylko ten Grock dostępny na Grock.com y
+[01:21:35] stosuje takie podejście, że do
+[01:21:37] rozwiązywania zadań wykorzystuje
+[01:21:40] równolegle kilku agentów, a potem łączy
+[01:21:42] te wyniki i to to również jest jedno z
+[01:21:44] podejść, które możesz tutaj zastosować.
+[01:21:47] Yyy, natomiast no właśnie yyy mamy do
+[01:21:50] czynienia z narzędziami. Mam tutaj tutaj
+[01:21:53] na myśli modele, które yyy ciągle
+[01:21:56] usprawniają swoje y możliwości, mam na
+[01:21:59] myśli iteracje pomiędzy wersjami modeli.
+[01:22:02] A to znaczy, że nasze podejście do
+[01:22:04] rozwiązywania problemów rzeczywiście
+[01:22:07] powinno uwzględniać ten fakt, powinno
+[01:22:09] uwzględniać te natywne możliwości
+[01:22:11] modelu, a nie próbować opakować je
+[01:22:13] logiką, która sztucznie będzie
+[01:22:16] ograniczała te wszystkie możliwości,
+[01:22:18] które mamy do dyspozycji. No i to
+[01:22:20] generalizowanie czy budowanie frameworku
+[01:22:22] do zgeneralizowanych czy dynamicznych
+[01:22:25] narzędzi to jest jedno z podejść, które
+[01:22:27] mi osobiście sprawdza się świetnie. I to
+[01:22:29] oczywiście nie jest tak, że model za
+[01:22:31] każdym razem dojdzie do idealnego
+[01:22:33] rozwiązania, natomiast tam jest znacznie
+[01:22:36] większy potencjał na to, że nie będziemy
+[01:22:38] ograniczeni tym, co nam się wydawało na
+[01:22:40] poziomie kształtowania tych narzędzi.
+[01:22:42] Także polecam właśnie takie, nie wiem,
+[01:22:44] eksperymenty myślowe czy y właśnie
+[01:22:47] rozumowanie z punktu widzenia rozumienia
+[01:22:51] tego, jak działają modele oraz jakie
+[01:22:53] mają możliwości dzisiaj, a niekoniecznie
+[01:22:56] tego, jakby jakbyśmy próbowali je
+[01:22:58] takiańczyć i ograniczać albo zamykać
+[01:23:01] jeszcze w dodatkowym pudełku. to po
+[01:23:03] prostu coraz rzadziej się sprawdza i yyy
+[01:23:07] te problemy, które kiedyś musieliśmy
+[01:23:09] adresować właśnie yyy logiką
+[01:23:10] deterministyczną yyy dzisiaj występuje
+[01:23:13] rzadziej albo występuje tylko w
+[01:23:15] określonych kontekstach. E, ja
+[01:23:18] przykładowo w tym swoim frameworku
+[01:23:19] wykorzystuję takie deterministyczne
+[01:23:21] wstrzykiwanie kontekstu i tak dalej, ale
+[01:23:23] ono jest zdecydowanie luźniejsze niż na
+[01:23:26] przykład moje pierwsze iteracje tego
+[01:23:27] narzędzia, gdzie właśnie starałem się na
+[01:23:30] przykład budować zależności pomiędzy
+[01:23:32] specyfikacjami, a potem okazywało się,
+[01:23:34] że zależności te z czasem stawały się
+[01:23:37] tak złożone, że w czasie implementacji
+[01:23:42] dochodziło do no scenariuszy, w których
+[01:23:45] te założenia po prostu blokowały agentów
+[01:23:47] zupełnie niepotrzebnie. Niehmada
+[01:23:53] jeszcze pytania śmiało. Ja też próbuję
+[01:23:55] odnaleźć
+[01:23:57] wątki z kartami. O, ciekawe pytanie od
+[01:24:01] Kuby. Jakbyś spojrzał na bieżący rok,
+[01:24:03] jaka zmiana w lmmach harnessach
+[01:24:05] najbardziej
+[01:24:06] zmieniła u ciebie myślenie i podejście
+[01:24:08] do rozwoju projektów?
+[01:24:11] y jedną z takich pierwszych, które tutaj
+[01:24:14] przychodzą do głowy jest yyy znaczny
+[01:24:17] wzrost modeli yyy w umiejętności
+[01:24:21] dotyczącej zarządzania innymi modelami
+[01:24:24] czy agentami w tym przypadku, tak? I to
+[01:24:26] jak zobaczysz sobie właśnie handof
+[01:24:30] tego jak y agenci teraz komunikują się
+[01:24:34] między sobą to wypada to po prostu
+[01:24:36] bardzo dobrze. Y i
+[01:24:39] y w porównaniu do tego, co jak to
+[01:24:42] wyglądało jeszcze jakiś czas temu w
+[01:24:44] przypadku z poprzednich generacji
+[01:24:46] modeli, no tutaj na pewno widać ogromny
+[01:24:50] przeskok. Yyy, kolejnym yyy takim
+[01:24:53] obszarem, w którym yym również yyy ja
+[01:24:57] osobiście doszukuję się u mnie takiej
+[01:24:59] transformacji, to jest właśnie to, co
+[01:25:02] mówiłem o prymitywach, tak? Czyli
+[01:25:05] zamiast budować narzędzia dla agentów,
+[01:25:09] yyy, tworzymy środowisko, w których w
+[01:25:12] którym oni sami kształtują te narzędzia.
+[01:25:14] I przykładowo
+[01:25:16] w praktyce polega to na tym, że jak
+[01:25:18] kiedyś tworzyłem na przykład swój
+[01:25:20] system, jak pewnie z was część wie,
+[01:25:24] część z was wie, tworzyłem agenta, który
+[01:25:27] pracował dla mnie i tworzyłem mu różne
+[01:25:29] integracje z urządzeniami i z
+[01:25:31] aplikacjami, z których korzystam. No to
+[01:25:33] teraz zamiast tworzyć te integracje, w
+[01:25:35] zasadzie usunąłem większość z nich albo
+[01:25:38] te, które były w formie MCP już nie
+[01:25:40] konfiguruję, tylko po prostu proszę
+[01:25:43] agenta, aby się do nich podłączył. I ta
+[01:25:45] różnica polega na tym, że dynamicznie
+[01:25:48] jest w stanie eksplorować sobie
+[01:25:50] narzędzia i istniejące serwery i zamiast
+[01:25:52] ode mnie wymagać chociażby przebudowania
+[01:25:55] aplikacji do tego, żeby żeby połączyła
+[01:25:58] się z jakimś yyy z jakimś yyy nowym
+[01:26:01] serwisem. to agent w locie jest w stanie
+[01:26:04] to zrobić. To samo jest w stanie zrobić
+[01:26:07] nawet bez samego MCP. Może dostać
+[01:26:09] dokumentację i dostać instrukcję. Okej,
+[01:26:11] podłącz się do tych endpintów. Poproś
+[01:26:14] mnie tylko o klucz API. I ten klucz API
+[01:26:16] jest odpowiednio w interfejsie
+[01:26:17] przekazany, żeby nie trafił do modelu.
+[01:26:20] No i zadanie jest wykonane. Tak samo
+[01:26:23] idąc dalej mamy agenta, który
+[01:26:26] przykładowo pisze sobie fragment kodu i
+[01:26:30] no właśnie normalnie wyobraźcie sobie
+[01:26:32] jak zlecacie coś agentowi
+[01:26:35] na przykład cykliczne sprawdzanie waszej
+[01:26:37] skrzynki email albo jakiś inny
+[01:26:39] powtarzalny proces to w momencie gdy ten
+[01:26:42] proces realizowany jest każdego dnia to
+[01:26:45] istnieje ryzyko, że coś pójdzie po
+[01:26:48] drodze nie tak i to ryzyko w zależności
+[01:26:51] od tego tego z jakiego modelu w danej
+[01:26:53] sytuacji korzystacie, bo może być to
+[01:26:54] słabszy model, jest bywa mniejsze bądź
+[01:26:58] większe. Natomiast
+[01:27:01] poza tym ryzykiem istnieje także kwestia
+[01:27:03] kosztów i czasu realizacji. No to teraz
+[01:27:07] zamiast prosić agenta o to, żeby
+[01:27:08] codziennie przeglądał moją skrzynkę
+[01:27:10] pocztową
+[01:27:12] czy skrzynkę email, proszę agenta o to,
+[01:27:15] żeby napisał sobie zestaw narzędzi,
+[01:27:17] które pomagają mu filtrować
+[01:27:21] ten email i na przykład wyświetlać
+[01:27:22] informacje, które są istotne i pracować
+[01:27:25] tylko na tym rezultacie. I zobaczcie jak
+[01:27:27] bardzo zmniejsza się tutaj zarówno
+[01:27:30] ryzyko błędów jak i
+[01:27:32] jak i kwestia właśnie kosztów czy czy
+[01:27:35] tego że po prostu na takim narzędziu
+[01:27:37] można można polegać, nie? E, także to
+[01:27:41] rozumowanie z punktu widzenia tego, co
+[01:27:43] potrafią modele i w czym stają się coraz
+[01:27:45] lepsze. Zamiast walczyć z tym, że modele
+[01:27:48] mają jakieś słabości dzisiajzy słabości
+[01:27:53] y jakieś właśnie ograniczenia bądź są w
+[01:27:56] czymś gorsze, staram się rozumować z
+[01:27:59] punktu widzenia właśnie tego, że stają
+[01:28:01] się stopniowo coraz lepsze praktycznie w
+[01:28:03] każdym z codziennych zadań. Yyy, no a
+[01:28:06] tam, gdzie nie są dobre, yyy, buduje
+[01:28:09] narzędzia, ale niezbyt skomplikowane,
+[01:28:12] tak, takie, które, y, włożą ich w pewne
+[01:28:15] ramy i ramy te będzie można łatwo zdjąć
+[01:28:19] w momencie, gdy yyy na przykład pojawi
+[01:28:21] się nowa generacja modeli. Także bardzo
+[01:28:24] ciekawe pytanie. Myślę, że każdy z nas
+[01:28:26] może sobie coś takiego zadać, bo modele
+[01:28:29] naprawdę bardzo się zmieniły i to nawet
+[01:28:32] z perspektywy ostatniej premiery GPT6.
+[01:28:35] I fajnie sobie tak redefiniować i
+[01:28:39] zastanawiać się nad tym, co, jakie
+[01:28:41] przekonania mieliśmy parę miesięcy temu,
+[01:28:43] a jakie mamy teraz i co z tego już nie
+[01:28:46] ma znaczenia.
+[01:28:48] Dobra, bo tutaj mam sygnały, że jeszcze
+[01:28:50] karty się generują, no ale trudno, zaraz
+[01:28:52] będziemy kończyć. Natomiast ja nie
+[01:28:53] znalazłem zbyt wielu postów z
+[01:28:55] udostępnieniami, więc nie wiem, czy wam
+[01:28:56] się karty jeszcze generują, czy y czy
+[01:29:00] już gdzieś to wrzuciliście. Widzę na
+[01:29:02] razie yyy na Xie jeden post. Yyy na
+[01:29:05] LinkedInie widzę post od Adriana, na XIE
+[01:29:07] widzę jeden post od yyy od kogo? Od
+[01:29:10] Tomka. Więc jeżeli jest ich więcej, to
+[01:29:13] proszę dajcie mi znać na czacie, bo być
+[01:29:14] może LinkedIn jak zwykle jest słaby w
+[01:29:17] yyy wyszukiwanie tych hashtagów,
+[01:29:20] jeśli nas nie oznaczyliście, bo
+[01:29:21] oznaczenia widzę, więc dajcie znać i
+[01:29:24] wrzućcie na czat swoje udostępnienia.
+[01:29:26] Jeśli nie, to będziemy losować między
+[01:29:28] Adrianem a Tomkiem. A mamy na to jeszcze
+[01:29:31] dosłownie dwie minuty, bo zaraz będziemy
+[01:29:33] chyba kończyć i widzę, że jest sporo
+[01:29:35] pytań. Możliwe, że zrobimy jeszcze jeden
+[01:29:38] jakiś jedno spotkanie po polsku.
+[01:29:41] Pamiętajcie, że mega jest po angielsku i
+[01:29:43] też tam mamy wydarzenia i i wysyłamy o
+[01:29:47] nich informacje. Także
+[01:29:50] proszę spójrzcie czy zapiszcie się na
+[01:29:53] listę, czy karty się generują dalej.
+[01:29:55] Mówicie no dobra.
+[01:29:58] Ktoś mówi, że nie działa. Zaraz
+[01:29:59] sprawdzimy. Ja sobie uruchomiłem właśnie
+[01:30:01] na, znaczy widzę te procesy.
+[01:30:03] >> Zabiliście proces,
+[01:30:04] >> że zabiliście proces. Zaraz to
+[01:30:05] sprawdzimy. Dobra, w takim razie
+[01:30:07] przedłużamy to, żeby było uczciwe, bo
+[01:30:08] dużo osób generuje karty, a udało się
+[01:30:10] tylko dwóm osobom udostępnić. W takim
+[01:30:12] razie chwilę to przedłużamy niedługo,
+[01:30:15] ale póki co jeszcze odpowiadamy na na
+[01:30:18] wasze pytania. Natomiast jest już w pół
+[01:30:21] do, więc będziemy też zaraz kończyć. Nie
+[01:30:25] uda nam się pewnie odpowiedzieć na
+[01:30:26] wszystkie pytania, aczkolwiek z tego co
+[01:30:29] scrolluje czat to Adam odpowiedział na
+[01:30:30] prawie wszystkie. Było sporo pytań o
+[01:30:33] >> Jeżeli macie jakieś pytania, które
+[01:30:35] pominąłem, bo tutaj dajcie znać
+[01:30:38] >> nie wszystkie mi dał wyłapać, to po
+[01:30:40] prostu podbijcie je, okej? Przyklejcie i
+[01:30:43] tak dalej.
+[01:30:43] >> Dokładnie. Przeklejcie teraz w czacie i
+[01:30:45] zerkniemy. Ja jeszcze patrzyłem na y no
+[01:30:48] są pytania też o kupno sprzętu, o
+[01:30:50] tokeny, o od o, na które odpowiem, bo
+[01:30:54] jest dość to zbudowane. Jak wprowadzić
+[01:30:56] nieliniowość do modelu agenta
+[01:30:57] frameworka? Ja napisałem przez
+[01:31:00] instrukcję i i piszesz, że naciskając
+[01:31:02] klawisze. No na przykład poprzez
+[01:31:05] odwrócenie pytań, czyli zamiast mówić co
+[01:31:08] model ma robić, pytasz co według niego
+[01:31:11] powinno się wydarzyć. To jest przykład.
+[01:31:13] albo yyy yyy na przykład yyy model
+[01:31:18] mógłby yyy najpierw zbudować listę
+[01:31:20] skojarzeń z dany z danym tematem według
+[01:31:23] yyy jakiegoś procesu myślowego albo yyy
+[01:31:27] jakiś czasem nawet modeli mentalnych, bo
+[01:31:29] ja akurat z tego korzystamy i to
+[01:31:32] prowadzi właśnie jego rozumowanie na
+[01:31:35] różne ścieżki i następnie czasem nawet
+[01:31:38] rozdzielam to na wątki, czyli jeden
+[01:31:41] agent generuje tak jakby właśnie taką
+[01:31:43] mapę myśli albo tak bardzo szeroko
+[01:31:47] patrzy na patrzy na temat chociażby nie
+[01:31:50] wiem przy wyborze narzędzi staku
+[01:31:52] technologiczne technologicznego albo
+[01:31:54] jakiś podejść do ich konfiguracji robię
+[01:31:57] tak że właśnie jeden agent ma za zadanie
+[01:32:00] nie dążyć do uzyskania odpowiedzi tylko
+[01:32:03] wypisaniu możliwie jak największej
+[01:32:04] liczby możliwych scenariuszy i tak samo
+[01:32:11] właśnie to odwraca może mieć też
+[01:32:13] charakter taki trochę meta odwracania,
+[01:32:15] czyli
+[01:32:18] w sensie nie wiem czy istnieje taki
+[01:32:19] termin, ale tutaj bardziej chodzi o
+[01:32:22] sytuację, w której
+[01:32:24] nie zadajemy pytań albo nie prosimy o
+[01:32:27] wygenerowanie pytań, tylko
+[01:32:30] o tak jakby spojrzenie na daną sytuację
+[01:32:35] z boku, tak aby określić co w danej
+[01:32:38] sytuacji mogłoby się potencjalnie
+[01:32:40] wydarzyć. Nie wiem czy chwytacie to co
+[01:32:42] mam teraz w głowie, bo to jest dość
+[01:32:45] takie zagmatwane. Natomiast modele
+[01:32:47] rzeczywiście przechodzą do momentu, w
+[01:32:48] którym są w stanie tak jakby stać się
+[01:32:51] takimi obserwatorami danej sytuacji i
+[01:32:54] tam kształtować kierunki, w których mogą
+[01:32:57] zmierzać. I coś takiego oczywiście nie
+[01:32:59] sprawdzi się wiecie tam gdzie
+[01:33:01] potrzebujecie dużej precyzji i
+[01:33:03] przewidywalności tylko właśnie w
+[01:33:05] sytuacjach gdzie potrzebna jest ta
+[01:33:07] nieliniowość i yyy takie wzmocnienie
+[01:33:11] kreatywności, nie?
+[01:33:13] No więc to są jakieś takie, nie wiem,
+[01:33:15] procesy, w których ja się zastanawiam
+[01:33:16] czasem
+[01:33:18] sam nad y różnymi obszarami. chociażby
+[01:33:20] stosowanie modelu mentalnego o nazwie
+[01:33:23] inwersja, które pewnie z was
+[01:33:26] część z was pewnie kojarzy. yyy no
+[01:33:28] polega na tym, że odwracamy swoje
+[01:33:30] założenia, więc model świetnie, nawet
+[01:33:33] pewnie lepiej niż ja, y jest w stanie
+[01:33:35] odwrócić pewne yyy koncepty yyy albo
+[01:33:38] kierunek, w który i rozumować właśnie z
+[01:33:43] takiego poziomu yyy albo rozbijać
+[01:33:45] zadanie na y czy jakiś temat y na atomy,
+[01:33:49] tak jakby kopać głębiej, a dopiero potem
+[01:33:52] z niego rozumować, czyli tutaj mówimy o
+[01:33:54] rozumowaniu zasadami pierwszego rzędu.
+[01:33:56] No i to są jakieś narzędzia, które
+[01:33:58] podrzucamy modelowi albo kształtujemy
+[01:34:01] proces, według którego na przykład
+[01:34:03] workery
+[01:34:05] podążają i następnie w mniejszym lub
+[01:34:08] większym stopniu dajemy im kontrolę nad
+[01:34:10] tym, jak taki proces może się
+[01:34:12] poprowadzić, nie? No i to to sprawdza
+[01:34:14] się nawet właśnie przy takim planowaniu.
+[01:34:17] Tutaj ktoś pytał jak podejmować yyy no
+[01:34:21] właśnie jak sprawiać, że żeby opisać
+[01:34:24] daną funkcjonalność, że czasem po prostu
+[01:34:26] gdy zaczynamy pracę nad yyy jakimś
+[01:34:28] featerem zwyczajnie nie zdajemy so tak
+[01:34:31] jakby nie mamy pełnego obrazu tego, co
+[01:34:33] co dokładnie chcemy zbudować. Yyy,
+[01:34:35] inaczej to jest jak restartujemy
+[01:34:36] projekt. Ja mniej więcej wiedziałem w
+[01:34:38] którą stronę patrzeć, aczkolwiek
+[01:34:40] niekoniecznie, bo wiele z tych
+[01:34:41] elementów, które tam były też były
+[01:34:43] przemyślane od samego początku. Niemniej
+[01:34:46] jednak model AI może nam pomóc właśnie
+[01:34:49] na tym etapie planowania i to w sposób,
+[01:34:52] który będzie odkrywał tak zwane unn
+[01:34:54] unknowns, tak? czyli rzeczy, o których
+[01:34:56] nie wiemy, że nie wiemy. Y więc warto
+[01:34:58] wykorzystywać AI właśnie nie tylko do
+[01:35:00] tego, żeby pingować je do przy
+[01:35:03] implementowaniu funkcjonalności, ale
+[01:35:05] również przy tej eksploracji, która
+[01:35:08] pozwala na przykład nawet w tak
+[01:35:10] pragmatycznych rzeczach jak
+[01:35:12] optymalizacja wydajności, mamy jakiś
+[01:35:14] interfejs, my mamy jakąś wiedzę na temat
+[01:35:16] jego możliwych optymalizacji, natomiast
+[01:35:20] obecna wiedza modeli może być właśnie
+[01:35:22] wciągnięta do przestrzeni doborczej. yyy
+[01:35:24] i yyy z takiego poziomu możemy dojść do
+[01:35:27] zupełnie innego rozwiązania, które
+[01:35:29] właśnie czasem doprowadzi nas do
+[01:35:31] miejsca, w którym usuniemy to, co
+[01:35:33] wydawało nam się, że jest niezbędne w
+[01:35:36] tym, w tej samej układance. Także
+[01:35:37] widzicie, jest tu trochę takiej zabawy,
+[01:35:40] y, ale też czegoś, co yyy mi osobiście
+[01:35:44] przypomina o takim klasycznym
+[01:35:46] programowaniu. To już nie jest wiecie
+[01:35:48] yyy układanie yyy jakiś, nie wiem,
+[01:35:51] struktur w kodzie, ale poniekąd tak.
+[01:35:54] Tylko dzisiaj to się odbywa głosowo w
+[01:35:57] dyskusjach yyy z agentami yyy a czasem
+[01:36:01] właśnie w poprzez proszenie o
+[01:36:03] wygenerowanie HTML-i, które wizualizują
+[01:36:06] mi jakąś logikę i pozwalają y no właśnie
+[01:36:09] rozumować w ten sposób yyy wspólnie z
+[01:36:12] modelem, nie?
+[01:36:15] No dobrze, słuchajcie, to
+[01:36:18] myślę, że będziemy już kończyć. Jesteśmy
+[01:36:20] chwilę po czasie. W związku z tym, komu
+[01:36:22] się udało, to się udało. Jak widzicie
+[01:36:25] jakieś,
+[01:36:27] to znaczy możecie wrzucić mi jeszcze na
+[01:36:28] YouTubea, jeśli udało wam się
+[01:36:30] opublikować kartę mega,
+[01:36:33] jeśli nie,
+[01:36:34] >> mega def, tak
+[01:36:36] >> megf. Y, na Twitterze są dwie i na
+[01:36:38] LinkedInie widzę jedną, więc dajcie
+[01:36:40] znać, bo być może jest więcej, a te
+[01:36:42] hashtagi się czasem nie odświeżają tak
+[01:36:44] szybko jak yyy jak powinny, czy jakbyśmy
+[01:36:46] chcieli. Natomiast yyy ja zaraz mało
+[01:36:49] mogę udostępnić ekran. Widzę, że jest
+[01:36:52] jedna karta od Adriana, którą sobie,
+[01:36:57] którego oznaczę. Mam jakieś randomowe
+[01:37:00] narzędzie
+[01:37:01] tutaj do Możemy pokazać mój ekran.
+[01:37:05] Mam randomowe narzędzie do generowania
+[01:37:08] [śmiech]
+[01:37:09] zwycięzcy. Nie wiem co to jest pierwsze
+[01:37:11] lepsze, które znalazłem. Mam nadzieję,
+[01:37:13] że działa,
+[01:37:14] ale żeby było obiektywnie.
+[01:37:17] Więc
+[01:37:18] szukam po hashztagu megadf jeszcze raz.
+[01:37:20] O, super. Jeszcze jednej osobie udało
+[01:37:22] się udostępnić 11 minut temu.
+[01:37:27] I jeszcze mamy Tomasza.
+[01:37:30] Jeszcze raz sobie to przefiltruję i
+[01:37:32] jeszcze raz zaraz sprawdzę na
+[01:37:33] LinkedInie, czy nic nie wyskoczyło. I
+[01:37:35] dajcie znać na czacie, jeśli macie
+[01:37:36] jakieś linki wys
+[01:37:37] >> Fajnie byłoby widzieć zbiór wszystkich
+[01:37:39] dróg i sposobów myślenia ludzi, żeby
+[01:37:41] wspólnie rozwijać najlepsze i terować je
+[01:37:43] w stronę przyjaz przyjazną ludzkości
+[01:37:45] dalej.
+[01:37:46] >> No właśnie tutaj jest taki ważny aspekt
+[01:37:49] tego, gdzie w ogóle zmierza nasz nasza
+[01:37:51] specjalizacja, nie? No bo to co
+[01:37:53] pokazałem, wiecie, mnie też prowadzi do
+[01:37:55] takiego pytania,
+[01:37:57] >> em, no co dalej z programowaniem, jak to
+[01:37:59] będzie wyglądać i, y, jak to się dzieje?
+[01:38:03] Czy czy ja powinienem teraz uczyć się
+[01:38:05] kolejnych frameworków i odkrywać nowe
+[01:38:08] narzędzia na takim głębokim poziomie,
+[01:38:10] czy może nie jest mi to już potrzebne, a
+[01:38:13] jeżeli nie jest, to czy zatracę
+[01:38:15] istniejące umiejętności. A może
+[01:38:16] potrzebuję zupełnie innych, o których
+[01:38:18] jeszcze nie wiem. Y także to są pytania,
+[01:38:20] które ja też sobie y zadaję na bieżąco i
+[01:38:23] właśnie jak widzicie eksploduje na różne
+[01:38:25] sposoby również z AI, również
+[01:38:27] samodzielnie yyy buduję te narzędzia i
+[01:38:31] właśnie staram się rozumować yyy no
+[01:38:34] głównie mając na uwadze to y w jakim
+[01:38:36] kierunku albo w zasadzie w jakim miejscu
+[01:38:39] znajduje się obecnie AI, bo tak naprawdę
+[01:38:43] to co wydarzy się pewnie za kilka
+[01:38:46] kilkanaście miesięcy, no dzisiaj jest
+[01:38:48] trudne do przewidzenia.
+[01:38:49] I nawet nie wiem czy powinniśmy próbować
+[01:38:52] to przewidzieć. znacznie lepiej
+[01:38:54] rozejrzeć się po prostu wokół i upewnić
+[01:38:57] się, że
+[01:38:59] no na przykład nasze przekonania nas nie
+[01:39:01] blokują pod kątem tego, że wczoraj
+[01:39:04] modele bardzo często myliły się w jakiś
+[01:39:07] obszarach i popełniały głupie błędy, a
+[01:39:10] dzisiaj tych błędów po prostu nie
+[01:39:11] spotykamy. I wiecie jak teraz
+[01:39:16] nawet kiedyś mogliśmy śmiać się z tego,
+[01:39:19] że modele nie są w stanie policzyć
+[01:39:21] litery R w słowie truskawka. E, tak
+[01:39:24] dzisiaj znalezienie podobnych
+[01:39:26] scenariuszy y no jest odpowiednio
+[01:39:28] trudniejsze. Nawet widziałem teraz nowy
+[01:39:30] benchmark y
+[01:39:33] z Willem Smithem jedzącym spaghetti,
+[01:39:36] który już nie jest generowanym wideo,
+[01:39:38] tylko modelem y
+[01:39:41] tylko jest modelowane w Blenderze. E no
+[01:39:44] i to jest jakiś y wiecie postęp, który y
+[01:39:48] próbujemy zmierzyć y no w taki a nie nie
+[01:39:51] inny sposób, ale pokazuje to e właśnie
+[01:39:54] jak bardzo y możliwości modeli y
+[01:39:58] zmieniają się w czasie i to jest tak
+[01:40:00] naprawdę zmienna, którą powinniśmy brać
+[01:40:03] pod uwagę.
+[01:40:04] >> Super. Słuchajcie, to
+[01:40:07] dzięki wielkie za dziś. Na pewno jeszcze
+[01:40:09] będziemy odpowiadać na mnóstwo waszych
+[01:40:12] pytań. Jeśli chcecie, możecie napisać
+[01:40:14] też na hello mega defładnie.
+[01:40:18] No a jeśli chodzi o generowanie kart, no
+[01:40:20] to trudno. Komu się udało, to się udało
+[01:40:22] wygenerować karty. Większość jeszcze
+[01:40:23] czeka, to tylko zabawa, więc
+[01:40:27] >> no stress. E, nie no, ja już zebrałem te
+[01:40:29] osoby, którym się udało. No bo komuś się
+[01:40:31] udało, no to mam i znalazłem jeszcze
+[01:40:34] parę postów nowych na LinkedInie, także
+[01:40:36] mamy Alana, Andrzeja, Tomka i z i
+[01:40:40] jeszcze mam z XA
+[01:40:44] już jeszcze raz ostatni sobie odświeżę,
+[01:40:46] żeby wziąć wszystkich. O, Danielowi
+[01:40:48] jeszcze się udało wpaść 40 sekund temu.
+[01:40:51] Well done. Dobra, to jeszcze Daniela
+[01:40:54] biorę i mamy Tomka. Yyy, Kacprowi się
+[01:40:57] nie udało. To nie jest karta, więc nie
+[01:40:59] biorę, [śmiech]
+[01:41:02] ale Merkoksa tutaj dodałem, czyli
+[01:41:05] jeszcze muszę Daniela dodać i to są
+[01:41:09] osoby, które mi się udało znaleźć i
+[01:41:12] wyszukać. Zerknę jeszcze tylko, czy na
+[01:41:14] YouTubie podaliście jakieś linki do
+[01:41:16] swoich postów, jeśli was ominąłem. Nie,
+[01:41:20] nie podajecie.
+[01:41:23] No to dobra, to w takim razie przechodzę
+[01:41:25] do naszego magicznego narzędzia.
+[01:41:28] Wybieram sej i nie wiem co się stanie
+[01:41:29] teraz. Siema Daniel. No [śmiech]
+[01:41:31] >> a dobra,
+[01:41:32] >> teraz może się coś wyświetlić.
+[01:41:35] >> Wyświetlił się Alan. Alan, gratulacje.
+[01:41:38] Wszystkim innym dzięki i mam nadzieję,
+[01:41:40] że też jak swoją
+[01:41:42] kartę wygenerowaliście. Al, Alan, ja
+[01:41:44] napiszę do ciebie DM. Natomiast jak
+[01:41:47] swoją kartę wygenerowaliście, no to
+[01:41:48] ważniejsze jest to, żebyście sprawdzili
+[01:41:50] sobie też co tam karta o was pisze. I w
+[01:41:54] drugim kroku, jak już przejdziecie do
+[01:41:55] Mega, na stronę Mega, to będziecie mieli
+[01:41:59] też pewne wskazówki dotyczące tego, co
+[01:42:02] możecie poprawić w swoim harnesie i w
+[01:42:04] swojej pracy z agentami. I wierzcie mi,
+[01:42:06] że to jest jakby mocno przetestowane i
+[01:42:09] fajne to naprawdę daje wskazówki, więc
+[01:42:11] mam nadzieję, że to wam w pewien sposób
+[01:42:14] pomoże. Tu mam coś też dla was. Zadanie
+[01:42:18] numer jeden. Zainstalujecie Grockbota,
+[01:42:21] jeżeli ta koncepcja w jakiś sposób wam
+[01:42:24] się spodobała, albo nawet tak jak
+[01:42:26] powiedziałem, nie będziecie z niego
+[01:42:27] korzystać. Zainstalujcie go po to, żeby
+[01:42:30] zobaczyć jak ta jak ta aplikacja działa.
+[01:42:32] Jest moim zdaniem bardzo imponująca. Tym
+[01:42:35] bardziej, jeżeli budujecie
+[01:42:38] systemy agentowe, to po prostu możecie
+[01:42:40] tam znaleźć yyy takie podejścia, które
+[01:42:44] no mogą wam się spodobać i otworzyć
+[01:42:46] głowę na na y jakieś inne ścieżki, które
+[01:42:49] przełożycie u siebie. A druga rzecz to
+[01:42:52] pobierzcie sobie to repozytorium, o
+[01:42:54] którym mówiliśmy wcześniej, repozytorium
+[01:42:56] Limen i wrzućcie w agenta i
+[01:42:59] porozmawiajcie po prostu o nim. yyy
+[01:43:01] nawet nie musicie sobie z niego
+[01:43:02] korzystać. Jeżeli chcecie to oczywiście
+[01:43:04] możecie. Natomiast yy to również yyy być
+[01:43:08] może pokaże wam w jaki sposób możecie y
+[01:43:11] może nie przejść do autonomii albo m
+[01:43:14] jakoś drastycznie wywracać swoje
+[01:43:16] projekty, ale yyy nawet wdrożyć jakieś
+[01:43:20] pojedyncze yyy optymalizacje czy
+[01:43:23] harmonogramy, czy reagowanie na
+[01:43:25] zdarzenia, które po prostu przełoży się
+[01:43:27] na albo większy komfort pracy, albo
+[01:43:29] większą jakość w projekcie,
+[01:43:32] albo większe security. A generalnie no
+[01:43:36] możecie na tym skorzystać, więc zachęcam
+[01:43:38] was do tego, aby to zrobić właśnie
+[01:43:39] wspólnie z agentami. Słuchajcie, bardzo,
+[01:43:42] bardzo wam dziękujemy, zwłaszcza, że
+[01:43:44] widzę, że niektórzy opuścili Apple
+[01:43:45] Event, było konkurencyjny, był
+[01:43:47] ciekawszy. Mega dzięki dla was,
+[01:43:50] jesteście super.
+[01:43:52] >> Bardzo się cieszymy, że mogliśmy spędzić
+[01:43:54] z wami razem czas. A jak będziecie
+[01:43:55] chcieli, to zrobimy jeszcze jeden y y
+[01:43:58] taki może warsztat bardziej z Adamem, bo
+[01:44:01] moim zdaniem jest bardzo ciekawe właśnie
+[01:44:03] to, co robimy teraz, czyli jak
+[01:44:05] setapujemy swoich jakby nowy projekt i
+[01:44:08] jak robimy to tak krok po kroku z tymi
+[01:44:10] plikami specyfikacji. Myślę, że to by
+[01:44:12] było fajne. Jeżeli tego chcecie to
+[01:44:14] dajcie oczywiście znać. Dziękujemy wam
+[01:44:17] bardzo za dzisiaj. Jeśli na jakieś
+[01:44:19] pytania nam się nie udało odpowiedzieć i
+[01:44:21] Adamowi na czacie, to przepraszamy.
+[01:44:23] Jeśli
+[01:44:24] >> możecie też złapać mnie na jakiś DM naie
+[01:44:27] albo na Instagramie, gdziekolwiek mnie
+[01:44:28] oglądacie.
+[01:44:29] >> Piszcie, śmiało piszcie i mam nadzieję,
+[01:44:30] że widzimy się na mega. Przypominam na
+[01:44:33] sam koniec, że zniżka 10% obowiązuje
+[01:44:36] dziś do północy z okazji tego spotkania,
+[01:44:38] więc dziękuję wam bardzo, że byliście na
+[01:44:40] żywo. No i macie do niej link tutaj w
+[01:44:43] komentarzu. A my żegnamy się i do
+[01:44:44] usłyszenia. Na razie.
+[01:44:48] This is [muzyka] for you. The one who
+[01:44:50] stayed late until it finally worked. Who
+[01:44:53] shipped it, watched it break, and fixed
+[01:44:56] it [muzyka] before anyone woke up. Who
+[01:44:59] built things nobody asked for just to
+[01:45:01] [muzyka] know if you could.
+[01:45:03] You learned to think in systems. You
+[01:45:06] cared about [muzyka] details no one
+[01:45:08] would ever see. And then almost
+[01:45:11] overnight, everything changed. The
+[01:45:14] machines write the code now, [muzyka]
+[01:45:17] faster than any of us can.
+[01:45:19] Some call it the end of the story. We
+[01:45:22] [muzyka] call it the best beginning
+[01:45:24] there's ever been. Because the problems
+[01:45:27] got bigger, the ambitions got wilder,
+[01:45:31] and someone [muzyka] still has to
+[01:45:33] imagine, to judge, to care. Someone has
+[01:45:37] to [muzyka] take all this power and
+[01:45:40] build the digital world we actually want
+[01:45:42] to live in.
+[01:45:44] That someone [muzyka]
+[01:45:45] was always you. You just needed the
+[01:45:48] moment. This is it. It's time. [muzyka]
+[01:45:53] It's time to rethink everything.

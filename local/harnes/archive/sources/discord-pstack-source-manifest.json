@@ -1,0 +1,93 @@
+{
+  "created_at": "2026-09-14T17:11:37.678749+00:00",
+  "sources": [
+    {
+      "file": "pstack/README.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/README.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "cd63df9733eb5b393371baca8194ea2dd9a3c815803ac48b8ff6580e49adef71"
+    },
+    {
+      "file": "pstack/skills/poteto-mode/SKILL.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/poteto-mode/SKILL.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "b3c505602b82fb3641a3983e9c46fb974881faa12ece1af804fae27afb7be532"
+    },
+    {
+      "file": "pstack/docs/guide/02-poteto-mode.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/docs/guide/02-poteto-mode.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "379a1b2c9cd2ba54032b2b142563328d0f3d65039f067863d19b1d4c008737f5"
+    },
+    {
+      "file": "pstack/skills/create-verification-skill/SKILL.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/create-verification-skill/SKILL.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "644f2551403c1bca01a2855b34611b6e7be0ce0dc5b204514c376c0f6a6e6ac4"
+    },
+    {
+      "file": "pstack/skills/principle-guard-the-context-window/SKILL.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-guard-the-context-window/SKILL.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "9f60e2c79b35f865cb103462f9128c6760b70f603475d1e535e5930f61840f66"
+    },
+    {
+      "file": "pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "761390804ee36c32f5338d8db47ec54463d40ff96dbb296dfafabcd5f2593eec"
+    },
+    {
+      "file": "pstack/skills/recall/SKILL.md",
+      "source_url": "https://raw.githubusercontent.com/cursor/plugins/be432a96ed36e48d05f44bf375864355f62263f9/pstack/skills/recall/SKILL.md",
+      "revision": "be432a96ed36e48d05f44bf375864355f62263f9",
+      "retrieved_at": "2026-09-14T17:11:37.678749+00:00",
+      "sha256": "d265b0e5b6dc5b89c0407f3387d24462c988e1990a37d5359735137908128c5a"
+    },
+    {
+      "file": "poteto-pstack-pt1.json",
+      "source_url": "https://api.fxtwitter.com/poteto/status/2094457600259842065",
+      "original_url": "https://x.com/poteto/status/2094457600259842065",
+      "retrieved_date": "2026-09-14",
+      "sha256": "3e272201dbccbf8cba44921c3b667e1355cf3bb7fc6096ea9fd5bbe58832bd51",
+      "transformation": "original response"
+    },
+    {
+      "file": "poteto-pstack-pt1.txt",
+      "source_url": "https://api.fxtwitter.com/poteto/status/2094457600259842065",
+      "original_url": "https://x.com/poteto/status/2094457600259842065",
+      "retrieved_date": "2026-09-14",
+      "sha256": "28b225f8658c3e1766a996c5ce30995910fe6af96ffefd987407a261dbbab3eb",
+      "transformation": "title and content.blocks[].text; no image OCR"
+    },
+    {
+      "file": "poteto-pstack-pt2.json",
+      "source_url": "https://api.fxtwitter.com/poteto/status/2097732320606507506",
+      "original_url": "https://x.com/poteto/status/2097732320606507506",
+      "retrieved_date": "2026-09-14",
+      "sha256": "ba1be054a9206942264984354ca6c50f37332a482991249506f1455e780d90ba",
+      "transformation": "original response"
+    },
+    {
+      "file": "poteto-pstack-pt2.txt",
+      "source_url": "https://api.fxtwitter.com/poteto/status/2097732320606507506",
+      "original_url": "https://x.com/poteto/status/2097732320606507506",
+      "retrieved_date": "2026-09-14",
+      "sha256": "26dabfe43c43cbea0a9aeb26a607703988aa6df0144aa314cbb43209e620c449",
+      "transformation": "title and content.blocks[].text; no image OCR"
+    },
+    {
+      "file": "discord-limen-2026-09-14.txt",
+      "source": "user-provided Discord quotation",
+      "received_date": "2026-09-14",
+      "transformation": "removed enclosing quotation marks only",
+      "sha256": "d6c29ca006479497a6115149a15aba53218f0a8278a6cad03914ea9dccc873f6"
+    }
+  ]
+}
