@@ -5,14 +5,18 @@ import test from "node:test";
 import { loadProjectSlot, type ProjectSlotMap, routingFingerprint } from "../src/project-slot.ts";
 import {
 	canonicalApprovedOutbox,
+	compareIdentity,
 	isSubstantiveAssistantTurn,
 	makeAttemptBoundary,
 	normalizeArtifactSpecs,
 	type ObservedExecutionEvent,
+	parseArtifactIdentity,
 	readManagedAssignment,
+	readObservedExecution,
 	writeContinuedManagedAssignment,
 	writeManagedAssignment,
 } from "../src/provenance.ts";
+import { normalizePiTranscript, observedExecutionRecords } from "../src/provenance-pi-adapter.ts";
 import { createSlotSeat } from "./project-slot-fixture.ts";
 
 async function slotsWithOutboxes() {
@@ -163,6 +167,228 @@ test("continued assignment preserves its triple and immutable inherited prefix",
 	assert.deepEqual([child.provider, child.model, child.thinking, child.assignment_id], [parent.provider, parent.model, parent.thinking, parent.assignment_id]);
 	assert.deepEqual(child.attempts[1]?.inherited_prefix, inheritedPrefix);
 	assert.notEqual(child.current_attempt_id, parent.current_attempt_id);
+});
+
+test("completed-result identity frontmatter is strict and mode-aware", () => {
+	const fields = [
+		"provenance_schema: 1",
+		"job_id: producer-a",
+		"provider: openai-codex",
+		"model: gpt-6-astra",
+		"thinking: high",
+		"started: 2026-09-16T10:00:00.000Z",
+		"finished: 2026-09-16T10:01:00.000Z",
+		"hosted: true",
+		"slot: slot-a",
+		"assignment_id: assignment-a",
+		"stage: synthesis",
+		"attempt_id: attempt-a",
+		"artifact_role: result",
+		"job_ref: /cabinet/jobs/producer-a",
+		"claim_set: claims.json",
+		"provenance_status: final",
+	];
+	const text = `---\n${fields.join("\n")}\n---\nresult\n`;
+	assert.equal(parseArtifactIdentity(text).provenance_status, "final");
+	const draft = text.replace("finished: 2026-09-16T10:01:00.000Z", "finished: null").replace("provenance_status: final", "provenance_status: pending");
+	assert.equal(parseArtifactIdentity(draft).finished, null);
+	assert.throws(() => parseArtifactIdentity(text.replace("hosted: true", 'hosted: "true"')), /hosted must be an unquoted boolean/);
+	assert.throws(() => parseArtifactIdentity(text.replace("model: gpt-6-astra", "model: gpt-6-astra\nextra: no")), /unknown provenance field extra/);
+	assert.throws(() => parseArtifactIdentity(text.replace("finished: 2026-09-16T10:01:00.000Z", "finished: null")), /final.*finished/);
+	assert.throws(() => parseArtifactIdentity(text.replace("provider: openai-codex", "provider: openai-codex\nmodel_provider: other")), /alias/);
+	assert.throws(() => parseArtifactIdentity(text.replace("model: gpt-6-astra", "model: openai-codex/gpt-6-astra")), /canonical model id/);
+	assert.throws(() => parseArtifactIdentity(text.replace("started: 2026-09-16T10:00:00.000Z", "started: 2026-02-30T10:00:00Z")), /valid offset-aware/);
+	assert.throws(() => parseArtifactIdentity(text.replace("job_id: producer-a", "job_id: producer/a")), /canonical safe id/);
+});
+
+test("observed execution rejects parent-only work and accepts a substantive child turn", async (context) => {
+	const root = (await slotsWithOutboxes()).seat.root;
+	context.after(() => rm(root, { recursive: true, force: true }));
+	const evidence = join(root, "evidence.jsonl");
+	const envelope = {
+		schema_version: 1,
+		slot: "slot-a",
+		job_id: "child",
+		assignment_id: "assignment-a",
+		attempt_id: "attempt-child",
+		session_id: "session-child",
+		branch_head: "child-head",
+		inherited_prefix_sha256: "b".repeat(64),
+		contributing_attempt_ids: ["attempt-parent", "attempt-child"],
+	};
+	const start = {
+		kind: "attempt-start",
+		event_id: "child-head",
+		parent_event_id: "parent-head",
+		session_id: "session-child",
+		branch_id: "limen/job",
+		provider: "openai-codex",
+		model: "gpt-6-astra",
+		thinking: "high",
+		transcript_offset: 120,
+	};
+	await writeFile(evidence, `${JSON.stringify({ ...envelope, event: start })}\n`);
+	const parentOnly = readObservedExecution(evidence);
+	assert.equal(
+		compareIdentity(
+			{
+				slot: "slot-a",
+				job_id: "child",
+				assignment_id: "assignment-a",
+				attempt_id: "attempt-child",
+				provider: "openai-codex",
+				model: "gpt-6-astra",
+				thinking: "high",
+				branch_id: "limen/job",
+				inherited_bytes: 100,
+			},
+			parentOnly,
+		).verified,
+		false,
+	);
+	const turn = {
+		kind: "assistant-turn-end",
+		event_id: "turn-end",
+		parent_event_id: "child-head",
+		session_id: "session-child",
+		branch_id: "limen/job",
+		stop_reason: "stop",
+		final_text: " child result ",
+		transcript_offset: 180,
+	};
+	await writeFile(evidence, `${JSON.stringify({ ...envelope, event: start })}\n${JSON.stringify({ ...envelope, event: turn })}\n`);
+	const accepted = compareIdentity(
+		{
+			slot: "slot-a",
+			job_id: "child",
+			assignment_id: "assignment-a",
+			attempt_id: "attempt-child",
+			provider: "openai-codex",
+			model: "gpt-6-astra",
+			thinking: "high",
+			branch_id: "limen/job",
+			inherited_bytes: 100,
+		},
+		readObservedExecution(evidence),
+	);
+	assert.equal(accepted.verified, true);
+	if (accepted.verified) assert.deepEqual(accepted.value.contributing_attempt_ids, ["attempt-parent", "attempt-child"]);
+});
+
+test("execution evidence rejects empty, non-stop, failed, wrong-session, and divergent child turns", async (context) => {
+	const { seat } = await slotsWithOutboxes();
+	context.after(() => rm(seat.root, { recursive: true, force: true }));
+	const evidence = join(seat.root, "strict-evidence.jsonl");
+	const envelope = {
+		schema_version: 1,
+		slot: "slot-a",
+		job_id: "child",
+		assignment_id: "assignment-a",
+		attempt_id: "attempt-child",
+		session_id: "session-child",
+		branch_head: "child-head",
+		inherited_prefix_sha256: null,
+		contributing_attempt_ids: ["attempt-child"],
+	};
+	const start = {
+		kind: "attempt-start",
+		event_id: "child-head",
+		parent_event_id: null,
+		session_id: "session-child",
+		branch_id: "limen/job",
+		provider: "openai-codex",
+		model: "gpt-6-astra",
+		thinking: "high",
+		transcript_offset: 1,
+	};
+	const expected = {
+		slot: "slot-a",
+		job_id: "child",
+		assignment_id: "assignment-a",
+		attempt_id: "attempt-child",
+		provider: "openai-codex",
+		model: "gpt-6-astra",
+		thinking: "high",
+		branch_id: "limen/job",
+		inherited_bytes: 0,
+	} as const;
+	for (const [stop_reason, final_text] of [
+		["stop", " \n\t"],
+		["toolUse", "claimed result"],
+	] as const) {
+		const turn = {
+			kind: "assistant-turn-end",
+			event_id: "turn",
+			parent_event_id: "child-head",
+			session_id: "session-child",
+			branch_id: "limen/job",
+			stop_reason,
+			final_text,
+			transcript_offset: 2,
+		};
+		await writeFile(evidence, `${JSON.stringify({ ...envelope, event: start })}\n${JSON.stringify({ ...envelope, event: turn })}\n`);
+		assert.equal(compareIdentity(expected, readObservedExecution(evidence)).verified, false);
+	}
+	const failed = { kind: "abort", event_id: "failed", parent_event_id: "child-head", session_id: "session-child", branch_id: "limen/job", transcript_offset: 2 };
+	await writeFile(evidence, `${JSON.stringify({ ...envelope, event: start })}\n${JSON.stringify({ ...envelope, event: failed })}\n`);
+	assert.equal(compareIdentity(expected, readObservedExecution(evidence)).verified, false);
+	const wrongSession = { ...start, session_id: "other-session" };
+	await writeFile(evidence, `${JSON.stringify({ ...envelope, event: wrongSession })}\n`);
+	assert.throws(() => readObservedExecution(evidence), /wrong-session/);
+	const divergent = {
+		kind: "assistant-turn-end",
+		event_id: "turn",
+		parent_event_id: "unrelated",
+		session_id: "session-child",
+		branch_id: "limen/job",
+		stop_reason: "stop",
+		final_text: "result",
+		transcript_offset: 2,
+	};
+	await writeFile(evidence, `${JSON.stringify({ ...envelope, event: start })}\n${JSON.stringify({ ...envelope, event: divergent })}\n`);
+	assert.throws(() => readObservedExecution(evidence), /divergent or unexplained ancestry/);
+	await writeFile(evidence, '{"type":"message"}\n');
+	assert.throws(() => readObservedExecution(evidence), /missing or unknown fields/);
+});
+
+test("Pi adapter excludes inherited and tool payload text from substantive child work", async (context) => {
+	const prefix = `${JSON.stringify({ type: "message", id: "parent", parentId: null, message: { role: "assistant", stopReason: "stop", content: [{ type: "text", text: "parent result" }] } })}\n`;
+	const toolOnly = `${JSON.stringify({ type: "message", id: "tool", parentId: "parent", message: { role: "assistant", stopReason: "toolUse", content: [{ type: "toolCall", name: "read" }] } })}\n`;
+	const final = `${JSON.stringify({
+		type: "message",
+		id: "final",
+		parentId: "tool",
+		message: {
+			role: "assistant",
+			stopReason: "stop",
+			content: [
+				{ type: "text", text: "child result" },
+				{ type: "toolCall", name: "ignored" },
+			],
+		},
+	})}\n`;
+	const common = {
+		slot: "slot-a",
+		job_id: "child",
+		assignment_id: "assignment-a",
+		attempt_id: "attempt-child",
+		branch_id: "limen/job",
+		branch_head: "child-head",
+		inherited_bytes: Buffer.byteLength(prefix),
+		inherited_last_event_id: "parent",
+		inherited_prefix_sha256: "b".repeat(64),
+		contributing_attempt_ids: ["attempt-parent", "attempt-child"],
+		runtime: { session_id: "session-child", provider: "openai-codex", model: "gpt-6-astra", thinking: "high" },
+	} as const;
+	const toolObserved = normalizePiTranscript(prefix + toolOnly, common);
+	assert.equal(toolObserved.events.some(isSubstantiveAssistantTurn), false);
+	const complete = normalizePiTranscript(prefix + toolOnly + final, common);
+	assert.equal(complete.events.filter(isSubstantiveAssistantTurn).length, 1);
+	const root = (await slotsWithOutboxes()).seat.root;
+	context.after(() => rm(root, { recursive: true, force: true }));
+	const evidence = join(root, "normalized.jsonl");
+	await writeFile(evidence, observedExecutionRecords(complete));
+	assert.deepEqual(readObservedExecution(evidence), complete);
 });
 
 test("ObservedExecution SPI distinguishes final assistant text from tool-only and failed turns", () => {

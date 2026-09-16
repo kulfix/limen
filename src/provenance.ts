@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { closeSync, constants, existsSync, lstatSync, openSync, readFileSync, realpathSync } from "node:fs";
+import { closeSync, constants, existsSync, fstatSync, lstatSync, openSync, readFileSync, realpathSync } from "node:fs";
 import { mkdir, open, rename, rm } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { assertSlotPath, type ResolvedProjectSlot, routingFingerprint } from "./project-slot.ts";
@@ -100,8 +100,282 @@ export type ObservedExecution = {
 
 export type ProvenanceVerdict<T = unknown> = { readonly verified: true; readonly value: T } | { readonly verified: false; readonly reason: string; readonly detail: string };
 
+export type ArtifactIdentity = {
+	readonly provenance_schema: 1;
+	readonly job_id: string;
+	readonly provider: string;
+	readonly model: string;
+	readonly thinking: string;
+	readonly started: string;
+	readonly finished: string | null;
+	readonly hosted: boolean;
+	readonly slot: string;
+	readonly assignment_id: string;
+	readonly stage: string;
+	readonly attempt_id: string;
+	readonly artifact_role: string;
+	readonly job_ref: string;
+	readonly claim_set?: string;
+	readonly provenance_status: "pending" | "final";
+	readonly model_provider?: string;
+	readonly model_id?: string;
+	readonly model_thinking?: string;
+	readonly type?: string;
+	readonly in_reply_to?: string;
+	readonly artifact_sha256?: string;
+	readonly claim_set_sha256?: string;
+};
+
+export type ExpectedExecutionIdentity = {
+	readonly slot: string;
+	readonly job_id: string;
+	readonly assignment_id: string;
+	readonly attempt_id: string;
+	readonly provider: string;
+	readonly model: string;
+	readonly thinking: string;
+	readonly branch_id: string;
+	readonly branch_head?: string;
+	readonly session_id?: string;
+	readonly inherited_bytes: number;
+	readonly inherited_prefix_sha256?: string | null;
+	readonly contributing_attempt_ids?: readonly string[];
+};
+
+const REQUIRED_ARTIFACT_FIELDS = [
+	"provenance_schema",
+	"job_id",
+	"provider",
+	"model",
+	"thinking",
+	"started",
+	"finished",
+	"hosted",
+	"slot",
+	"assignment_id",
+	"stage",
+	"attempt_id",
+	"artifact_role",
+	"job_ref",
+	"provenance_status",
+] as const;
+const ARTIFACT_FIELDS = new Set([
+	...REQUIRED_ARTIFACT_FIELDS,
+	"claim_set",
+	"model_provider",
+	"model_id",
+	"model_thinking",
+	"type",
+	"in_reply_to",
+	"artifact_sha256",
+	"claim_set_sha256",
+]);
+const OFFSET_TIMESTAMP = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(?:\.\d+)?(?:Z|([+-])(\d\d):(\d\d))$/;
+const SAFE_PROVENANCE_ID = /^[A-Za-z0-9][A-Za-z0-9._:@-]{0,255}$/;
+const CANONICAL_MODEL = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const SHA256 = /^[a-f0-9]{64}$/;
+
+/** Parse completed-result identity without using the permissive bridge handoff parser. */
+export function parseArtifactIdentity(text: string): ArtifactIdentity {
+	const match = /^(?:\uFEFF)?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
+	if (!match) throw new Error("artifact must use YAML frontmatter delimited by ---");
+	const raw = match[1] ?? "";
+	const fields = new Map<string, string>();
+	for (const line of raw.split(/\r?\n/)) {
+		if (!line) continue;
+		if (/^\s/.test(line) || line.trimStart().startsWith("#")) throw new Error(`nested or commented provenance YAML is not allowed: ${JSON.stringify(line)}`);
+		const field = /^([a-z][a-z0-9_]*):(?: (.*))?$/.exec(line);
+		if (!field?.[1] || field[2] === undefined) throw new Error(`invalid provenance frontmatter line: ${JSON.stringify(line)}`);
+		const [, key, value] = field;
+		if (!ARTIFACT_FIELDS.has(key)) throw new Error(`unknown provenance field ${key}`);
+		if (fields.has(key)) throw new Error(`duplicate provenance field ${key}`);
+		if (/^["']|["']$/.test(value) || /^[\[{]|[\]}]$/.test(value)) {
+			if (key === "hosted") throw new Error("hosted must be an unquoted boolean");
+			throw new Error(`provenance field ${key} must be a plain scalar`);
+		}
+		fields.set(key, value);
+	}
+	for (const key of REQUIRED_ARTIFACT_FIELDS) if (!fields.has(key)) throw new Error(`artifact identity missing ${key}`);
+	if (fields.get("provenance_schema") !== "1") throw new Error("unsupported provenance_schema");
+	const hosted = fields.get("hosted");
+	if (hosted !== "true" && hosted !== "false") throw new Error("hosted must be an unquoted boolean");
+	const finishedRaw = fields.get("finished") ?? "";
+	const status = fields.get("provenance_status");
+	if (status !== "pending" && status !== "final") throw new Error("provenance_status must be pending or final");
+	const started = fields.get("started") ?? "";
+	assertOffsetTimestamp("started", started);
+	let finished: string | null;
+	if (finishedRaw === "null") finished = null;
+	else {
+		assertOffsetTimestamp("finished", finishedRaw);
+		finished = finishedRaw;
+	}
+	if (status === "pending" && finished !== null) throw new Error("pending artifact requires finished: null");
+	if (status === "final" && finished === null) throw new Error("final artifact requires an offset-aware finished timestamp");
+	if (finished && Date.parse(finished) < Date.parse(started)) throw new Error("artifact finished timestamp precedes started");
+	for (const key of ["job_id", "provider", "thinking", "slot", "assignment_id", "stage", "attempt_id"] as const) {
+		const value = fields.get(key) ?? "";
+		if (!SAFE_PROVENANCE_ID.test(value)) throw new Error(`${key} is not a canonical safe id`);
+	}
+	const model = fields.get("model") ?? "";
+	if (!CANONICAL_MODEL.test(model)) throw new Error("model must be a canonical model id without provider shorthand");
+	const artifactRole = fields.get("artifact_role") ?? "";
+	if (!SAFE_ROLE.test(artifactRole)) throw new Error("artifact_role is invalid");
+	const jobRef = fields.get("job_ref") ?? "";
+	if (!jobRef || jobRef.includes("\0") || !isAbsolute(jobRef)) throw new Error("job_ref must be an absolute cabinet reference");
+	const claimSet = fields.get("claim_set");
+	if (claimSet !== undefined) normalizeRelativePath(claimSet);
+	for (const key of ["artifact_sha256", "claim_set_sha256"] as const) {
+		const value = fields.get(key);
+		if (value !== undefined && !SHA256.test(value)) throw new Error(`${key} must be a lowercase SHA-256 digest`);
+	}
+	for (const [alias, canonical] of [
+		["model_provider", "provider"],
+		["model_id", "model"],
+		["model_thinking", "thinking"],
+	] as const) {
+		const value = fields.get(alias);
+		if (value !== undefined && value !== fields.get(canonical)) throw new Error(`${alias} alias conflicts with ${canonical}`);
+	}
+	for (const key of ["type", "in_reply_to"] as const) if (fields.has(key) && !fields.get(key)) throw new Error(`${key} must be nonempty`);
+	return {
+		provenance_schema: 1,
+		job_id: fields.get("job_id")!,
+		provider: fields.get("provider")!,
+		model,
+		thinking: fields.get("thinking")!,
+		started,
+		finished,
+		hosted: hosted === "true",
+		slot: fields.get("slot")!,
+		assignment_id: fields.get("assignment_id")!,
+		stage: fields.get("stage")!,
+		attempt_id: fields.get("attempt_id")!,
+		artifact_role: artifactRole,
+		job_ref: jobRef,
+		provenance_status: status,
+		...(claimSet !== undefined ? { claim_set: claimSet } : {}),
+		...(fields.has("model_provider") ? { model_provider: fields.get("model_provider")! } : {}),
+		...(fields.has("model_id") ? { model_id: fields.get("model_id")! } : {}),
+		...(fields.has("model_thinking") ? { model_thinking: fields.get("model_thinking")! } : {}),
+		...(fields.has("type") ? { type: fields.get("type")! } : {}),
+		...(fields.has("in_reply_to") ? { in_reply_to: fields.get("in_reply_to")! } : {}),
+		...(fields.has("artifact_sha256") ? { artifact_sha256: fields.get("artifact_sha256")! } : {}),
+		...(fields.has("claim_set_sha256") ? { claim_set_sha256: fields.get("claim_set_sha256")! } : {}),
+	};
+}
+
+/** Read adapter-normalized, append-only evidence. Pi transcript parsing belongs in provenance-pi-adapter.ts. */
+export function readObservedExecution(path: string, maximum = 4 * 1024 * 1024): ObservedExecution {
+	const descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+	let bytes: Buffer;
+	try {
+		const stat = fstatSync(descriptor);
+		if (!stat.isFile()) throw new Error(`${path} is not a regular execution-evidence file`);
+		if (stat.size > maximum) throw new Error(`${path} exceeds its size limit`);
+		bytes = readFileSync(descriptor);
+	} finally {
+		closeSync(descriptor);
+	}
+	const lines = new TextDecoder("utf-8", { fatal: true }).decode(bytes).split("\n");
+	if (lines.at(-1) === "") lines.pop();
+	if (lines.some((line) => line.length === 0)) throw new Error("execution evidence contains an empty record");
+	if (lines.length === 0) throw new Error("execution evidence is empty");
+	const records = lines.map((line, index) => parseEvidenceRecord(line, index + 1));
+	const first = records[0]!;
+	for (const record of records.slice(1)) {
+		for (const key of ["schema_version", "slot", "job_id", "assignment_id", "attempt_id", "session_id", "branch_head", "inherited_prefix_sha256"] as const) {
+			if (record[key] !== first[key]) throw new Error(`execution evidence has mixed ${key}`);
+		}
+		if (JSON.stringify(record.contributing_attempt_ids) !== JSON.stringify(first.contributing_attempt_ids)) throw new Error("execution evidence has mixed contributing attempts");
+	}
+	validateObservedEvents(
+		records.map((record) => record.event),
+		first.session_id,
+		first.branch_head,
+	);
+	return {
+		schema_version: 1,
+		slot: first.slot,
+		job_id: first.job_id,
+		assignment_id: first.assignment_id,
+		attempt_id: first.attempt_id,
+		session_id: first.session_id,
+		branch_head: first.branch_head,
+		inherited_prefix_sha256: first.inherited_prefix_sha256,
+		events: records.map((record) => record.event),
+		contributing_attempt_ids: first.contributing_attempt_ids,
+	};
+}
+
+export function compareIdentity(
+	expected: ExpectedExecutionIdentity | ManagedAssignment,
+	observed: ObservedExecution,
+	artifact?: ArtifactIdentity,
+): ProvenanceVerdict<ObservedExecution> {
+	const attempt = "attempts" in expected ? expected.attempts.find((candidate) => candidate.attempt_id === expected.current_attempt_id) : undefined;
+	if ("attempts" in expected && !attempt) return rejected("attempt-missing", "assignment has no current attempt boundary");
+	const wanted: ExpectedExecutionIdentity =
+		"attempts" in expected
+			? {
+					slot: expected.slot,
+					job_id: expected.job_id,
+					assignment_id: expected.assignment_id,
+					attempt_id: expected.current_attempt_id,
+					provider: expected.provider,
+					model: expected.model,
+					thinking: expected.thinking,
+					branch_id: attempt!.expected_descendant_branch,
+					branch_head: attempt!.branch_head,
+					...(attempt!.session_id ? { session_id: attempt!.session_id } : {}),
+					inherited_bytes: attempt!.inherited_prefix?.bytes ?? 0,
+					inherited_prefix_sha256: attempt!.inherited_prefix?.sha256 ?? null,
+					contributing_attempt_ids: expected.attempts.map((candidate) => candidate.attempt_id),
+				}
+			: expected;
+	for (const key of ["slot", "job_id", "assignment_id", "attempt_id"] as const) {
+		if (observed[key] !== wanted[key]) return rejected("binding-mismatch", `observed ${key} does not match assignment`);
+	}
+	if (wanted.branch_head !== undefined && observed.branch_head !== wanted.branch_head)
+		return rejected("execution-boundary-mismatch", "observed child branch head does not match the attempt boundary");
+	if (wanted.session_id !== undefined && observed.session_id !== wanted.session_id)
+		return rejected("execution-boundary-mismatch", "observed session does not match the attempt boundary");
+	if (wanted.inherited_prefix_sha256 !== undefined && observed.inherited_prefix_sha256 !== wanted.inherited_prefix_sha256)
+		return rejected("inherited-prefix-mismatch", "observed inherited transcript digest does not match the attempt boundary");
+	if (wanted.contributing_attempt_ids && JSON.stringify(observed.contributing_attempt_ids) !== JSON.stringify(wanted.contributing_attempt_ids))
+		return rejected("attempt-chain-mismatch", "observed contributing attempts do not match the assignment chain");
+	const starts = observed.events.filter((event): event is Extract<ObservedExecutionEvent, { kind: "attempt-start" }> => event.kind === "attempt-start");
+	if (starts.length !== 1) return rejected("ambiguous-execution", "attempt requires exactly one fresh attempt-start event");
+	const start = starts[0]!;
+	if (start.provider !== wanted.provider || start.model !== wanted.model || start.thinking !== wanted.thinking)
+		return rejected("identity-mismatch", "fresh observed model identity does not match assignment");
+	if (start.branch_id !== wanted.branch_id || start.session_id !== observed.session_id)
+		return rejected("execution-boundary-mismatch", "attempt-start is on the wrong session or branch");
+	if (start.transcript_offset <= wanted.inherited_bytes) return rejected("inherited-only", "attempt-start is not strictly after the inherited transcript boundary");
+	const failed = observed.events.some((event) => event.kind === "error" || event.kind === "cancel" || event.kind === "abort");
+	if (failed) return rejected("unsuccessful-child-turn", "child execution contains an error, cancel, or abort marker");
+	const turn = observed.events.find(
+		(event) =>
+			isSubstantiveAssistantTurn(event) && event.session_id === observed.session_id && event.branch_id === wanted.branch_id && event.transcript_offset > wanted.inherited_bytes,
+	);
+	if (!turn) return rejected("no-substantive-child-turn", "attempt has no successful substantive child assistant turn after the boundary");
+	if (!observed.contributing_attempt_ids.includes(wanted.attempt_id)) return rejected("attempt-chain-mismatch", "contributing attempts omit the current attempt");
+	if (artifact) {
+		for (const key of ["slot", "job_id", "assignment_id", "attempt_id", "provider", "model", "thinking"] as const) {
+			if (artifact[key] !== wanted[key]) return rejected("artifact-identity-mismatch", `artifact ${key} does not match assignment`);
+		}
+		if ("attempts" in expected) {
+			if (artifact.stage !== expected.stage) return rejected("artifact-identity-mismatch", "artifact stage does not match assignment");
+			if (!expected.artifacts.some((candidate) => candidate.role === artifact.artifact_role))
+				return rejected("artifact-identity-mismatch", "artifact role is not in the authorized inventory");
+		}
+		if (artifact.provenance_status !== "final" || artifact.finished === null) return rejected("artifact-pending", "artifact is not final");
+	}
+	return { verified: true, value: observed };
+}
+
 export function isSubstantiveAssistantTurn(event: ObservedExecutionEvent): boolean {
-	return event.kind === "assistant-turn-end" && event.stop_reason === "stop" && event.final_text.trim().length > 0;
+	return event.kind === "assistant-turn-end" && event.stop_reason === "stop" && /[^\p{White_Space}]/u.test(event.final_text);
 }
 
 export function normalizeArtifactSpecs(values: readonly string[]): ArtifactSpec[] {
@@ -264,6 +538,116 @@ export function readManagedAssignment(jobDir: string): ManagedAssignment | undef
 }
 
 export const sha256 = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
+
+type EvidenceRecord = Omit<ObservedExecution, "events"> & { readonly event: ObservedExecutionEvent };
+
+function assertOffsetTimestamp(name: string, value: string): void {
+	const match = OFFSET_TIMESTAMP.exec(value);
+	if (!match || !Number.isFinite(Date.parse(value))) throw new Error(`${name} must be a valid offset-aware timestamp`);
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	const day = Number(match[3]);
+	const hour = Number(match[4]);
+	const minute = Number(match[5]);
+	const second = Number(match[6]);
+	const offsetHour = Number(match[8] ?? 0);
+	const offsetMinute = Number(match[9] ?? 0);
+	const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+	if (month < 1 || month > 12 || day < 1 || day > daysInMonth || hour > 23 || minute > 59 || second > 59 || offsetHour > 23 || offsetMinute > 59)
+		throw new Error(`${name} must be a valid offset-aware timestamp`);
+}
+
+function parseEvidenceRecord(line: string, lineNumber: number): EvidenceRecord {
+	let value: unknown;
+	try {
+		value = JSON.parse(line);
+	} catch {
+		throw new Error(`invalid execution evidence JSON on line ${lineNumber}`);
+	}
+	assertExactObject(
+		value,
+		["schema_version", "slot", "job_id", "assignment_id", "attempt_id", "session_id", "branch_head", "inherited_prefix_sha256", "contributing_attempt_ids", "event"],
+		`execution evidence line ${lineNumber}`,
+	);
+	const record = value as Record<string, unknown>;
+	if (record.schema_version !== 1) throw new Error("unsupported execution evidence schema_version");
+	for (const key of ["slot", "job_id", "assignment_id", "attempt_id", "session_id", "branch_head"] as const)
+		if (typeof record[key] !== "string" || !SAFE_ID.test(record[key])) throw new Error(`execution evidence ${key} is invalid`);
+	if (record.inherited_prefix_sha256 !== null && (typeof record.inherited_prefix_sha256 !== "string" || !SHA256.test(record.inherited_prefix_sha256)))
+		throw new Error("execution evidence inherited_prefix_sha256 is invalid");
+	if (
+		!Array.isArray(record.contributing_attempt_ids) ||
+		record.contributing_attempt_ids.length === 0 ||
+		record.contributing_attempt_ids.some((id) => typeof id !== "string" || !SAFE_ID.test(id)) ||
+		new Set(record.contributing_attempt_ids).size !== record.contributing_attempt_ids.length
+	)
+		throw new Error("execution evidence contributing_attempt_ids is invalid");
+	const event = parseObservedEvent(record.event, lineNumber);
+	return {
+		schema_version: 1,
+		slot: record.slot as string,
+		job_id: record.job_id as string,
+		assignment_id: record.assignment_id as string,
+		attempt_id: record.attempt_id as string,
+		session_id: record.session_id as string,
+		branch_head: record.branch_head as string,
+		inherited_prefix_sha256: record.inherited_prefix_sha256 as string | null,
+		contributing_attempt_ids: record.contributing_attempt_ids as string[],
+		event,
+	};
+}
+
+function parseObservedEvent(value: unknown, lineNumber: number): ObservedExecutionEvent {
+	if (!value || typeof value !== "object" || Array.isArray(value) || !("kind" in value)) throw new Error(`execution event on line ${lineNumber} is invalid`);
+	const event = value as Record<string, unknown>;
+	const common = ["kind", "event_id", "parent_event_id", "session_id", "branch_id", "transcript_offset"];
+	if (event.kind === "attempt-start") assertExactObject(event, [...common, "provider", "model", "thinking"], `attempt-start event on line ${lineNumber}`);
+	else if (event.kind === "assistant-turn-end") assertExactObject(event, [...common, "stop_reason", "final_text"], `assistant-turn-end event on line ${lineNumber}`);
+	else if (event.kind === "error" || event.kind === "cancel" || event.kind === "abort") assertExactObject(event, common, `${event.kind} event on line ${lineNumber}`);
+	else throw new Error(`execution event on line ${lineNumber} has an unknown kind`);
+	for (const key of ["event_id", "session_id", "branch_id"] as const)
+		if (typeof event[key] !== "string" || !SAFE_ID.test(event[key])) throw new Error(`execution event ${key} is invalid`);
+	if (event.parent_event_id !== null && (typeof event.parent_event_id !== "string" || !SAFE_ID.test(event.parent_event_id)))
+		throw new Error("execution event parent_event_id is invalid");
+	if (!Number.isSafeInteger(event.transcript_offset) || (event.transcript_offset as number) < 0) throw new Error("execution event transcript_offset is invalid");
+	if (event.kind === "attempt-start") {
+		if (typeof event.provider !== "string" || !SAFE_ID.test(event.provider)) throw new Error("attempt-start provider is invalid");
+		if (typeof event.model !== "string" || !CANONICAL_MODEL.test(event.model)) throw new Error("attempt-start model is invalid");
+		if (typeof event.thinking !== "string" || !SAFE_ID.test(event.thinking)) throw new Error("attempt-start thinking is invalid");
+	} else if (event.kind === "assistant-turn-end") {
+		if (typeof event.stop_reason !== "string" || typeof event.final_text !== "string") throw new Error("assistant-turn-end payload is invalid");
+	}
+	return event as unknown as ObservedExecutionEvent;
+}
+
+function validateObservedEvents(events: readonly ObservedExecutionEvent[], sessionId: string, branchHead: string): void {
+	if (events[0]?.kind !== "attempt-start") throw new Error("execution evidence must begin with attempt-start");
+	if (events[0].event_id !== branchHead) throw new Error("attempt-start does not match the recorded child branch head");
+	const ids = new Set<string>();
+	let priorOffset = -1;
+	let priorId: string | undefined;
+	for (const event of events) {
+		if (ids.has(event.event_id)) throw new Error(`duplicate execution event id ${event.event_id}`);
+		ids.add(event.event_id);
+		if (event.session_id !== sessionId) throw new Error("execution evidence contains a wrong-session event");
+		if (event.branch_id !== events[0].branch_id) throw new Error("execution evidence contains a wrong-branch event");
+		if (event.transcript_offset <= priorOffset) throw new Error("execution event offsets are not strictly increasing");
+		if (priorId !== undefined && event.parent_event_id !== priorId) throw new Error("execution evidence has divergent or unexplained ancestry");
+		priorOffset = event.transcript_offset;
+		priorId = event.event_id;
+	}
+}
+
+function assertExactObject(value: unknown, keys: readonly string[], name: string): asserts value is Record<string, unknown> {
+	if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${name} must be an object`);
+	const actual = Object.keys(value).sort();
+	const expected = [...keys].sort();
+	if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) throw new Error(`${name} has missing or unknown fields`);
+}
+
+function rejected(reason: string, detail: string): ProvenanceVerdict<never> {
+	return { verified: false, reason, detail };
+}
 
 function readBoundedJson(path: string, maximum: number): unknown {
 	const descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
