@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { processGroupAlive } from "../src/contain.ts";
 import { derivePulse, type Pulse, producedNothing } from "../src/job.ts";
 import { activeProjectSlot, readRoutingRecord } from "../src/project-slot.ts";
+import { verifyManagedJob } from "../src/provenance-gate.ts";
 import { reapDeadJobs } from "../src/reap.ts";
 import { registerProject } from "./seat.ts";
 
@@ -357,6 +358,8 @@ export default function limenWake(pi: PiApi): void {
 			else if (oldEnoughForFallback(job, join(job, "advisory"))) sendAdvisory(jobs, id, true);
 			return;
 		}
+		// Managed completion is invisible to normal delivery until current source, snapshot and sealed claims verify now.
+		if (!verifyManagedJob(job, projectSlot).verified) return;
 		if (own && !deliveryExists(job, sessionId) && !deliveryExists(job, "_fallback")) notifyHerdr(job, id, state, label, branch, sessionId);
 		if (own) sendCompletion(jobs, id, state, false);
 		else if (oldEnoughForFallback(job)) sendCompletion(jobs, id, state, true);
@@ -582,7 +585,8 @@ function handoffExcerpt(job: string): string {
 		const lines = commits.split("\n").filter(Boolean);
 		sections.push(lines.length ? `Commits:\n${lines.slice(0, 10).join("\n")}${lines.length > 10 ? `\n… ${lines.length - 10} more` : ""}` : "Commits: none");
 	}
-	const result = text(join(job, "result"));
+	// A managed job's assistant footer is not a sealed artifact member and is never a result excerpt.
+	const result = existsSync(join(job, "provenance", "assignment.json")) ? "" : text(join(job, "result"));
 	if (result) {
 		const head = result.split("\n").slice(0, 15).join("\n").slice(0, 1200);
 		sections.push(`Final message:\n${head}${head.length < result.length ? "\n… (full text in the job record)" : ""}`);

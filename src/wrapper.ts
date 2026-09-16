@@ -7,6 +7,7 @@ import { deliverFinishWebhook } from "./finish-webhook.ts";
 import { changedFileCount, commitList } from "./git.ts";
 import { settleJobTab } from "./herdr.ts";
 import { activeProjectSlot, assertSlotPath, readRoutingRecord } from "./project-slot.ts";
+import { retryManagedFinalization } from "./provenance-finalize.ts";
 import { createClaudeStreamParser, createStreamParser, type StreamEvent } from "./stream.ts";
 
 const STOP_GRACE_MS = 5_000;
@@ -247,6 +248,15 @@ export async function finalizeJob(jobDir: string, state: "done" | "failed" | "st
 	const inbox = await readdir(`${jobDir}/steer/inbox`).catch(() => []);
 	await appendLimenLog(jobDir, inbox.length ? `${state}: ${detail}; ${inbox.length} steer(s) never delivered` : `${state}: ${detail}`).catch(() => {});
 	await atomicWrite(`${jobDir}/state`, `${state}\n`);
+	let managedCompletionRejected = false;
+	if (state === "done") {
+		const provenance = await retryManagedFinalization(jobDir);
+		if (provenance.status === "sealed") await appendLimenLog(jobDir, `provenance sealed: ${provenance.current.manifest_sha256}`);
+		else if (provenance.status === "rejected") {
+			managedCompletionRejected = true;
+			await appendLimenLog(jobDir, `provenance rejected: ${provenance.reason}`);
+		}
+	}
 	await rm(`${jobDir}/pid`, { force: true });
 	await rm(`${jobDir}/born`, { force: true });
 	// A tmp whose writer still runs is an in-flight rename by a racing finalizer, not a leftover; deleting it makes that rename ENOENT and crashes the other process.
@@ -254,9 +264,11 @@ export async function finalizeJob(jobDir: string, state: "done" | "failed" | "st
 		const writer = /\.(\d+)\.[0-9a-f]+\.tmp$/.exec(name);
 		if (writer && !processAlive(Number(writer[1]))) await rm(`${jobDir}/${name}`, { force: true });
 	}
-	await deliverFinishWebhook(jobDir, shutdownDeadline).catch(() =>
-		appendLimenLog(jobDir, "finish webhook: delivery could not be recorded; inspect finish-webhook-attempt before manual retry").catch(() => {}),
-	);
+	if (managedCompletionRejected) await appendLimenLog(jobDir, "finish webhook: suppressed until managed provenance verifies");
+	else
+		await deliverFinishWebhook(jobDir, shutdownDeadline).catch(() =>
+			appendLimenLog(jobDir, "finish webhook: delivery could not be recorded; inspect finish-webhook-attempt before manual retry").catch(() => {}),
+		);
 	await settleJobTab(jobDir);
 }
 export async function recordCommits(jobDir: string): Promise<void> {

@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { closeSync, constants, existsSync, fstatSync, lstatSync, openSync, readFileSync, realpathSync } from "node:fs";
 import { mkdir, open, rename, rm } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { assertSlotPath, type ResolvedProjectSlot, routingFingerprint } from "./project-slot.ts";
+import { activeProjectSlot, assertSlotPath, type ResolvedProjectSlot, routingFingerprint } from "./project-slot.ts";
 
 export const CLAIM_SET_MEDIA = "application/vnd.limen.claim-set+json;version=1";
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,255}$/;
@@ -535,6 +535,168 @@ export function readManagedAssignment(jobDir: string): ManagedAssignment | undef
 	if (value.schema_version !== 1 || !SAFE_ID.test(value.assignment_id) || !Array.isArray(value.artifacts) || !Array.isArray(value.attempts))
 		throw new Error("managed assignment is invalid");
 	return value;
+}
+
+export type ResultReferenceV1 = {
+	readonly schema_version: 1;
+	readonly type: "limen-result-reference";
+	readonly slot: string;
+	readonly job_id: string;
+	readonly assignment_id: string;
+	readonly stage: string;
+	readonly attempt_id: string;
+	readonly artifact_role: string;
+	readonly manifest_sha256: string;
+};
+
+export type VerifiedManifestMember = {
+	readonly role: string;
+	readonly relative_path: string;
+	readonly media_type: string;
+	readonly size: number;
+	readonly sha256: string;
+	readonly snapshot_path: string;
+};
+
+export type VerifiedCompletedResult = {
+	readonly reference: ResultReferenceV1;
+	readonly job_dir: string;
+	readonly snapshot_root: string;
+	readonly identity: { readonly provider: string; readonly model: string; readonly thinking: string };
+	readonly members: readonly VerifiedManifestMember[];
+	readonly selected_member: VerifiedManifestMember;
+};
+
+export function parseResultReference(value: unknown): ResultReferenceV1 {
+	assertExactObject(value, ["schema_version", "type", "slot", "job_id", "assignment_id", "stage", "attempt_id", "artifact_role", "manifest_sha256"], "result reference");
+	const record = value as Record<string, unknown>;
+	if (record.schema_version !== 1 || record.type !== "limen-result-reference") throw new Error("unsupported result reference schema or type");
+	for (const key of ["slot", "job_id", "assignment_id", "stage", "attempt_id"] as const)
+		if (typeof record[key] !== "string" || !SAFE_PROVENANCE_ID.test(record[key])) throw new Error(`result reference ${key} is invalid`);
+	if (typeof record.artifact_role !== "string" || !SAFE_ROLE.test(record.artifact_role)) throw new Error("result reference artifact_role is invalid");
+	if (typeof record.manifest_sha256 !== "string" || !SHA256.test(record.manifest_sha256)) throw new Error("result reference manifest_sha256 is invalid");
+	return record as ResultReferenceV1;
+}
+
+/** Re-read current runtime, manifest, snapshot and source bytes for one slot-derived result. */
+export function verifyCompletedResult(referenceInput: unknown, suppliedSlot = activeProjectSlot()): ProvenanceVerdict<VerifiedCompletedResult> {
+	try {
+		const reference = parseResultReference(referenceInput);
+		if (!suppliedSlot) return rejected("slot-unavailable", "completed-result verification requires an active project slot");
+		if (reference.slot !== suppliedSlot.slot_id) return rejected("wrong-slot", `result belongs to slot ${reference.slot}`);
+		const jobDir = resolve(suppliedSlot.cabinet_root, "jobs", reference.job_id);
+		assertSlotPath(suppliedSlot, jobDir, "cabinet");
+		if (readSmallText(resolve(jobDir, "state")) !== "done") return rejected("job-not-done", "managed result job is not done");
+		const assignment = readManagedAssignment(jobDir);
+		if (!assignment) return rejected("assignment-missing", "managed result assignment is absent");
+		if (assignment.routing_fingerprint !== routingFingerprint(suppliedSlot)) return rejected("routing-changed", "managed result routing no longer matches its assignment");
+		for (const key of ["slot", "job_id", "assignment_id", "stage"] as const)
+			if (reference[key] !== assignment[key]) return rejected("reference-mismatch", `result reference ${key} does not match assignment`);
+		if (reference.attempt_id !== assignment.current_attempt_id) return rejected("superseded-attempt", "result reference is not the current attempt");
+		if (!suppliedSlot.approved_result_outboxes.includes(realpathSync(assignment.outbox))) return rejected("outbox-not-approved", "assignment outbox is no longer exactly approved");
+		const current = readBoundedJson(resolve(jobDir, "provenance/current.json"), 16 * 1024) as Record<string, unknown>;
+		if (current.schema_version !== 1 || typeof current.revision !== "string" || !/^[a-f0-9]{24}$/.test(current.revision) || current.manifest_sha256 !== reference.manifest_sha256)
+			return rejected("stale-seal", "current provenance pointer does not match the result reference");
+		const manifestPath = resolve(jobDir, "provenance/manifests", `${current.revision}.json`);
+		const manifestBytes = readBoundedRegular(manifestPath, 1024 * 1024);
+		if (sha256(manifestBytes) !== reference.manifest_sha256) return rejected("manifest-digest-mismatch", "current manifest bytes changed");
+		const manifest = JSON.parse(manifestBytes.toString("utf8")) as Record<string, unknown>;
+		assertExactObject(
+			manifest,
+			[
+				"schema_version",
+				"type",
+				"slot",
+				"routing_fingerprint",
+				"job_id",
+				"assignment_id",
+				"stage",
+				"attempt_id",
+				"terminal_at",
+				"observed_identity",
+				"contributing_attempt_ids",
+				"members",
+			],
+			"provenance manifest",
+		);
+		if (
+			manifest.schema_version !== 1 ||
+			manifest.type !== "limen-provenance-manifest" ||
+			manifest.slot !== assignment.slot ||
+			manifest.routing_fingerprint !== assignment.routing_fingerprint ||
+			manifest.job_id !== assignment.job_id ||
+			manifest.assignment_id !== assignment.assignment_id ||
+			manifest.stage !== assignment.stage ||
+			manifest.attempt_id !== assignment.current_attempt_id ||
+			!Array.isArray(manifest.members)
+		)
+			return rejected("manifest-binding-mismatch", "manifest does not match current assignment");
+		const observedIdentity = manifest.observed_identity as Record<string, unknown> | undefined;
+		assertExactObject(observedIdentity, ["provider", "model", "thinking"], "manifest observed identity");
+		if (!observedIdentity || observedIdentity.provider !== assignment.provider || observedIdentity.model !== assignment.model || observedIdentity.thinking !== assignment.thinking)
+			return rejected("identity-mismatch", "manifest observed identity does not match assignment");
+		const members = manifest.members.map(parseVerifiedMember);
+		if (members.length !== assignment.artifacts.length) return rejected("inventory-mismatch", "manifest does not contain the complete authorized inventory");
+		const snapshotRoot = resolve(jobDir, "provenance/snapshots", current.revision);
+		for (const spec of assignment.artifacts) {
+			const member = members.find((candidate) => candidate.role === spec.role);
+			if (!member || member.relative_path !== spec.relative_path || member.snapshot_path !== spec.relative_path || member.media_type !== spec.media_type)
+				return rejected("inventory-mismatch", `manifest member ${spec.role} does not match assignment`);
+			const snapshot = readBoundedRegular(resolve(snapshotRoot, normalizeRelativePath(member.snapshot_path)), 16 * 1024 * 1024);
+			if (snapshot.length !== member.size || sha256(snapshot) !== member.sha256) return rejected("snapshot-changed", `sealed snapshot member ${member.role} changed`);
+			const source = readBoundedRegular(resolve(assignment.outbox, normalizeRelativePath(member.relative_path)), 16 * 1024 * 1024);
+			if (source.length !== member.size || sha256(source) !== member.sha256) return rejected("source-changed", `current source member ${member.role} changed`);
+		}
+		const selected = members.find((candidate) => candidate.role === reference.artifact_role);
+		if (!selected) return rejected("member-missing", "referenced artifact role is not sealed");
+		const attempt = assignment.attempts.find((candidate) => candidate.attempt_id === assignment.current_attempt_id)!;
+		const observed = readObservedExecution(resolve(jobDir, normalizeRelativePath(attempt.evidence_path)));
+		const execution = compareIdentity(assignment, observed);
+		if (!execution.verified) return execution;
+		return {
+			verified: true,
+			value: {
+				reference,
+				job_dir: jobDir,
+				snapshot_root: snapshotRoot,
+				identity: { provider: assignment.provider, model: assignment.model, thinking: assignment.thinking },
+				members,
+				selected_member: selected,
+			},
+		};
+	} catch (error) {
+		return rejected("unverifiable", error instanceof Error ? error.message : String(error));
+	}
+}
+
+function parseVerifiedMember(value: unknown): VerifiedManifestMember {
+	assertExactObject(value, ["role", "relative_path", "media_type", "size", "sha256", "snapshot_path"], "manifest member");
+	const member = value as Record<string, unknown>;
+	if (typeof member.role !== "string" || !SAFE_ROLE.test(member.role)) throw new Error("manifest member role is invalid");
+	if (typeof member.relative_path !== "string" || typeof member.snapshot_path !== "string") throw new Error("manifest member path is invalid");
+	normalizeRelativePath(member.relative_path);
+	normalizeRelativePath(member.snapshot_path);
+	if (typeof member.media_type !== "string" || !member.media_type) throw new Error("manifest member media type is invalid");
+	if (!Number.isSafeInteger(member.size) || (member.size as number) < 0 || typeof member.sha256 !== "string" || !SHA256.test(member.sha256))
+		throw new Error("manifest member size or digest is invalid");
+	return member as VerifiedManifestMember;
+}
+
+function readBoundedRegular(path: string, maximum: number): Buffer {
+	if (realpathSync(path) !== path) throw new Error(`${path} contains a symlinked path`);
+	const descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+	try {
+		const stat = fstatSync(descriptor);
+		if (!stat.isFile()) throw new Error(`${path} is not a regular file`);
+		if (stat.size > maximum) throw new Error(`${path} exceeds its size limit`);
+		return readFileSync(descriptor);
+	} finally {
+		closeSync(descriptor);
+	}
+}
+
+function readSmallText(path: string): string {
+	return readBoundedRegular(path, 4096).toString("utf8").trim();
 }
 
 export const sha256 = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
