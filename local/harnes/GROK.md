@@ -12,6 +12,7 @@ Materiały Pawła o pracy z agentami (Rezavo / RR). Grok jest frontem rozmowy; t
 | Herdr | [HERDR.md](./HERDR.md) — spawn/continue bez cichego detached |
 | Modele | [MODELS.md](./MODELS.md) — DeepSeek flash tanio; Astra tylko gdy trzeba |
 | Procedura Pi | [procedures/research-start.md](./procedures/research-start.md) |
+| Issue pipeline / plumbing | [procedures/issue-pipeline.md](./procedures/issue-pipeline.md) — Vision/Journal SoT/`finish=receipt` |
 
 ```bash
 # na seatcie /srv/limen/tools/limen, Node ≥ 24, HERDR_ENV=1

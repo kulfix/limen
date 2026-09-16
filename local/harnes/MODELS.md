@@ -55,6 +55,10 @@ DeepSeek **nie** jest domyślnym modelem „research”. To **opcjonalny**, najt
 Issue-fix z PR jest skończony dopiero gdy PR jest mergeable i required checks są zielone — nie przy RED Summary ze skip/braku full.
 Koordynator/worker sami dodają `ci:run-full` (lub równoważnik repo) i czekają; do Routera/Pawła tylko green-ready albo realny fail/decyzja, nie „missing label”.
 
+## Finish / receipt (handoff do Groka)
+
+Skończony etap = Grok-readable `to-grok.md` (lub równoważnik) **oraz** `job/state=done`. HTTP 2xx webhooka nie wystarcza; webhook może być wyłączony (`null`). Vision/Styleguide i Journal SoT pod `context_root` slota — kanon: [issue-pipeline.md § Plumbing](procedures/issue-pipeline.md#plumbing-slotu-vision--journal--finish).
+
 ## Przykłady spawn
 
 ```bash
