@@ -7,7 +7,7 @@ import { initCommand, workspaceCommand } from "./commands/init.ts";
 import { jobsCommand } from "./commands/jobs.ts";
 import { linearCommand } from "./commands/linear.ts";
 import { openCommand } from "./commands/open.ts";
-import { provenanceCommand } from "./commands/provenance.ts";
+import { provenanceCommand } from "./commands/provenance-ops.ts";
 import { pruneCommand } from "./commands/prune.ts";
 import { spawnCommand } from "./commands/spawn.ts";
 import { steerCommand } from "./commands/steer.ts";

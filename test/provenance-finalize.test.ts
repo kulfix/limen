@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
-import { readPublicationState } from "../src/commands/provenance.ts";
+import { readPublicationState } from "../src/commands/provenance-ops.ts";
 import { inspectFinishWebhook } from "../src/finish-receipt.ts";
 import { acceptInbound } from "../src/handoff.ts";
 import { loadProjectSlot, type ProjectSlotMap } from "../src/project-slot.ts";
