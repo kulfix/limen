@@ -45,10 +45,7 @@ test("architecture stays small, pure, direct, and dependency-free", async () => 
 	const names = all.filter((path) => path.endsWith(".ts") && !path.includes("/local/")).map((path) => basename(path));
 	assert.equal(new Set(names).size, names.length, "TypeScript basenames must be unique");
 	const main = await readFile(join(ROOT, "src/main.ts"), "utf8");
-	assert.match(
-		main,
-		/satisfies\s+Record<[\s\S]*?"provenance"[\s\S]*?"ticket-author"[\s\S]*?Command\s*>/,
-	);
+	assert.match(main, /satisfies\s+Record<[\s\S]*?"provenance"[\s\S]*?"ticket-author"[\s\S]*?Command\s*>/);
 });
 
 test("strict TypeScript and templates preserve the capability-judgment line", async () => {
