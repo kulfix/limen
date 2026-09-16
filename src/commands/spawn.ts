@@ -23,12 +23,13 @@ import {
 import { herdrAvailable, openHostedTab, openWatchTab } from "../herdr.ts";
 import { parseDuration } from "../job.ts";
 import { activeProjectSlot, assertSlotPath, makeRoutingRecord, readRoutingRecord, routingFingerprint } from "../project-slot.ts";
+import { canonicalApprovedOutbox, makeAttemptBoundary, normalizeArtifactSpecs, writeManagedAssignment } from "../provenance.ts";
 import { liveJob } from "../reap.ts";
 import { appendLimenLog, atomicWrite, finalizeJob, launchHostedSupervisor, launchWrapper, sanitizedSlotEnvironment } from "../wrapper.ts";
 import { hunkBinary } from "./diff.ts";
 import { pruneFinishedWorktrees } from "./prune.ts";
 
-type SpawnOptions = {
+export type SpawnOptions = {
 	task: string;
 	taskFile?: string;
 	label?: string;
@@ -44,6 +45,10 @@ type SpawnOptions = {
 	detached: boolean;
 	role?: string;
 	engine?: string;
+	assignmentId?: string;
+	stage?: string;
+	outbox?: string;
+	artifacts: readonly string[];
 };
 const PACKAGE_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 export function resolvePreamble(root: string, role: string): string {
@@ -78,6 +83,13 @@ const handshakeMs = (): number => (Number(process.env.LIMEN_HANDSHAKE_MS) > 0 ? 
 export async function spawnCommand(args: readonly string[], cwd: string): Promise<void> {
 	const parsed = parseSpawnArgs(args);
 	const slot = activeProjectSlot();
+	const managed = parsed.assignmentId !== undefined;
+	const artifacts = managed ? normalizeArtifactSpecs(parsed.artifacts) : [];
+	if (managed) {
+		if (!slot) throw new Error("managed launch requires an active project slot");
+		if (parsed.engine === "claude") throw new Error("managed launch requires the Pi engine");
+		canonicalApprovedOutbox(slot, parsed.outbox!);
+	}
 	if (slot && parsed.engine === "claude") throw new Error("Claude project-slot workers are deferred until their complete input can be isolated");
 	if (slot && parsed.taskFile && parsed.taskFile !== "-") assertSlotPath(slot, resolve(cwd, parsed.taskFile), "context-input");
 	if (parsed.tab && parsed.detached) throw new Error("--tab and --detached cannot be combined");
@@ -183,6 +195,23 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 				: []),
 			...(coordinatorTab ? [writeFile(`${jobDir}/origin-tab`, `${coordinatorTab}\n`, { flag: "wx", flush: true })] : []),
 		]);
+		if (managed && slot) {
+			await writeManagedAssignment({
+				slot,
+				jobDir,
+				jobId: id,
+				assignmentId: options.assignmentId!,
+				stage: options.stage!,
+				provider: options.provider!,
+				model: options.model!,
+				thinking: options.thinking!,
+				task: taskBody,
+				hosted: options.tab,
+				outbox: options.outbox!,
+				artifacts,
+				attempt: makeAttemptBoundary({ branch_id: branch, branch_head: base, expected_descendant_branch: branch }),
+			});
+		}
 		const finishConfig = slot?.finish_webhook_env ?? finishWebhookEnv(root, cwd);
 		if (finishConfig) await writeFile(`${jobDir}/finish-webhook-env`, `${finishConfig}\n`, { flag: "wx", mode: 0o600, flush: true });
 		await writeFile(`${jobDir}/notify/ready`, "1\n", { flag: "wx", flush: true });
@@ -396,9 +425,11 @@ function executeWorktree(root: string, plan: WorktreePlan): string {
 	if (plan.kind === "add-new") addNewWorktree(root, plan.path, plan.branch);
 	return plan.path;
 }
-function parseSpawnArgs(args: readonly string[]): SpawnOptions {
+export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	let branch: string | undefined, repo: string | undefined, label: string | undefined, model: string | undefined;
 	let provider: string | undefined, thinking: string | undefined;
+	let assignmentId: string | undefined, stage: string | undefined, outbox: string | undefined;
+	const artifacts: string[] = [];
 	let timeoutMs: number | undefined, taskFile: string | undefined, prepare: string | undefined, role: string | undefined, engine: string | undefined;
 	let review = false,
 		tab = false,
@@ -413,7 +444,25 @@ function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 		else if (!positional && value === "--tab") tab = true;
 		else if (!positional && value === "--detached") detached = true;
 		else if (!positional && value.startsWith("--")) {
-			if (!["--branch", "--repo", "--label", "--model", "--provider", "--thinking", "--timeout", "--task-file", "--prepare", "--role", "--engine"].includes(value))
+			if (
+				![
+					"--branch",
+					"--repo",
+					"--label",
+					"--model",
+					"--provider",
+					"--thinking",
+					"--timeout",
+					"--task-file",
+					"--prepare",
+					"--role",
+					"--engine",
+					"--assignment-id",
+					"--stage",
+					"--outbox",
+					"--artifact",
+				].includes(value)
+			)
 				throw new Error(`unknown spawn option ${value}`);
 			const optionValue = args[index + 1];
 			if (!optionValue) throw new Error(`${value} requires a value`);
@@ -426,6 +475,10 @@ function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 			else if (value === "--thinking") thinking = once(thinking, value, optionValue);
 			else if (value === "--task-file") taskFile = once(taskFile, value, optionValue);
 			else if (value === "--prepare") prepare = once(prepare, value, optionValue);
+			else if (value === "--assignment-id") assignmentId = once(assignmentId, value, optionValue);
+			else if (value === "--stage") stage = once(stage, value, optionValue);
+			else if (value === "--outbox") outbox = once(outbox, value, optionValue);
+			else if (value === "--artifact") artifacts.push(optionValue);
 			else if (value === "--role") {
 				role = once(role, value, optionValue.trim());
 				if (!/^[a-z][a-z0-9-]*$/.test(role)) throw new Error("--role must be a lowercase name");
@@ -436,9 +489,21 @@ function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 		} else task.push(value);
 	}
 	if (review && role) throw new Error("--role and --review cannot be combined");
+	const managed = assignmentId !== undefined || stage !== undefined || outbox !== undefined || artifacts.length > 0;
+	if (managed && ([assignmentId, stage, outbox, provider, model, thinking].some((value) => value === undefined) || artifacts.length === 0))
+		throw new Error("managed launch requires --assignment-id, --stage, --outbox, --artifact, --provider, --model, and --thinking together");
+	if (managed && review) throw new Error("managed launch cannot be combined with --review");
 	if (taskFile && task.length) throw new Error("spawn accepts a positional task or --task-file, not both");
 	if (!taskFile && (task.length === 0 || !task.join(" ").trim())) throw new Error("spawn requires task text");
-	const out: SpawnOptions = { task: task.join(" "), review, tab, detached, ...(role ? { role } : {}), ...(engine ? { engine } : {}) };
+	const out: SpawnOptions = {
+		task: task.join(" "),
+		review,
+		tab,
+		detached,
+		artifacts,
+		...(role ? { role } : {}),
+		...(engine ? { engine } : {}),
+	};
 	if (label) out.label = label;
 	if (taskFile) out.taskFile = taskFile;
 	if (prepare) out.prepare = prepare;
@@ -447,6 +512,9 @@ function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	if (model) out.model = model;
 	if (provider) out.provider = provider;
 	if (thinking) out.thinking = thinking;
+	if (assignmentId) out.assignmentId = assignmentId;
+	if (stage) out.stage = stage;
+	if (outbox) out.outbox = outbox;
 	if (timeoutMs) out.timeoutMs = timeoutMs;
 	return out;
 }
