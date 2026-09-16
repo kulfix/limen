@@ -59,6 +59,8 @@ Koordynator/worker sami dodają `ci:run-full` (lub równoważnik repo) i czekaj�
 
 Skończony etap = Grok-readable `to-grok.md` (lub równoważnik) **oraz** `job/state=done`. HTTP 2xx webhooka nie wystarcza; webhook może być wyłączony (`null`). Vision/Styleguide i Journal SoT pod `context_root` slota — kanon: [issue-pipeline.md § Plumbing](procedures/issue-pipeline.md#plumbing-slotu-vision--journal--finish).
 
+**Grok/Router ack:** po `to-grok.md` zostaw jawny ack (`receipt-ack.md` lub sekcja w receipt) — [grok-ack-receipt.md](procedures/grok-ack-receipt.md). Bez ack pętla dla Routera pozostaje otwarta.
+
 ## Przykłady spawn
 
 ```bash

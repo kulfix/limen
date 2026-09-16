@@ -17,6 +17,11 @@ export type ProjectSlotMap = {
 	readonly worktrees_root: string;
 	readonly herdr_namespace: string;
 	readonly finish_webhook_env?: string | null;
+	readonly approved_result_outboxes?: readonly string[];
+	readonly provenance_receipt_root?: string | null;
+	readonly provenance_verdict_root?: string | null;
+	readonly trusted_receiver_ids?: readonly string[];
+	readonly trusted_coordinator_ids?: readonly string[];
 };
 
 export type ResolvedProjectSlot = {
@@ -33,6 +38,11 @@ export type ResolvedProjectSlot = {
 	readonly worktrees_root: string;
 	readonly herdr_namespace: string;
 	readonly finish_webhook_env: string | null;
+	readonly approved_result_outboxes: readonly string[];
+	readonly provenance_receipt_root: string | null;
+	readonly provenance_verdict_root: string | null;
+	readonly trusted_receiver_ids: readonly string[];
+	readonly trusted_coordinator_ids: readonly string[];
 	readonly config_file: string;
 };
 
@@ -56,6 +66,11 @@ export type ProjectRoutingRecord = {
 	readonly herdr_namespace: string;
 	readonly config_file: string;
 	readonly finish_webhook_env: string | null;
+	readonly approved_result_outboxes?: readonly string[];
+	readonly provenance_receipt_root?: string | null;
+	readonly provenance_verdict_root?: string | null;
+	readonly trusted_receiver_ids?: readonly string[];
+	readonly trusted_coordinator_ids?: readonly string[];
 };
 
 export type SlotPathKind = "context-input" | "inbound" | "models-policy" | "cabinet" | "session" | "worktree" | "code-repo" | "context-repo" | "app-template";
@@ -74,7 +89,15 @@ const REQUIRED_KEYS = [
 	"worktrees_root",
 	"herdr_namespace",
 ] as const;
-const ALLOWED_KEYS = new Set<string>([...REQUIRED_KEYS, "finish_webhook_env"]);
+const ALLOWED_KEYS = new Set<string>([
+	...REQUIRED_KEYS,
+	"finish_webhook_env",
+	"approved_result_outboxes",
+	"provenance_receipt_root",
+	"provenance_verdict_root",
+	"trusted_receiver_ids",
+	"trusted_coordinator_ids",
+]);
 const SLOT_ID = /^[a-z][a-z0-9-]*$/;
 
 function inside(path: string, root: string): boolean {
@@ -93,6 +116,27 @@ function canonicalExisting(path: unknown, field: string): string {
 	} catch {
 		throw new Error(`${field} is unavailable`);
 	}
+}
+
+function optionalPathList(value: unknown, field: string): readonly string[] {
+	if (value === undefined) return [];
+	if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`${field} must be an array of absolute paths`);
+	const paths = value.map((entry) => canonicalExisting(entry, field));
+	if (new Set(paths).size !== paths.length) throw new Error(`${field} has duplicate destinations`);
+	return paths;
+}
+
+function optionalIdList(value: unknown, field: string): readonly string[] {
+	if (value === undefined) return [];
+	if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$/.test(entry)))
+		throw new Error(`${field} must be an array of safe principal ids`);
+	if (new Set(value).size !== value.length) throw new Error(`${field} has duplicate ids`);
+	return value as string[];
+}
+
+function optionalCanonicalPath(value: unknown, field: string): string | null {
+	if (value === undefined || value === null) return null;
+	return canonicalExisting(value, field);
 }
 
 function parseMap(configFile: string): ResolvedProjectSlot {
@@ -128,6 +172,11 @@ function parseMap(configFile: string): ResolvedProjectSlot {
 		worktrees_root: canonicalExisting(raw.worktrees_root, "worktrees_root"),
 		herdr_namespace: raw.herdr_namespace,
 		finish_webhook_env: raw.finish_webhook_env === undefined || raw.finish_webhook_env === null ? null : canonicalExisting(raw.finish_webhook_env, "finish_webhook_env"),
+		approved_result_outboxes: optionalPathList(raw.approved_result_outboxes, "approved_result_outboxes"),
+		provenance_receipt_root: optionalCanonicalPath(raw.provenance_receipt_root, "provenance_receipt_root"),
+		provenance_verdict_root: optionalCanonicalPath(raw.provenance_verdict_root, "provenance_verdict_root"),
+		trusted_receiver_ids: optionalIdList(raw.trusted_receiver_ids, "trusted_receiver_ids"),
+		trusted_coordinator_ids: optionalIdList(raw.trusted_coordinator_ids, "trusted_coordinator_ids"),
 		config_file: realpathSync(configFile),
 	};
 	const privateRoots = [slot.code_root, slot.context_root, slot.cabinet_root, slot.sessions_root, slot.worktrees_root].filter((path): path is string => path !== null);
@@ -135,6 +184,12 @@ function parseMap(configFile: string): ResolvedProjectSlot {
 	if (!inside(slot.inbound_root, slot.context_root)) throw new Error("inbound_root must be inside context_root");
 	if (!inside(slot.models_policy, slot.context_root)) throw new Error("models_policy must be inside context_root");
 	if (slot.finish_webhook_env && !inside(slot.finish_webhook_env, slot.project_root)) throw new Error("finish_webhook_env must be inside project_root");
+	const authorityRoots = [slot.provenance_receipt_root, slot.provenance_verdict_root].filter((path): path is string => path !== null);
+	for (const root of authorityRoots) {
+		if (!inside(root, slot.project_root)) throw new Error("provenance authority root must be inside project_root");
+		if (slot.approved_result_outboxes.some((outbox) => overlap(root, outbox))) throw new Error("provenance authority roots must not overlap producer result outboxes");
+	}
+	if (authorityRoots.length === 2 && overlap(authorityRoots[0]!, authorityRoots[1]!)) throw new Error("provenance receipt and verdict roots must not overlap");
 	if (slot.code_root && overlap(slot.code_root, slot.context_root)) throw new Error("code_root and context_root overlap");
 	for (const stateRoot of [slot.cabinet_root, slot.sessions_root, slot.worktrees_root]) {
 		if (slot.code_root && overlap(stateRoot, slot.code_root)) throw new Error("state root overlaps code_root");
@@ -202,6 +257,11 @@ export function canonicalRoutingJson(slot: ResolvedProjectSlot): string {
 		worktrees_root: slot.worktrees_root,
 		herdr_namespace: slot.herdr_namespace,
 		finish_webhook_env: slot.finish_webhook_env,
+		...(slot.approved_result_outboxes.length ? { approved_result_outboxes: slot.approved_result_outboxes } : {}),
+		...(slot.provenance_receipt_root ? { provenance_receipt_root: slot.provenance_receipt_root } : {}),
+		...(slot.provenance_verdict_root ? { provenance_verdict_root: slot.provenance_verdict_root } : {}),
+		...(slot.trusted_receiver_ids.length ? { trusted_receiver_ids: slot.trusted_receiver_ids } : {}),
+		...(slot.trusted_coordinator_ids.length ? { trusted_coordinator_ids: slot.trusted_coordinator_ids } : {}),
 		config_file: slot.config_file,
 	});
 }
@@ -245,6 +305,11 @@ export function makeRoutingRecord(
 		herdr_namespace: slot.herdr_namespace,
 		config_file: slot.config_file,
 		finish_webhook_env: slot.finish_webhook_env,
+		...(slot.approved_result_outboxes.length ? { approved_result_outboxes: slot.approved_result_outboxes } : {}),
+		...(slot.provenance_receipt_root ? { provenance_receipt_root: slot.provenance_receipt_root } : {}),
+		...(slot.provenance_verdict_root ? { provenance_verdict_root: slot.provenance_verdict_root } : {}),
+		...(slot.trusted_receiver_ids.length ? { trusted_receiver_ids: slot.trusted_receiver_ids } : {}),
+		...(slot.trusted_coordinator_ids.length ? { trusted_coordinator_ids: slot.trusted_coordinator_ids } : {}),
 	};
 }
 

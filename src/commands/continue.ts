@@ -1,9 +1,11 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { addBranchWorktree, branchExists, headCommit, repoRoot, workspaceRepository, workspaceRoot } from "../git.ts";
 import { herdrAvailable, openWatchTab } from "../herdr.ts";
 import { resolveJob } from "../lookup.ts";
 import { activeProjectSlot, makeRoutingRecord, readRoutingRecord, routingFingerprint } from "../project-slot.ts";
+import { makeAttemptBoundary, readManagedAssignment, supersedeManagedPublication, writeContinuedManagedAssignment } from "../provenance.ts";
 import { atomicWrite, finalizeJob, launchWrapper } from "../wrapper.ts";
 import {
 	capturedVersions,
@@ -51,12 +53,27 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	// Patch 2: default is hosted in Herdr. Detached only with an explicit --detached — never a silent fallback.
 	const hosted = !detached;
 	if (hosted && !herdr) throw new Error("continue defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
-	const chosenModel = model ?? (process.env[review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
+	let chosenModel = model ?? (process.env[review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
 
 	const slot = activeProjectSlot();
 	const root = slot?.context_root ?? workspaceRoot(cwd) ?? repoRoot(cwd);
 	const { id: parentId, jobDir: parentDir } = await resolveJob(cwd, query);
 	const parentRouting = readRoutingRecord(parentDir, slot);
+	const parentAssignment = readManagedAssignment(parentDir);
+	if (parentAssignment) {
+		if (!slot || parentAssignment.slot !== slot.slot_id || parentAssignment.routing_fingerprint !== routingFingerprint(slot))
+			throw new Error("managed parent routing changed; start a fresh assignment");
+		for (const [name, requested, expected] of [
+			["provider", provider, parentAssignment.provider],
+			["model", model, parentAssignment.model],
+			["thinking", thinking, parentAssignment.thinking],
+		] as const) {
+			if (requested !== undefined && requested !== expected) throw new Error(`continued managed assignment cannot change ${name}`);
+		}
+		provider = parentAssignment.provider;
+		chosenModel = parentAssignment.model;
+		thinking = parentAssignment.thinking;
+	}
 	const role = review ? "reviewer" : (await text(`${parentDir}/role`)) || "worker";
 	const preamble = resolvePreamble(root, role);
 	const parentState = await text(`${parentDir}/state`);
@@ -69,12 +86,18 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	if ((await text(`${parentDir}/engine`)) === "claude") throw new Error(`job ${parentId} ran on claude, which keeps no limen session transcript; spawn a fresh job instead`);
 	const sessions = (await readdir(`${parentDir}/session`).catch(() => [])).filter((name) => name.endsWith(".jsonl"));
 	if (sessions.length === 0) throw new Error(`parent record ${parentId} has no session transcript to continue`);
-	const inheritedSession = sessions.sort().at(-1);
+	const inheritedSession = sessions.sort().at(-1)!;
+	const inheritedBytes = await readFile(`${parentDir}/session/${inheritedSession}`);
+	const prefix = captureInheritedPrefix(inheritedBytes);
 	preflightPi(chosenModel, provider);
 
 	const finalLabel = label ?? `${(await text(`${parentDir}/label`)) || parentId} · continue`;
 	const id = makeJobId(finalLabel);
 	const jobDir = `${slot ? slot.cabinet_root : `${root}/.limen`}/jobs/${id}`;
+	if (parentAssignment) {
+		const parentAttempt = parentAssignment.attempts.find((attempt) => attempt.attempt_id === parentAssignment.current_attempt_id);
+		if (!parentAttempt || parentAttempt.expected_descendant_branch !== branch) throw new Error("managed parent branch does not match its attempt boundary");
+	}
 	if (!existsSync(worktree)) {
 		const repository = parentRouting?.repository_root ?? (repo ? workspaceRepository(root, repo) : root);
 		if (!branchExists(repository, branch))
@@ -82,6 +105,18 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 		addBranchWorktree(repository, worktree, branch);
 		console.log(`restored ${worktree} from ${branch}; only committed branch contents were recovered`);
 	}
+	const branchHead = headCommit(worktree);
+	const childAttempt = parentAssignment
+		? makeAttemptBoundary({
+				branch_id: branch,
+				branch_head: branchHead,
+				expected_descendant_branch: branch,
+				parent_attempt_id: parentAssignment.current_attempt_id,
+				parent_branch_head: branchHead,
+				transcript_path: `${jobDir}/session/${inheritedSession}`,
+				inherited_prefix: prefix,
+			})
+		: undefined;
 	await mkdir(jobDir, { recursive: false });
 	await mkdir(`${jobDir}/notify/subscribers`, { recursive: true });
 	if (slot && parentRouting) {
@@ -100,7 +135,7 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 		writeFile(`${jobDir}/label`, `${finalLabel}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/branch`, `${branch}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/worktree`, `${worktree}\n`, { flag: "wx", flush: true }),
-		writeFile(`${jobDir}/base`, `${headCommit(worktree)}\n`, { flag: "wx", flush: true }),
+		writeFile(`${jobDir}/base`, `${branchHead}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/parent`, `${parentId}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/started-at`, `${new Date().toISOString()}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/tool-calls`, "0\n", { flag: "wx", flush: true }),
@@ -124,6 +159,9 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 			: []),
 		...(coordinatorTab ? [writeFile(`${jobDir}/origin-tab`, `${coordinatorTab}\n`, { flag: "wx", flush: true })] : []),
 	]);
+	if (parentAssignment && childAttempt) {
+		await writeContinuedManagedAssignment({ parent: parentAssignment, childJobDir: jobDir, childJobId: id, task: `${instruction}\n`, attempt: childAttempt });
+	}
 	// Resume the parent's opt-in (or absence), not the current shell's destination.
 	const finishConfig = await text(`${parentDir}/finish-webhook-env`);
 	if (finishConfig && (!slot || finishConfig === parentRouting?.finish_webhook_env))
@@ -133,7 +171,8 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	// The continued run writes into its own transcript, seeded with a copy of the parent's
 	// newest session — the parent record stays frozen history.
 	await mkdir(`${jobDir}/session`, { recursive: true });
-	await copyFile(`${parentDir}/session/${inheritedSession}`, `${jobDir}/session/${inheritedSession}`);
+	await writeFile(`${jobDir}/session/${inheritedSession}`, inheritedBytes, { flag: "wx", flush: true });
+	if (childAttempt) await supersedeManagedPublication(parentDir, childAttempt.attempt_id);
 	await atomicWrite(`${jobDir}/state`, "running\n");
 	if (hosted) {
 		try {
@@ -210,6 +249,25 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 			: `continued ${finalLabel} in ${parentId}'s session`,
 	);
 	console.log(id);
+}
+
+export function captureInheritedPrefix(bytes: Buffer): { bytes: number; events: number; last_event_id: string | null; sha256: string } {
+	const lines = bytes
+		.toString("utf8")
+		.split("\n")
+		.filter((line) => line.trim().length > 0);
+	let lastEventId: string | null = null;
+	const last = lines.at(-1);
+	if (last) {
+		try {
+			const value = JSON.parse(last) as Record<string, unknown>;
+			const candidate = value.id ?? value.event_id ?? (value.message && typeof value.message === "object" ? (value.message as Record<string, unknown>).id : undefined);
+			if (typeof candidate === "string") lastEventId = candidate;
+		} catch {
+			// A transcript can contain adapter-specific records without IDs; its byte digest remains authoritative.
+		}
+	}
+	return { bytes: bytes.length, events: lines.length, last_event_id: lastEventId, sha256: createHash("sha256").update(bytes).digest("hex") };
 }
 
 async function text(path: string): Promise<string> {

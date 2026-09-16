@@ -48,8 +48,9 @@ Model **musi** być wybrany przy każdym nowym assignment (Router→limen handof
 
 | Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
-| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment |
-| **brainstorm** design/plan, architektura, trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność tego wymaga | jawna wartość z assignment |
+| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment (`model_thinking`) |
+| **brainstorm** design / aim / trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność wymaga; lekki design/docs: Terra lub Grok OK | jawna wartość z assignment |
+| **plan-write** | **Terra** lub **Sol** (preferowane, zgodne z tabelą plan poniżej i MODELS); Astra tylko gdy trudność naprawdę wymaga — nie Astra-only | jawna wartość z assignment |
 | Execute / verify | Własny provider/model/thinking potwierdzony przy assignment tego etapu; może powtórzyć intake, ale go nie dziedziczy | jawna wartość z assignment |
 
 Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko gdy assignment świadomie wybiera najtańszy off-sub — **nie** default research. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
@@ -95,7 +96,7 @@ Przed każdym spawnem issue-fix, execute lub verify koordynator zapisuje w `note
 
 Niezgodność bazy, repo albo mapy kodu oznacza refresh lub pytanie przed wydaniem modelu, nie próbę naprawy na domysłach. Przed execute wymagającym izolowanych hostów testowych sprawdź ich osiągalność zatwierdzonym CLI; błąd SSH/infrastruktury nie jest błędem testu. Po błędzie engine (OAuth, limit tygodniowy, auth) krótko ustal i zapisz w `notes.md`, które konto/profil zawiodło; nie próbuj w ciemno kolejnych kont Claude (`a1` → `a2` → `a3`).
 
-Przed startem potwierdź też kanał powrotu do Groka (finish-webhook, wake albo poll outboxu). **Finish = receipt:** Grok-readable `to-grok.md` (lub równoważnik) **oraz** `job/state=done`. HTTP 2xx webhooka **nie wystarcza**; webhook może być `null` / nie skonfigurowany — świadomie OK day-one. Bez receipt sprawdź istniejący job; nie duplikuj wake i nie uruchamiaj automatycznie kolejnego etapu kodu. Szczegóły: [Plumbing](#plumbing-slotu-vision--journal--finish).
+Przed startem potwierdź też kanał powrotu do Groka (finish-webhook, wake albo poll outboxu). Dla niezarządzanego legacy wyniku nadal zachowaj Grok-readable `to-grok.md` (lub równoważnik) oraz `job/state=done`. Dla zapieczętowanego managed result wymagaj osobnego receiver receipt i coordinator verdict według [model-provenance.md](model-provenance.md); nie dopisuj ACK do wyniku. HTTP 2xx webhooka **nie wystarcza**; webhook może być `null` / nie skonfigurowany — świadomie OK day-one. Bez receipt sprawdź istniejący job; nie duplikuj wake i nie uruchamiaj automatycznie kolejnego etapu kodu. Szczegóły: [Plumbing](#plumbing-slotu-vision--journal--finish).
 
 Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem (tu Grok):
 
@@ -120,18 +121,20 @@ To nie skrypt całego pipeline'u. Kolejny etap wymaga osobnej decyzji koordynato
 
 ## Plumbing slotu (Vision / Journal / finish)
 
-Lekcje z harness plumbing **2026-09-16** (proof: slot `limen-harness`). Kanon dla operatorów/agentów na seatcie. Źródło research: [`local/harnes/research/limen-rr-port/outbox/plumbing-harness/`](../research/limen-rr-port/outbox/plumbing-harness/). **Bez** rezavo product URL, cutover ani portu skilli RR.
+Lekcje z harness plumbing **2026-09-16** (proof: slot `limen-harness`, F001). Kanon dla operatorów/agentów na seatcie. Źródło research (prefer surviving outbox): [`local/harnes/research/limen-rr-port/outbox/plumbing-harness/`](../research/limen-rr-port/outbox/plumbing-harness/). **Bez** rezavo product URL, cutover ani portu skilli RR.
+
+**Siła dowodu F001 (uczciwie):** to smoke **coordinator-injection / worker-cue-and-read / file-receipt** — **nie** literalny Adam „Vision injected into every session”. Worker dostaje cue do `spec/vision.md` i czyta plik; pełne wstrzyknięcie Vision do każdej sesji workera = osobna decyzja właściciela (O2). Marker/inject job ≠ TOR2 design-write trial. Gate rezavo: brak product URL → SKIP (patrz yellow-fix `SKIP-rezavo.md`).
 
 ### Vision inject — furniture, nie ozdoba
 
-App map i Styleguide **muszą** żyć pod `context_root` / `LIMEN_CONTEXT_ROOT` slota i być widoczne w promptach (hook `communication.ts`):
+App map i Styleguide **muszą** żyć pod `context_root` / `LIMEN_CONTEXT_ROOT` slota i być widoczne wg kontraktu hooka `communication.ts`:
 
 | Plik | Ścieżka względem `context_root` | Gdzie w promptcie |
 | --- | --- | --- |
-| App map (Vision) | `spec/vision.md` | Coordinator: system prompt; Worker: cue do vision w turn cue |
+| App map (Vision) | `spec/vision.md` | Coordinator: system prompt; Worker: **cue** do vision w turn cue (nie pełne body w każdej sesji) |
 | Styleguide | `.agents/limen/styleguide.md` | Coordinator i Worker: system prompt |
 
-Przed spawnem na slocie z context: potwierdź obecność obu plików. Brak = posadź furniture albo blocker — inject działa tylko gdy meble leżą w `context_root`. Marker proof (np. w harness) może udowodnić inject; day-one produkcyjny wystarczy realna treść Vision/Styleguide.
+Przed spawnem na slocie z context: potwierdź obecność obu plików. Brak = posadź furniture albo blocker — inject działa tylko gdy meble leżą w `context_root`. Marker proof (np. w harness) może udowodnić **wąski** kontrakt powyżej; day-one produkcyjny wystarczy realna treść Vision/Styleguide. Preferuj surviving outbox / git blob nad wyczyszczonym worktree.
 
 ### Journal SoT — filesystem pod context (TOR1 A)
 
@@ -154,7 +157,7 @@ Etap jest skończony dla Routera/Groka dopiero gdy **oba** warunki:
 1. istnieje Grok-readable receipt — zwykle `to-grok.md` (lub równoważnik w outboxie tematu) z `job_id`, statusem i ścieżkami artefaktów;
 2. rekord joba ma `state=done` (oraz sensowny `finished-at`).
 
-HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping; receipt plikowy + job state nadal zamyka etap. Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
+HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping. Rozdziel: **transport** (webhook) ≠ **consumption** (receiver receipt) ≠ **quality** (coordinator verdict) ≠ **next-stage permission**. Dla sealed managed result ACK jest wyłącznie standalone; osadzony `## Router / Grok ack` zmienia zapieczętowane bajty i unieważnia weryfikację. Szczegóły: [model-provenance.md](model-provenance.md) i [grok-ack-receipt.md](grok-ack-receipt.md). Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
 
 ## Etapy i warunki przejścia
 
@@ -178,7 +181,7 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
 4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` (rewizja + werdykt design-review) i aktualnego checkoutu oddaje `plan.md` wg [kontraktu](#kontrakt-planmd-day-one): self-contained jednostki (pliki/symbole, mechanizm, ordered steps, acceptance, komenda weryfikacji + oczekiwany wynik), **zero** TBD/placeholder, bez ciał funkcji. Mapa RR writing-plans poniżej. Bez kodu. Worker nie spawnuje execute.
 5. **Plan-review — bramka (osobno od zgody na kod).** Koordynator/właściciel (opc. tech job za zgodą) sprawdza plan względem zaakceptowanego designu: coverage acceptance→steps, ścieżki/symbole, założenia, ryzyka/rollback. Zapisuje przyjętą rewizję i werdykt w `notes.md` (oraz opc. `plan-review.md`). One-shot MUST fix — bez pętli recheck na ten sam tekst. Brak PASS ≠ execute.
 6. **Consent to code — osobna bramka.** Zgoda na design **i** PASS plan-review **nie** są zgodą na kod. W `notes.md` zapisz jawny zakres zgody na kod, wymagane dowody, review owner i limit. Dopiero potem execute. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
-7. **Execute — job implementacyjny.** Dostaje plan i bazowy SHA; oddaje commit oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr).
+7. **Execute — Unit-job chain (nie jeden job na cały plan).** Domyślnie **jeden Unit = jeden świeży hosted job + mały task-file**. Wyjątek tylko gdy plan/Architekt jawnie deklaruje `ship_package:` (lista Unitów) — wtedy **jeden `ship_package` = jeden job**. Task-file **nie** jest całym `plan.md`. Koordynator spawnuje wyłącznie wskazany Unit albo wpis z `ship_packages`; nie zleca „Units 1–N” w jednym briefie bez deklaracji package. Każdy job dostaje: `unit_or_package_id`, skrót/digest planu, **excerpt tylko tego Unit/package**, bazowy SHA; oddaje commit (lub brak zmian) oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr). **Hard-check spawn w TypeScript (odrzucanie mega-task-file w kodzie) = later, nie day-one** — day-one egzekwuje procedura + koordynator.
 8. **Verify — koordynator lub autoryzowany reviewer.** Bada dokładny SHA oraz zachowane dowody zgodnie z zasadami repo. Zapisz `verification.md`, a werdykt review osobno. Podaj wykonane komendy i wyniki, niewykonane checks oraz ograniczenia dowodu. Zmieniony SHA wymaga ponownego osądu; lokalna weryfikacja nie dowodzi produkcji. Defekt nie uruchamia automatycznej naprawy/re-review ponad zgodę i budżet.
 9. **GH write-back — koordynator, tylko za zgodą.** Publikuj wyłącznie dozwoloną operację i zachowaj read-back w `writeback.md`. Brak uprawnienia pozostawia issue otwarte i wynik gotowy do decyzji; nie odbiera dowodom kodu ważności. Po otwarciu PR: monitoruj CI, w razie RED Summary ze skip/braku full sami dodaj `ci:run-full` (lub równoważnik) i czekaj na zielone — nie wołaj Pawła o label ([Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr)). Zapisz `to-grok.md` z `in_reply_to` bieżącego handoffu dopiero gdy sukces (mergeable + required green) albo realny blocker; zakończ sesję na outboxie.
 
@@ -199,6 +202,19 @@ Do Routera/Pawła eskaluj wyłącznie: (a) zielone i gotowe do merge, albo (b) r
 - Po wake sprawdź `state`, `finished-at`, log, wynik i Git. Job zakończony bez artefaktu nie pozwala przejść dalej. `notes.md` aktualizuje koordynator: przyjęta rewizja, podstawa decyzji, aktualny job/blocker, następny dozwolony krok i writer.
 - Po utracie sesji przeczytaj notes i istniejący job w repo produktu; przy autoryzowanym przejęciu użyj `limen watch <id>`. Brak powiadomienia nie upoważnia do duplikatu.
 - Przed resume odczytaj ponownie źródło i obejrzyj zachowany worktree. Autoryzowany finish/repair na `spawn --branch <branch>` zachowuje właściwą bazę oraz jawne flagi **wybranego** modelu; nie restartuje całej sekwencji. Zmiana issue, planu lub SHA wymaga oceny zależnych dowodów.
+
+### Recovery: mega-job / overflow / mixed scope = process FAIL
+
+Lekcja z incidentu mega-impl (np. Units 1–5 w jednym task-file → STOP przy ~47% context / mixed scope). **To jest FAIL procesu koordynatora**, nie „niech dokończy”.
+
+| Objaw | Werdykt | Akcja |
+| --- | --- | --- |
+| Okno kontekstu overflow / job ciszy się przy rosnącym context | **FAIL** | `limen stop` z powodem; **nie** `continue` tej sesji; zachowaj worktree |
+| Mixed scope (więcej niż jeden Unit albo package w jednym jobie bez `ship_package`) | **FAIL** | STOP; rozdziel na Unit/`ship_package`; **nowy** mały task-file + świeży hosted spawn |
+| Task-file = cały `plan.md` albo „zrób Units 1–N” bez deklaracji `ship_packages` | **FAIL** | Nie startuj / stop natychmiast; napisz excerpt jednego Unit/package |
+| Worker prosi „let it finish” / „jeszcze chwilę na resztę planu” | **Zakaz** | Ban: nie przedłużaj mega-joba; split + nowy job |
+
+**Zakazane jako rozwiązanie:** policja profilu Routera, „window-police” w Grok, ciche `continue` mega-sesji, doklejanie kolejnych Unitów do tego samego task-file. Day-one = procedura + split. **Kodowy hard-check w `spawn` (TS) = deferred** — nie blokuj day-one na implementacji silnika.
 
 ## GH: jeden writer, sprawdzalny odbiór
 
@@ -325,6 +341,9 @@ Astra **nie** jest domyślnym modelem całego pipeline'u.
 | Ops / E2E gdy design ma Operational Changes / SC | **Uprość** | Jeśli design ma te sekcje ≠ N/A — plan musi je domknąć. |
 | Internal repair w scope bez ponownej zgody usera | **Uprość** | Koordynator może zlecić plan-amend w ramach już danej zgody na kod; product/scope nadal do Pawła. |
 | Execution handoff menu / persony / parallel fan-out | **Pomiń** | UX Claude; Limen = decision + spawn execute. |
+| Mega-impl jednego joba na wiele Unitów / cały plan jako task-file | **Pomiń** (zakaz) | Incident mega-job: overflow + mixed scope = process FAIL → split; 1 Unit lub 1 `ship_package` = 1 job. |
+| Opcjonalne `ship_packages` w planie (Architekt) | **Weź** (opcjonalne) | Tylko z uzasadnieniem; inaczej domyślnie 1 Unit = 1 hosted job. |
+| Hard-check mega-task w TypeScript `spawn` | **Później** | Day-one = procedura + koordynator; nie Router-profile policing. |
 
 ### Sekwencja (plan po zaakceptowanym designie)
 
@@ -344,11 +363,14 @@ Worker **nigdy** nie spawnuje następnego etapu. Brak plan-review PASS albo brak
 2. Design baseline: absolutna ścieżka + rewizja/skrót + werdykt design-review
 3. Decyzje materialne (już zatwierdzone — bez rediscovery)
 4. Global Constraints (skrót z designu) albo `N/A`
-5. Jednostki / kroki — każda: pliki/symbole, co zmienia, zależności, acceptance, komenda weryfikacji + **oczekiwany wynik**; **zero** TBD / „jak Task N” / ciał funkcji
-6. Ryzyka / rollback (lub `N/A` + uzasadnienie)
-7. Jak weryfikować łącznie + co wolno na GH
-8. Plan-review: rewizja + werdykt (uzupełnia koordynator po bramce)
-9. Pytania tylko product/authority
+5. Jednostki / kroki — każda z **stabilnym `id`**: pliki/symbole, co zmienia, zależności, acceptance, komenda weryfikacji + **oczekiwany wynik**; **zero** TBD / „jak Task N” / ciał funkcji
+6. Opcjonalnie `ship_packages: [ids…]` — **tylko** gdy plan lub Architekt uzasadnia, że te Unit-y **muszą** wejść w **jeden** commit/PR (np. seal bez gate = nielegalne). Każdy package: lista `unit_id`, uzasadnienie, acceptance package. Bez uzasadnienia = brak package; domyślnie 1 Unit = 1 job.
+7. Ryzyka / rollback (lub `N/A` + uzasadnienie)
+8. Jak weryfikować łącznie + co wolno na GH
+9. Plan-review: rewizja + werdykt (uzupełnia koordynator po bramce)
+10. Pytania tylko product/authority
+
+**Execute mapping:** koordynator spawnuje **tylko** jeden `unit_id` albo jeden wpis z `ship_packages`. Nie spawnuje całego planu. Task-file = excerpt Unit/package + digest planu — **ban** `task-file = plan.md`. Hard-check w kodzie spawn = later.
 
 ### Modele na slocie plan
 

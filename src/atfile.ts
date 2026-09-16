@@ -6,6 +6,8 @@ import { limenRoot } from "./git.ts";
 import { type Handoff, inboundStateDir, parseFrontmatter, parseHandoff, resolveInboundPath } from "./handoff.ts";
 import { herdrAvailable, locateHostedAgent, openHostedTab, startHostedPi } from "./herdr.ts";
 import { activeProjectSlot, assertSlotPath, routingFingerprint } from "./project-slot.ts";
+import { parseArtifactIdentity } from "./provenance.ts";
+import { requireManagedHandoff, verifyManagedJob } from "./provenance-gate.ts";
 import { sanitizedSlotEnvironment } from "./wrapper.ts";
 
 export type WakeResult = {
@@ -33,6 +35,7 @@ export async function wakeInbound(cwd: string, input: string): Promise<WakeResul
 	if (topicSlug !== handoff.slug) {
 		throw new Error(`handoff slug ${JSON.stringify(handoff.slug)} does not match topic directory ${JSON.stringify(topicSlug)}`);
 	}
+	requireManagedHandoff(handoff, slot);
 	const statePath = resolve(inboundStateDir(cwd), encodeStateId(handoff.id));
 	if (!existsSync(statePath)) {
 		throw new Error(`handoff id ${JSON.stringify(handoff.id)} is not accepted; run limen inbound accept first`);
@@ -191,12 +194,21 @@ function isExistError(error: unknown): boolean {
 async function finishedOutbox(topicDir: string, handoffId: string): Promise<boolean> {
 	const grokPath = resolve(topicDir, "to-grok.md");
 	if (!existsSync(grokPath)) return false;
+	let text: string;
+	let meta: Record<string, string>;
 	try {
-		const { meta } = parseFrontmatter(await readFile(grokPath, "utf8"));
-		return meta.in_reply_to === handoffId && (meta.type === "result" || meta.type === "blocked");
+		text = await readFile(grokPath, "utf8");
+		meta = parseFrontmatter(text).meta;
 	} catch {
 		return false;
 	}
+	const finished = meta.in_reply_to === handoffId && (meta.type === "result" || meta.type === "blocked");
+	if (!finished || !meta.provenance_schema) return finished;
+	const identity = parseArtifactIdentity(text);
+	const verdict = verifyManagedJob(identity.job_ref, activeProjectSlot());
+	if (!verdict.verified) throw new Error(`managed provenance rejected: ${verdict.reason}: ${verdict.detail}`);
+	if (!verdict.value) throw new Error("managed provenance rejected: referenced job has no managed assignment");
+	return true;
 }
 
 async function writeInboundLauncher(

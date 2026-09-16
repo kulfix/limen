@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { chmod, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import test from "node:test";
+import { captureInheritedPrefix } from "../src/commands/continue.ts";
 import { liveJob } from "../src/reap.ts";
 import { git, limen, limenWithEnv, onlyJobId, scratchRepo, scratchWorkspace, waitForState } from "./scratch.ts";
 
@@ -30,6 +32,16 @@ function worktreeFor(root: string, id: string): string {
 	if (!line) throw new Error(`no worktree for ${id}`);
 	return line.slice("worktree ".length);
 }
+
+test("continued transcript boundary captures exact bytes, events, last id, and digest", () => {
+	const bytes = Buffer.from('{"id":"first"}\n\n{"event_id":"last"}\n');
+	assert.deepEqual(captureInheritedPrefix(bytes), {
+		bytes: bytes.length,
+		events: 2,
+		last_event_id: "last",
+		sha256: createHash("sha256").update(bytes).digest("hex"),
+	});
+});
 
 test("continue resumes a finished job in its own session and links the record", async (context) => {
 	const scratch = await scratchRepo(continuingFakePi);
