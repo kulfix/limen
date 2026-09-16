@@ -44,4 +44,4 @@ Worker zapisuje ten raport we własnym worktree pod ścieżką z briefu. Zastąp
 
 `<Jedna propozycja dla koordynatora, wymagane dowody/zgoda; nie instrukcja automatycznego przejścia.>`
 
-Worker nie aktualizuje `notes.md`, GH, Plane ani boardu, nie spawnuje, nie merguje i nie deployuje. `done` dotyczy joba, nie akceptacji artefaktu ani zakończenia issue. Koordynator musi najpierw odczytać i zachować dowody.
+Worker nie aktualizuje `notes.md`, GH, Plane ani boardu, nie spawnuje, nie merguje i nie deployuje. `done` dotyczy joba, nie akceptacji artefaktu ani zakończenia issue. Dla Routera/Groka etap zamyka dopiero **receipt** (`to-grok.md` lub równoważnik) **oraz** `job/state=done` — HTTP 2xx webhooka nie wystarcza. Koordynator musi najpierw odczytać i zachować dowody.
