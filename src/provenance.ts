@@ -549,6 +549,52 @@ export type ResultReferenceV1 = {
 	readonly manifest_sha256: string;
 };
 
+export type ReceiverReceiptV1 = {
+	readonly schema_version: 1;
+	readonly type: "receiver-receipt";
+	readonly receipt_id: string;
+	readonly receiver_id: string;
+	readonly correlation_id: string;
+	readonly result_reference: ResultReferenceV1;
+	readonly verification: "verified";
+	readonly consumed_at: string;
+};
+
+export type CoordinatorVerdictV1 = {
+	readonly schema_version: 1;
+	readonly type: "coordinator-verdict";
+	readonly verdict_id: string;
+	readonly coordinator_id: string;
+	readonly result_reference: ResultReferenceV1;
+	readonly receiver_receipt_sha256: string;
+	readonly reviewed_manifest_sha256: string;
+	readonly quality: "accepted" | "rejected";
+	readonly decided_at: string;
+};
+
+export type VerifiedReceipt = {
+	readonly receipt: ReceiverReceiptV1;
+	readonly receipt_sha256: string;
+	readonly receipt_path: string;
+	readonly result: VerifiedCompletedResult;
+};
+
+export type StageReadiness =
+	| {
+			readonly ready: true;
+			readonly authorizationDigest: string;
+			readonly evidence: {
+				readonly manifest_sha256: string;
+				readonly receiver_receipt_sha256: string;
+				readonly coordinator_verdict_sha256: string;
+			};
+	  }
+	| {
+			readonly ready: false;
+			readonly reason: string;
+			readonly remedy: string;
+	  };
+
 export type VerifiedManifestMember = {
 	readonly role: string;
 	readonly relative_path: string;
@@ -562,6 +608,7 @@ export type VerifiedCompletedResult = {
 	readonly reference: ResultReferenceV1;
 	readonly job_dir: string;
 	readonly snapshot_root: string;
+	readonly terminal_at: string;
 	readonly identity: { readonly provider: string; readonly model: string; readonly thinking: string };
 	readonly members: readonly VerifiedManifestMember[];
 	readonly selected_member: VerifiedManifestMember;
@@ -576,6 +623,140 @@ export function parseResultReference(value: unknown): ResultReferenceV1 {
 	if (typeof record.artifact_role !== "string" || !SAFE_ROLE.test(record.artifact_role)) throw new Error("result reference artifact_role is invalid");
 	if (typeof record.manifest_sha256 !== "string" || !SHA256.test(record.manifest_sha256)) throw new Error("result reference manifest_sha256 is invalid");
 	return record as ResultReferenceV1;
+}
+
+export function parseReceiverReceipt(value: unknown): ReceiverReceiptV1 {
+	assertExactObject(value, ["schema_version", "type", "receipt_id", "receiver_id", "correlation_id", "result_reference", "verification", "consumed_at"], "receiver receipt");
+	const record = value as Record<string, unknown>;
+	if (record.schema_version !== 1 || record.type !== "receiver-receipt") throw new Error("unsupported receiver receipt schema or type");
+	for (const key of ["receipt_id", "receiver_id", "correlation_id"] as const)
+		if (typeof record[key] !== "string" || !SAFE_PROVENANCE_ID.test(record[key])) throw new Error(`receiver receipt ${key} is invalid`);
+	if (record.verification !== "verified") throw new Error("receiver receipt verification must be verified");
+	if (typeof record.consumed_at !== "string") throw new Error("receiver receipt consumed_at is invalid");
+	assertOffsetTimestamp("consumed_at", record.consumed_at);
+	return { ...(record as Omit<ReceiverReceiptV1, "result_reference">), result_reference: parseResultReference(record.result_reference) };
+}
+
+export function parseCoordinatorVerdict(value: unknown): CoordinatorVerdictV1 {
+	assertExactObject(
+		value,
+		["schema_version", "type", "verdict_id", "coordinator_id", "result_reference", "receiver_receipt_sha256", "reviewed_manifest_sha256", "quality", "decided_at"],
+		"coordinator verdict",
+	);
+	const record = value as Record<string, unknown>;
+	if (record.schema_version !== 1 || record.type !== "coordinator-verdict") throw new Error("unsupported coordinator verdict schema or type");
+	for (const key of ["verdict_id", "coordinator_id"] as const)
+		if (typeof record[key] !== "string" || !SAFE_PROVENANCE_ID.test(record[key])) throw new Error(`coordinator verdict ${key} is invalid`);
+	for (const key of ["receiver_receipt_sha256", "reviewed_manifest_sha256"] as const)
+		if (typeof record[key] !== "string" || !SHA256.test(record[key])) throw new Error(`coordinator verdict ${key} is invalid`);
+	if (record.quality !== "accepted" && record.quality !== "rejected") throw new Error("coordinator verdict quality is invalid");
+	if (typeof record.decided_at !== "string") throw new Error("coordinator verdict decided_at is invalid");
+	assertOffsetTimestamp("decided_at", record.decided_at);
+	return { ...(record as Omit<CoordinatorVerdictV1, "result_reference">), result_reference: parseResultReference(record.result_reference) };
+}
+
+/** Verify a receiver-owned acknowledgement against current sealed result bytes. */
+export function verifyReceipt(referenceInput: unknown, receiptPath: string, suppliedSlot = activeProjectSlot()): ProvenanceVerdict<VerifiedReceipt> {
+	const completed = verifyCompletedResult(referenceInput, suppliedSlot);
+	if (!completed.verified) return completed;
+	try {
+		if (!suppliedSlot) return rejected("slot-unavailable", "receipt verification requires an active project slot");
+		if (!suppliedSlot.provenance_receipt_root) return rejected("receipt-root-unavailable", "slot has no configured provenance receipt root");
+		if (!existsSync(receiptPath)) return rejected("receipt-missing", "standalone receiver receipt is missing");
+		const bytes = readAuthorityFile(receiptPath, suppliedSlot.provenance_receipt_root, "receiver receipt");
+		const receipt = parseReceiverReceipt(JSON.parse(bytes.toString("utf8")));
+		if (!suppliedSlot.trusted_receiver_ids.includes(receipt.receiver_id)) return rejected("unauthorized-receiver", `receiver ${receipt.receiver_id} is not trusted for this slot`);
+		if (!sameResultReference(receipt.result_reference, completed.value.reference)) return rejected("receipt-reference-mismatch", "receiver receipt cites a different result");
+		if (Date.parse(receipt.consumed_at) < Date.parse(completed.value.terminal_at))
+			return rejected("receipt-before-result", "receiver receipt predates the completed sealed result");
+		const expectedPath = resolve(suppliedSlot.provenance_receipt_root, receipt.result_reference.manifest_sha256, `${receipt.receipt_id}.json`);
+		if (realpathSync(receiptPath) !== expectedPath) return rejected("receipt-path-mismatch", "receiver receipt is not at its deterministic slot path");
+		return { verified: true, value: { receipt, receipt_sha256: sha256(bytes), receipt_path: expectedPath, result: completed.value } };
+	} catch (error) {
+		const classification = authorityErrorClassification(error);
+		return rejected(
+			classification === "operational" ? "receipt-read-failed" : classification === "not-ready" ? "receipt-missing" : "invalid-receipt",
+			error instanceof Error ? error.message : String(error),
+		);
+	}
+}
+
+/** Compose current provenance, receiver consumption and coordinator quality without writes. */
+export function evaluateStageReadiness(
+	input: { readonly resultReference: unknown; readonly receiptPath: string; readonly verdictPath: string },
+	suppliedSlot = activeProjectSlot(),
+): StageReadiness {
+	if (!suppliedSlot) return notReady("slot-unavailable", "select a configured project slot and retry");
+	if (!suppliedSlot.provenance_receipt_root || !suppliedSlot.provenance_verdict_root)
+		return notReady("authority-root-unavailable", "configure both receipt and verdict roots for the selected slot");
+	const completed = verifyCompletedResult(input.resultReference, suppliedSlot);
+	if (!completed.verified) return notReady(completed.reason, completed.detail);
+	const receipt = verifyReceipt(completed.value.reference, input.receiptPath, suppliedSlot);
+	if (!receipt.verified) return notReady(receipt.reason, receipt.detail);
+	try {
+		const verdictBytes = readAuthorityFile(input.verdictPath, suppliedSlot.provenance_verdict_root, "coordinator verdict");
+		const verdict = parseCoordinatorVerdict(JSON.parse(verdictBytes.toString("utf8")));
+		if (!suppliedSlot.trusted_coordinator_ids.includes(verdict.coordinator_id))
+			return notReady("unauthorized-coordinator", `coordinator ${verdict.coordinator_id} is not trusted for this slot`);
+		if (!sameResultReference(verdict.result_reference, completed.value.reference))
+			return notReady("verdict-reference-mismatch", "write a verdict for the exact current result reference");
+		const expectedPath = resolve(suppliedSlot.provenance_verdict_root, verdict.result_reference.manifest_sha256, `${verdict.verdict_id}.json`);
+		if (realpathSync(input.verdictPath) !== expectedPath) return notReady("verdict-path-mismatch", "place the verdict at its deterministic slot path");
+		if (verdict.receiver_receipt_sha256 !== receipt.value.receipt_sha256)
+			return notReady("receipt-digest-mismatch", "review the exact verified receiver receipt and write a new verdict");
+		if (verdict.reviewed_manifest_sha256 !== completed.value.reference.manifest_sha256)
+			return notReady("reviewed-manifest-mismatch", "review the current manifest and write a new verdict");
+		if (Date.parse(verdict.decided_at) < Date.parse(receipt.value.receipt.consumed_at))
+			return notReady("verdict-before-consumption", "decide quality only after the receiver consumed the sealed result");
+		if (verdict.quality === "rejected") return notReady("quality-rejected", "address the coordinator's quality rejection and obtain a new verdict");
+		const verdictDigest = sha256(verdictBytes);
+		const evidence = {
+			manifest_sha256: completed.value.reference.manifest_sha256,
+			receiver_receipt_sha256: receipt.value.receipt_sha256,
+			coordinator_verdict_sha256: verdictDigest,
+		};
+		return { ready: true, authorizationDigest: sha256(`${JSON.stringify(evidence)}\n`), evidence };
+	} catch (error) {
+		const classification = authorityErrorClassification(error);
+		return notReady(
+			classification === "operational" ? "verdict-read-failed" : classification === "not-ready" ? "verdict-missing" : "invalid-verdict",
+			error instanceof Error ? error.message : String(error),
+		);
+	}
+}
+
+/** Stable CLI mapping: ready=0, operational=1, absent/stale/rejected=2, malformed/unauthorized=3. */
+export function stageReadinessExitCode(readiness: StageReadiness): 0 | 1 | 2 | 3 {
+	if (readiness.ready) return 0;
+	if (
+		[
+			"slot-unavailable",
+			"authority-root-unavailable",
+			"receipt-root-unavailable",
+			"receipt-read-failed",
+			"verdict-read-failed",
+			"result-reference-read-failed",
+			"unverifiable",
+		].includes(readiness.reason)
+	)
+		return 1;
+	if (
+		[
+			"evidence-missing",
+			"job-not-done",
+			"assignment-missing",
+			"stale-seal",
+			"superseded-attempt",
+			"source-changed",
+			"receipt-missing",
+			"verdict-missing",
+			"receipt-digest-mismatch",
+			"reviewed-manifest-mismatch",
+			"quality-rejected",
+		].includes(readiness.reason)
+	)
+		return 2;
+	return 3;
 }
 
 /** Re-read current runtime, manifest, snapshot and source bytes for one slot-derived result. */
@@ -594,7 +775,9 @@ export function verifyCompletedResult(referenceInput: unknown, suppliedSlot = ac
 			if (reference[key] !== assignment[key]) return rejected("reference-mismatch", `result reference ${key} does not match assignment`);
 		if (reference.attempt_id !== assignment.current_attempt_id) return rejected("superseded-attempt", "result reference is not the current attempt");
 		if (!suppliedSlot.approved_result_outboxes.includes(realpathSync(assignment.outbox))) return rejected("outbox-not-approved", "assignment outbox is no longer exactly approved");
-		const current = readBoundedJson(resolve(jobDir, "provenance/current.json"), 16 * 1024) as Record<string, unknown>;
+		const currentPath = resolve(jobDir, "provenance/current.json");
+		if (!existsSync(currentPath)) return rejected("stale-seal", "managed result has no current provenance pointer");
+		const current = readBoundedJson(currentPath, 16 * 1024) as Record<string, unknown>;
 		if (current.schema_version !== 1 || typeof current.revision !== "string" || !/^[a-f0-9]{24}$/.test(current.revision) || current.manifest_sha256 !== reference.manifest_sha256)
 			return rejected("stale-seal", "current provenance pointer does not match the result reference");
 		const manifestPath = resolve(jobDir, "provenance/manifests", `${current.revision}.json`);
@@ -631,6 +814,8 @@ export function verifyCompletedResult(referenceInput: unknown, suppliedSlot = ac
 			!Array.isArray(manifest.members)
 		)
 			return rejected("manifest-binding-mismatch", "manifest does not match current assignment");
+		if (typeof manifest.terminal_at !== "string") return rejected("manifest-binding-mismatch", "manifest terminal time is invalid");
+		assertOffsetTimestamp("manifest terminal_at", manifest.terminal_at);
 		const observedIdentity = manifest.observed_identity as Record<string, unknown> | undefined;
 		assertExactObject(observedIdentity, ["provider", "model", "thinking"], "manifest observed identity");
 		if (!observedIdentity || observedIdentity.provider !== assignment.provider || observedIdentity.model !== assignment.model || observedIdentity.thinking !== assignment.thinking)
@@ -659,6 +844,7 @@ export function verifyCompletedResult(referenceInput: unknown, suppliedSlot = ac
 				reference,
 				job_dir: jobDir,
 				snapshot_root: snapshotRoot,
+				terminal_at: manifest.terminal_at,
 				identity: { provider: assignment.provider, model: assignment.model, thinking: assignment.thinking },
 				members,
 				selected_member: selected,
@@ -693,6 +879,30 @@ function readBoundedRegular(path: string, maximum: number): Buffer {
 	} finally {
 		closeSync(descriptor);
 	}
+}
+
+function readAuthorityFile(path: string, root: string, name: string): Buffer {
+	if (!isAbsolute(path)) throw new Error(`${name} path must be absolute`);
+	const actual = realpathSync(path);
+	const rel = relative(root, actual);
+	if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) throw new Error(`${name} path crosses its configured slot root`);
+	if (actual !== path) throw new Error(`${name} path contains a symlink`);
+	return readBoundedRegular(actual, 256 * 1024);
+}
+
+function sameResultReference(left: ResultReferenceV1, right: ResultReferenceV1): boolean {
+	return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function notReady(reason: string, remedy: string): StageReadiness {
+	return { ready: false, reason, remedy };
+}
+
+function authorityErrorClassification(error: unknown): "not-ready" | "invalid" | "operational" {
+	if (!error || typeof error !== "object" || !("code" in error)) return "invalid";
+	const code = (error as NodeJS.ErrnoException).code;
+	if (code === "ENOENT") return "not-ready";
+	return code === "ELOOP" ? "invalid" : "operational";
 }
 
 function readSmallText(path: string): string {

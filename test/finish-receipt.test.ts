@@ -44,7 +44,10 @@ test("inspection keeps absent, legacy and unverifiable bot evidence unobserved w
 	t.after(() => rm(root, { recursive: true, force: true }));
 	const job = join(root, "job");
 	await mkdir(job);
-	assert.match(await inspectFinishWebhook(job), /configured: no[\s\S]*transport: unknown[\s\S]*bot-turn: unobserved/);
+	assert.match(
+		await inspectFinishWebhook(job),
+		/configured: no[\s\S]*transport: unknown[\s\S]*bot-turn: unobserved[\s\S]*provenance: unmanaged[\s\S]*consumption: unverified[\s\S]*stage-readiness: not ready/,
+	);
 	await writeFile(join(job, "finish-webhook-env"), "/must-not-be-opened/private.env\n");
 	await writeFile(join(job, "finish-webhook"), "accepted: sender exited 0 (owner wake unobserved)\n");
 	assert.match(await inspectFinishWebhook(job), /configured: yes[\s\S]*transport: unknown[\s\S]*bot-turn: unobserved/);
@@ -53,6 +56,7 @@ test("inspection keeps absent, legacy and unverifiable bot evidence unobserved w
 	const detail = await inspectFinishWebhook(job);
 	assert.match(detail, /target 1: transport accepted · HTTP 2xx/);
 	assert.match(detail, /bot-turn: unobserved/);
+	assert.match(detail, /consumption: unverified[\s\S]*stage-readiness: not ready/);
 	assert.doesNotMatch(detail, /secret|private.env|completed":true/);
 });
 

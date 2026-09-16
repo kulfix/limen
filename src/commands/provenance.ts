@@ -2,7 +2,7 @@ import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync } f
 import { mkdir, open, rename, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { activeProjectSlot, assertSlotPath, type ResolvedProjectSlot } from "../project-slot.ts";
-import { normalizeRelativePath, parseResultReference, verifyCompletedResult } from "../provenance.ts";
+import { evaluateStageReadiness, normalizeRelativePath, parseResultReference, type StageReadiness, stageReadinessExitCode, verifyCompletedResult } from "../provenance.ts";
 import { renderVerifiedAttributions, verifyClaimSet } from "../provenance-claims.ts";
 import { finalizeManagedResult, readCurrentSeal, retryManagedFinalization } from "../provenance-finalize.ts";
 
@@ -47,7 +47,28 @@ export async function provenanceCommand(args: readonly string[], _cwd: string): 
 		process.stdout.write(bytes);
 		return;
 	}
-	if (operation === "stage-readiness") throw new Error("stage-readiness is not available until the separately authorized receipt/verdict unit");
+	if (operation === "stage-readiness") {
+		if (rest.length !== 8 || option(rest, "--format") !== "json") throw usage();
+		const resultReferencePath = option(rest, "--result-reference");
+		const receiptPath = option(rest, "--receiver-receipt");
+		const verdictPath = option(rest, "--coordinator-verdict");
+		let readiness: StageReadiness;
+		try {
+			const reference = parseResultReference(readJson(resultReferencePath));
+			readiness = evaluateStageReadiness({ resultReference: reference, receiptPath, verdictPath }, slot);
+		} catch (error) {
+			const code = error && typeof error === "object" && "code" in error ? (error as NodeJS.ErrnoException).code : undefined;
+			const reason = code === "ENOENT" ? "evidence-missing" : code && code !== "ELOOP" ? "result-reference-read-failed" : "invalid-result-reference";
+			readiness = {
+				ready: false,
+				reason,
+				remedy: code === "ENOENT" ? "provide all three standalone evidence files" : error instanceof Error ? error.message : String(error),
+			};
+		}
+		console.log(JSON.stringify(readiness, null, 2));
+		process.exitCode = stageReadinessExitCode(readiness);
+		return;
+	}
 	throw usage();
 }
 
@@ -157,7 +178,9 @@ async function atomicJson(path: string, value: unknown): Promise<void> {
 }
 
 function usage(): Error {
-	return new Error("provenance requires inspect|finalize --job <id>, verify|publish --result-reference <json>, or publication enable|disable|status [--reason <text>]");
+	return new Error(
+		"provenance requires inspect|finalize --job <id>, verify|publish --result-reference <json>, stage-readiness --result-reference <json> --receiver-receipt <json> --coordinator-verdict <json> --format json, or publication enable|disable|status [--reason <text>]",
+	);
 }
 
 export { finalizeManagedResult, renderVerifiedAttributions };

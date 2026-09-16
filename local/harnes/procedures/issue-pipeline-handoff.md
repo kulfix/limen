@@ -60,7 +60,7 @@ Brief plan joba musi wymagać `plan.md` zgodnego z kontraktem w [issue-pipeline.
 - GH / PLANE-GH: `<ścieżki zasad; bez uprawnień do zapisu dla workera>`
 - Istniejący plan / potrzebne KB: `<ścieżki i rewizje, bez drugiego backlogu>`
 - Wymagania RR: `<zgoda na równoważny krok przy literalnym wymogu skilla albo blocker; niczego nie udawaj>`
-- Finish receipt: `<ścieżka planowanego to-grok.md / outbox; HTTP 2xx webhooka ≠ sukces; webhook może być null>`
+- Finish receipt: `<dla legacy: ścieżka to-grok.md; dla sealed managed result: osobne result-reference, receiver receipt i coordinator verdict wg model-provenance.md; bez embedded ACK; HTTP 2xx ≠ sukces>`
 
 ## Wynik
 

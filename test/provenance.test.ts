@@ -11,6 +11,8 @@ import {
 	normalizeArtifactSpecs,
 	type ObservedExecutionEvent,
 	parseArtifactIdentity,
+	parseCoordinatorVerdict,
+	parseReceiverReceipt,
 	readManagedAssignment,
 	readObservedExecution,
 	writeContinuedManagedAssignment,
@@ -64,6 +66,8 @@ test("slot routing freezes exact result destinations and provenance authorities"
 	assert.match(routingFingerprint(slot), /^[a-f0-9]{64}$/);
 	assert.equal(canonicalApprovedOutbox(slot, outboxes["slot-a"]).path, outboxes["slot-a"]);
 	assert.throws(() => canonicalApprovedOutbox(slot, outboxes["slot-b"]), /not an exact approved destination/);
+	await writeFile(mapPath, `${JSON.stringify({ ...map, provenance_receipt_root: outboxes["slot-a"] })}\n`);
+	assert.throws(() => loadProjectSlot(seat.config, "slot-a"), /must not overlap producer result outboxes/);
 });
 
 test("managed assignment is atomic, exact-slot, and includes its first attempt", async (context) => {
@@ -199,6 +203,47 @@ test("completed-result identity frontmatter is strict and mode-aware", () => {
 	assert.throws(() => parseArtifactIdentity(text.replace("model: gpt-6-astra", "model: openai-codex/gpt-6-astra")), /canonical model id/);
 	assert.throws(() => parseArtifactIdentity(text.replace("started: 2026-09-16T10:00:00.000Z", "started: 2026-02-30T10:00:00Z")), /valid offset-aware/);
 	assert.throws(() => parseArtifactIdentity(text.replace("job_id: producer-a", "job_id: producer/a")), /canonical safe id/);
+});
+
+test("receiver receipts and coordinator verdicts use exact standalone schemas", () => {
+	const reference = {
+		schema_version: 1,
+		type: "limen-result-reference",
+		slot: "slot-a",
+		job_id: "producer-a",
+		assignment_id: "assignment-a",
+		stage: "synthesis",
+		attempt_id: "attempt-a",
+		artifact_role: "result",
+		manifest_sha256: "a".repeat(64),
+	} as const;
+	const receipt = {
+		schema_version: 1,
+		type: "receiver-receipt",
+		receipt_id: "receipt-a",
+		receiver_id: "receiver-a",
+		correlation_id: "event-a",
+		result_reference: reference,
+		verification: "verified",
+		consumed_at: "2026-09-16T10:02:00.000Z",
+	} as const;
+	assert.deepEqual(parseReceiverReceipt(receipt), receipt);
+	assert.throws(() => parseReceiverReceipt({ ...receipt, http_status: 204 }), /missing or unknown fields/);
+	assert.throws(() => parseReceiverReceipt({ ...receipt, verification: "claimed" }), /must be verified/);
+	const verdict = {
+		schema_version: 1,
+		type: "coordinator-verdict",
+		verdict_id: "verdict-a",
+		coordinator_id: "coordinator-a",
+		result_reference: reference,
+		receiver_receipt_sha256: "b".repeat(64),
+		reviewed_manifest_sha256: reference.manifest_sha256,
+		quality: "accepted",
+		decided_at: "2026-09-16T10:03:00.000Z",
+	} as const;
+	assert.deepEqual(parseCoordinatorVerdict(verdict), verdict);
+	assert.throws(() => parseCoordinatorVerdict({ ...verdict, quality: "pass" }), /quality is invalid/);
+	assert.throws(() => parseCoordinatorVerdict({ ...verdict, decided_at: "not-a-time" }), /offset-aware timestamp/);
 });
 
 test("observed execution rejects parent-only work and accepts a substantive child turn", async (context) => {

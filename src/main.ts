@@ -85,7 +85,7 @@ usage:
   limen stop <id|suffix|label> [reason]
   limen jobs [--running|--active|--all|<id|suffix|label>]
   limen prune
-  limen provenance inspect|finalize|verify|publish|publication ...  # managed-result sealing is publication-disabled by default
+  limen provenance inspect|finalize|verify|publish|stage-readiness|publication ...  # managed-result sealing is publication-disabled by default
   limen watch <id|suffix|label> | --running
   limen unwatch <id|suffix|label> | --all
   limen open <id|suffix|label>

@@ -184,9 +184,12 @@ function parseMap(configFile: string): ResolvedProjectSlot {
 	if (!inside(slot.inbound_root, slot.context_root)) throw new Error("inbound_root must be inside context_root");
 	if (!inside(slot.models_policy, slot.context_root)) throw new Error("models_policy must be inside context_root");
 	if (slot.finish_webhook_env && !inside(slot.finish_webhook_env, slot.project_root)) throw new Error("finish_webhook_env must be inside project_root");
-	for (const root of [slot.provenance_receipt_root, slot.provenance_verdict_root]) {
-		if (root && !inside(root, slot.project_root)) throw new Error("provenance authority root must be inside project_root");
+	const authorityRoots = [slot.provenance_receipt_root, slot.provenance_verdict_root].filter((path): path is string => path !== null);
+	for (const root of authorityRoots) {
+		if (!inside(root, slot.project_root)) throw new Error("provenance authority root must be inside project_root");
+		if (slot.approved_result_outboxes.some((outbox) => overlap(root, outbox))) throw new Error("provenance authority roots must not overlap producer result outboxes");
 	}
+	if (authorityRoots.length === 2 && overlap(authorityRoots[0]!, authorityRoots[1]!)) throw new Error("provenance receipt and verdict roots must not overlap");
 	if (slot.code_root && overlap(slot.code_root, slot.context_root)) throw new Error("code_root and context_root overlap");
 	for (const stateRoot of [slot.cabinet_root, slot.sessions_root, slot.worktrees_root]) {
 		if (slot.code_root && overlap(stateRoot, slot.code_root)) throw new Error("state root overlaps code_root");
