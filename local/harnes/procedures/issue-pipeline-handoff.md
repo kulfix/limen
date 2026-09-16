@@ -52,9 +52,11 @@ Brief plan joba musi wymagać `plan.md` zgodnego z kontraktem w [issue-pipeline.
 
 - Zasady produktu: `<absolutna ścieżka do AGENTS.md i wymaganych dokumentów repo>`
 - Modele: `<absolutna ścieżka do local/harnes/MODELS.md; provider/model/thinking przypisane temu etapowi — nie dziedziczone z intake; nie Astra-only dla issue-fix>`
+- Slot / `context_root` (gdy job na slocie z context): `<ABS context; potwierdź Vision spec/vision.md + Styleguide .agents/limen/styleguide.md; Journal SoT = spec/build.md + spec/features/{planned,active,done,dropped} — Grok tylko czyta>`
 - GH / PLANE-GH: `<ścieżki zasad; bez uprawnień do zapisu dla workera>`
 - Istniejący plan / potrzebne KB: `<ścieżki i rewizje, bez drugiego backlogu>`
 - Wymagania RR: `<zgoda na równoważny krok przy literalnym wymogu skilla albo blocker; niczego nie udawaj>`
+- Finish receipt: `<ścieżka planowanego to-grok.md / outbox; HTTP 2xx webhooka ≠ sukces; webhook może być null>`
 
 ## Wynik
 
