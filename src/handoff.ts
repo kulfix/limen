@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { limenRoot } from "./git.ts";
 import { activeProjectSlot, assertSlotPath } from "./project-slot.ts";
+import { requireManagedHandoff } from "./provenance-gate.ts";
 
 export const INBOUND_ROOT = "local/harnes/research";
 
@@ -18,6 +19,8 @@ export type Handoff = {
 	readonly body: string;
 	readonly path: string;
 	readonly slot?: string;
+	readonly result_reference?: string;
+	readonly attachments?: string;
 };
 
 export type AcceptResult = {
@@ -67,6 +70,7 @@ export async function acceptInbound(cwd: string, input: string): Promise<AcceptR
 	if (topicSlug !== handoff.slug) {
 		throw new Error(`handoff slug ${JSON.stringify(handoff.slug)} does not match topic directory ${JSON.stringify(topicSlug)}`);
 	}
+	requireManagedHandoff(handoff, slot);
 	const stateDir = inboundStateDir(cwd);
 	const statePath = resolve(stateDir, encodeId(handoff.id));
 	if (existsSync(statePath)) throw new Error(`handoff id ${JSON.stringify(handoff.id)} already accepted`);
@@ -100,7 +104,19 @@ export function parseHandoff(path: string, text: string): Handoff {
 	if (Number.isNaN(Date.parse(created))) throw new Error(`handoff created must be ISO-8601; got ${JSON.stringify(created)}`);
 	const slot = meta.slot;
 	if (slot && !/^[a-z][a-z0-9-]*$/.test(slot)) throw new Error(`handoff slot is invalid: ${JSON.stringify(slot)}`);
-	return { id, slug, from: "grok", to: "limen", type: type as Handoff["type"], created, body, path, ...(slot ? { slot } : {}) };
+	return {
+		id,
+		slug,
+		from: "grok",
+		to: "limen",
+		type: type as Handoff["type"],
+		created,
+		body,
+		path,
+		...(slot ? { slot } : {}),
+		...(meta.result_reference ? { result_reference: meta.result_reference } : {}),
+		...(meta.attachments ? { attachments: meta.attachments } : {}),
+	};
 }
 
 export function parseFrontmatter(text: string): { meta: Record<string, string>; body: string } {

@@ -29,6 +29,18 @@ test("all three inert examples validate with the runtime loader", () => {
 	assert.equal(loadProjectSlot(config, "limen-harness").code_root, null);
 });
 
+test("provenance procedures require standalone ACK evidence and a digest-stable manual Journal edit", () => {
+	const provenance = readFileSync("local/harnes/procedures/model-provenance.md", "utf8");
+	for (const phrase of ["standalone receiver receipt", "authorizationDigest", "Immediately before", "Abort if any digest changed", "never edit Journal automatically", "bot-turn"])
+		assert.match(provenance, new RegExp(phrase, "i"));
+	const ack = readFileSync("local/harnes/procedures/grok-ack-receipt.md", "utf8");
+	assert.match(ack, /Never append `## Router \/ Grok ack`/);
+	assert.match(ack, /Historical unsealed receipts/);
+	assert.doesNotMatch(ack, /pick one|muszą się zgadzać/i);
+	for (const path of ["local/harnes/procedures/issue-pipeline.md", "local/harnes/procedures/issue-pipeline-handoff.md", "local/harnes/procedures/issue-pipeline-result.md"])
+		assert.match(readFileSync(path, "utf8"), /sealed managed result/i);
+});
+
 test("operator docs keep preparation, cutover, rollback, and archive decisions separate", () => {
 	const docs = readFileSync("docs/seat-project-slots.md", "utf8");
 	for (const phrase of ["disabled by default", "routing/loader boundary", "same UID", "--repo", "not seat cutover", "Rollback", "no automatic migration"])

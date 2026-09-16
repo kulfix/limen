@@ -96,7 +96,7 @@ Przed każdym spawnem issue-fix, execute lub verify koordynator zapisuje w `note
 
 Niezgodność bazy, repo albo mapy kodu oznacza refresh lub pytanie przed wydaniem modelu, nie próbę naprawy na domysłach. Przed execute wymagającym izolowanych hostów testowych sprawdź ich osiągalność zatwierdzonym CLI; błąd SSH/infrastruktury nie jest błędem testu. Po błędzie engine (OAuth, limit tygodniowy, auth) krótko ustal i zapisz w `notes.md`, które konto/profil zawiodło; nie próbuj w ciemno kolejnych kont Claude (`a1` → `a2` → `a3`).
 
-Przed startem potwierdź też kanał powrotu do Groka (finish-webhook, wake albo poll outboxu). **Finish = receipt:** Grok-readable `to-grok.md` (lub równoważnik) **oraz** `job/state=done`. HTTP 2xx webhooka **nie wystarcza**; webhook może być `null` / nie skonfigurowany — świadomie OK day-one. Bez receipt sprawdź istniejący job; nie duplikuj wake i nie uruchamiaj automatycznie kolejnego etapu kodu. Szczegóły: [Plumbing](#plumbing-slotu-vision--journal--finish).
+Przed startem potwierdź też kanał powrotu do Groka (finish-webhook, wake albo poll outboxu). Dla niezarządzanego legacy wyniku nadal zachowaj Grok-readable `to-grok.md` (lub równoważnik) oraz `job/state=done`. Dla zapieczętowanego managed result wymagaj osobnego receiver receipt i coordinator verdict według [model-provenance.md](model-provenance.md); nie dopisuj ACK do wyniku. HTTP 2xx webhooka **nie wystarcza**; webhook może być `null` / nie skonfigurowany — świadomie OK day-one. Bez receipt sprawdź istniejący job; nie duplikuj wake i nie uruchamiaj automatycznie kolejnego etapu kodu. Szczegóły: [Plumbing](#plumbing-slotu-vision--journal--finish).
 
 Przykład jednego zlecenia issue-fix (po zgodzie), z **przekazanym** wybranym modelem (tu Grok):
 
@@ -157,7 +157,7 @@ Etap jest skończony dla Routera/Groka dopiero gdy **oba** warunki:
 1. istnieje Grok-readable receipt — zwykle `to-grok.md` (lub równoważnik w outboxie tematu) z `job_id`, statusem i ścieżkami artefaktów;
 2. rekord joba ma `state=done` (oraz sensowny `finished-at`).
 
-HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping; receipt plikowy + job state nadal zamyka etap. Rozdziel: **transport** (webhook) ≠ **file acceptance** (Router ack) ≠ **next-stage permission**. Ack: [grok-ack-receipt.md](grok-ack-receipt.md) — standalone `receipt-ack.md` i osadzona sekcja ack muszą się zgadzać (job id + ISO UTC). Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
+HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping. Rozdziel: **transport** (webhook) ≠ **consumption** (receiver receipt) ≠ **quality** (coordinator verdict) ≠ **next-stage permission**. Dla sealed managed result ACK jest wyłącznie standalone; osadzony `## Router / Grok ack` zmienia zapieczętowane bajty i unieważnia weryfikację. Szczegóły: [model-provenance.md](model-provenance.md) i [grok-ack-receipt.md](grok-ack-receipt.md). Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
 
 ## Etapy i warunki przejścia
 

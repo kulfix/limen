@@ -7,6 +7,7 @@ import { initCommand, workspaceCommand } from "./commands/init.ts";
 import { jobsCommand } from "./commands/jobs.ts";
 import { linearCommand } from "./commands/linear.ts";
 import { openCommand } from "./commands/open.ts";
+import { provenanceCommand } from "./commands/provenance-ops.ts";
 import { pruneCommand } from "./commands/prune.ts";
 import { spawnCommand } from "./commands/spawn.ts";
 import { steerCommand } from "./commands/steer.ts";
@@ -32,6 +33,7 @@ const COMMANDS = {
 	wait: waitCommand,
 	jobs: jobsCommand,
 	prune: pruneCommand,
+	provenance: provenanceCommand,
 	watch: watchCommand,
 	unwatch: unwatchCommand,
 	open: openCommand,
@@ -51,6 +53,7 @@ const COMMANDS = {
 	| "wait"
 	| "jobs"
 	| "prune"
+	| "provenance"
 	| "watch"
 	| "unwatch"
 	| "open"
@@ -82,6 +85,7 @@ usage:
   limen stop <id|suffix|label> [reason]
   limen jobs [--running|--active|--all|<id|suffix|label>]
   limen prune
+  limen provenance inspect|finalize|verify|publish|stage-readiness|publication ...  # managed-result sealing is publication-disabled by default
   limen watch <id|suffix|label> | --running
   limen unwatch <id|suffix|label> | --all
   limen open <id|suffix|label>

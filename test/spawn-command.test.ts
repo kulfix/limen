@@ -2,7 +2,37 @@ import assert from "node:assert/strict";
 import { access, chmod, readdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import test from "node:test";
+import { parseSpawnArgs } from "../src/commands/spawn.ts";
 import { defaultFakeClaude, defaultFakePi, git, limen, limenWithEnv, limenWithInput, limenWithSession, onlyJobId, scratchRepo, waitForState, writeFakeClaude } from "./scratch.ts";
+
+test("managed spawn options are all-or-nothing and retain repeatable artifacts", () => {
+	const complete = [
+		"--assignment-id",
+		"assignment-a",
+		"--stage",
+		"synthesis",
+		"--outbox",
+		"/tmp/outbox",
+		"--artifact",
+		"result=result.md",
+		"--artifact",
+		"claim-set=claims.json",
+		"--provider",
+		"openai-codex",
+		"--model",
+		"gpt-6-astra",
+		"--thinking",
+		"high",
+		"write result",
+	];
+	assert.deepEqual(parseSpawnArgs(complete).artifacts, ["result=result.md", "claim-set=claims.json"]);
+	for (const missing of ["--assignment-id", "--stage", "--outbox", "--artifact", "--provider", "--model", "--thinking"]) {
+		const index = complete.indexOf(missing);
+		const width = missing === "--artifact" ? 4 : 2;
+		const malformed = [...complete.slice(0, index), ...complete.slice(index + width)];
+		assert.throws(() => parseSpawnArgs(malformed), /managed launch requires/);
+	}
+});
 
 test("spawn creates isolated branch, canonical record, runs pi, and resumes its worktree", async (context) => {
 	const scratch = await scratchRepo();
