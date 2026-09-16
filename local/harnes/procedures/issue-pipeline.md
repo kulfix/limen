@@ -48,8 +48,9 @@ Model **musi** być wybrany przy każdym nowym assignment (Router→limen handof
 
 | Tor / etap | Dopuszczalny wybór | Thinking |
 | --- | --- | --- |
-| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment |
-| **brainstorm** design/plan, architektura, trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność tego wymaga | jawna wartość z assignment |
+| **issue-fix** / jednoznaczne patche, smoke, mechanika | Luna (`openai-codex` / `gpt-5.6-luna`), Terra (`openai-codex` / `gpt-5.6-terra`) albo **Grok** (`xai` / `grok-4.6`) — first-class wg assignment; DeepSeek flash (`openrouter`) tylko opcjonalnie off-sub | jawna wartość z assignment (`model_thinking`) |
+| **brainstorm** design / aim / trudna diagnoza | Sol (`openai-codex` / `gpt-5.6-sol`) albo Astra (`openai-codex` / `gpt-6-astra`) — tylko gdy trudność wymaga; lekki design/docs: Terra lub Grok OK | jawna wartość z assignment |
+| **plan-write** | **Terra** lub **Sol** (preferowane, zgodne z tabelą plan poniżej i MODELS); Astra tylko gdy trudność naprawdę wymaga — nie Astra-only | jawna wartość z assignment |
 | Execute / verify | Własny provider/model/thinking potwierdzony przy assignment tego etapu; może powtórzyć intake, ale go nie dziedziczy | jawna wartość z assignment |
 
 Astra nie jest domyślnym modelem całego pipeline'u. Trudny brainstorm może użyć Sol albo Astry. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko gdy assignment świadomie wybiera najtańszy off-sub — **nie** default research. Wybór modelu musi nastąpić przy assignment — koordynator nie dobiera go później z pamięci ani po cichu po awarii.
@@ -120,18 +121,20 @@ To nie skrypt całego pipeline'u. Kolejny etap wymaga osobnej decyzji koordynato
 
 ## Plumbing slotu (Vision / Journal / finish)
 
-Lekcje z harness plumbing **2026-09-16** (proof: slot `limen-harness`). Kanon dla operatorów/agentów na seatcie. Źródło research: [`local/harnes/research/limen-rr-port/outbox/plumbing-harness/`](../research/limen-rr-port/outbox/plumbing-harness/). **Bez** rezavo product URL, cutover ani portu skilli RR.
+Lekcje z harness plumbing **2026-09-16** (proof: slot `limen-harness`, F001). Kanon dla operatorów/agentów na seatcie. Źródło research (prefer surviving outbox): [`local/harnes/research/limen-rr-port/outbox/plumbing-harness/`](../research/limen-rr-port/outbox/plumbing-harness/). **Bez** rezavo product URL, cutover ani portu skilli RR.
+
+**Siła dowodu F001 (uczciwie):** to smoke **coordinator-injection / worker-cue-and-read / file-receipt** — **nie** literalny Adam „Vision injected into every session”. Worker dostaje cue do `spec/vision.md` i czyta plik; pełne wstrzyknięcie Vision do każdej sesji workera = osobna decyzja właściciela (O2). Marker/inject job ≠ TOR2 design-write trial. Gate rezavo: brak product URL → SKIP (patrz yellow-fix `SKIP-rezavo.md`).
 
 ### Vision inject — furniture, nie ozdoba
 
-App map i Styleguide **muszą** żyć pod `context_root` / `LIMEN_CONTEXT_ROOT` slota i być widoczne w promptach (hook `communication.ts`):
+App map i Styleguide **muszą** żyć pod `context_root` / `LIMEN_CONTEXT_ROOT` slota i być widoczne wg kontraktu hooka `communication.ts`:
 
 | Plik | Ścieżka względem `context_root` | Gdzie w promptcie |
 | --- | --- | --- |
-| App map (Vision) | `spec/vision.md` | Coordinator: system prompt; Worker: cue do vision w turn cue |
+| App map (Vision) | `spec/vision.md` | Coordinator: system prompt; Worker: **cue** do vision w turn cue (nie pełne body w każdej sesji) |
 | Styleguide | `.agents/limen/styleguide.md` | Coordinator i Worker: system prompt |
 
-Przed spawnem na slocie z context: potwierdź obecność obu plików. Brak = posadź furniture albo blocker — inject działa tylko gdy meble leżą w `context_root`. Marker proof (np. w harness) może udowodnić inject; day-one produkcyjny wystarczy realna treść Vision/Styleguide.
+Przed spawnem na slocie z context: potwierdź obecność obu plików. Brak = posadź furniture albo blocker — inject działa tylko gdy meble leżą w `context_root`. Marker proof (np. w harness) może udowodnić **wąski** kontrakt powyżej; day-one produkcyjny wystarczy realna treść Vision/Styleguide. Preferuj surviving outbox / git blob nad wyczyszczonym worktree.
 
 ### Journal SoT — filesystem pod context (TOR1 A)
 
@@ -154,7 +157,7 @@ Etap jest skończony dla Routera/Groka dopiero gdy **oba** warunki:
 1. istnieje Grok-readable receipt — zwykle `to-grok.md` (lub równoważnik w outboxie tematu) z `job_id`, statusem i ścieżkami artefaktów;
 2. rekord joba ma `state=done` (oraz sensowny `finished-at`).
 
-HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping; receipt plikowy + job state nadal zamyka etap. Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
+HTTP **2xx** finish-webhook **nie wystarcza**. `finish_webhook_env` może być `null` — day-one harness świadomie bez HTTP ping; receipt plikowy + job state nadal zamyka etap. Rozdziel: **transport** (webhook) ≠ **file acceptance** (Router ack) ≠ **next-stage permission**. Ack: [grok-ack-receipt.md](grok-ack-receipt.md) — standalone `receipt-ack.md` i osadzona sekcja ack muszą się zgadzać (job id + ISO UTC). Bez receipt: odczytaj istniejący job / outbox; **nie** duplikuj wake i **nie** auto-chain kolejnego etapu kodu.
 
 ## Etapy i warunki przejścia
 

@@ -19,8 +19,12 @@ Koordynator wypełnia pola przed `limen spawn --task-file`. Zastąp `<…>`; dla
 - Zakazy dodatkowe: `<granice z decision i repo>`
 - Review owner / polityka: `<kto ocenia wynik; czy odrębny reviewer jest autoryzowany>`
 - Limit prób / spendu: `<jawny limit; przekroczenie wraca do koordynatora>`
-- Model (assignment, obowiązkowe): `model_provider: <openai-codex|openrouter|xai|…>` · `model_id: <np. gpt-5.6-luna>` · `model_thinking: <low|medium|high>` — ustaw lub potwierdź dla tego etapu i zapisz w decision/`to-limen.md`; brak = blocker albo wybór przed spawnem zapisany w notes.
-- Model także przy resume tego samego assignmentu: te same `--provider` / `--model` / `--thinking` (bez cichej zmiany). Następny etap ma nowy assignment i własną trójkę, nawet gdy świadomie powtarza poprzednią. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko opcjonalnie off-sub (nie default research); trudny brainstorm: Sol albo Astra. **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
+- Model (assignment, obowiązkowe — **płaskie** pola, nie zagnieżdżony YAML):
+  - `model_provider: <openai-codex|openrouter|xai|…>`
+  - `model_id: <np. gpt-5.6-luna | gpt-5.6-terra | gpt-5.6-sol | gpt-6-astra | grok-4.6 | …>`
+  - `model_thinking: <low|medium|high>`
+  Ustaw lub potwierdź dla **tego** etapu i zapisz w decision / `to-limen.md` / task-file frontmatter (wzór: [templates/task-brief-frontmatter.md](templates/task-brief-frontmatter.md)); brak = blocker albo wybór przed spawnem zapisany w notes. Parser inbound czyta te trzy klucze płasko.
+- Model także przy resume tego samego assignmentu: te same `--provider` / `--model` / `--thinking` (bez cichej zmiany). Następny etap ma nowy assignment i własną trójkę, nawet gdy świadomie powtarza poprzednią. Issue-fix: Luna, Terra albo **Grok (first-class)**; DeepSeek tylko opcjonalnie off-sub (nie default research); trudny brainstorm/design: Sol albo Astra; **plan-write: Terra lub Sol** (Astra tylko gdy trudność naprawdę wymaga). **Bez cichej substytucji**; przy błędzie modelu/quota zachowaj pracę i zgłoś blocker.
 
 ## Wejście
 
