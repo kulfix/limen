@@ -1,7 +1,8 @@
 import { spawn } from "node:child_process";
 import { appendFile, open, readdir, readFile, rename, rm } from "node:fs/promises";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runClaudeSdkSession } from "./claude-sdk.ts";
 import { containEscapedDescendants, discoverEscapedDescendants, processAlive, processInfo, signalProcessGroup } from "./contain.ts";
 import { deliverFinishWebhook } from "./finish-webhook.ts";
 import { changedFileCount, commitList } from "./git.ts";
@@ -109,9 +110,11 @@ export async function runInternalJob(): Promise<void> {
 	let graceTimer: NodeJS.Timeout | undefined;
 	let tools = 0;
 	let pending = Promise.resolve();
+	let sdkAbort: AbortController | undefined;
 	process.on("SIGTERM", () => {
 		stopRequested = true;
 		shutdownDeadline ??= Date.now() + STOP_GRACE_MS - 500;
+		sdkAbort?.abort();
 	});
 	let exhaustionTermination = Promise.resolve();
 	const exhaust = (reason: string) => {
@@ -131,19 +134,19 @@ export async function runInternalJob(): Promise<void> {
 	};
 	// A role names a preamble; an engine names a binary. Both agents get the same preamble, the same
 	// worktree, and the same trust the README states — pi takes --approve, claude takes bypassPermissions.
-	const engine = process.env.LIMEN_ENGINE === "claude" ? "claude" : "pi";
+	const engine = process.env.LIMEN_ENGINE === "claude" ? "claude" : process.env.LIMEN_ENGINE === "claude-sdk" ? "claude-sdk" : "pi";
 	const contextRoot = process.env.LIMEN_CONTEXT_ROOT ?? "";
 	const args: string[] = [];
 	if (engine === "claude") {
 		args.push("-p", (await readFile(taskFile, "utf8")).trim());
 		args.push("--output-format", "stream-json", "--verbose", "--permission-mode", "bypassPermissions", "--append-system-prompt", preamble);
 		if (contextRoot && contextRoot !== worktree) args.push("--add-dir", contextRoot);
-	} else {
+	} else if (engine === "pi") {
 		args.push("--mode", "json", "--approve", "--no-extensions", "--session-dir", `${jobDir}/session`, "--name", `limen: ${label}`, "--append-system-prompt", preamble);
 		args.push("--extension", `${HOOK}/steering.ts`, "--extension", `${HOOK}/communication.ts`);
 	}
 	if (engine === "pi" && process.env.LIMEN_PROVIDER) args.push("--provider", process.env.LIMEN_PROVIDER);
-	if (process.env.LIMEN_MODEL) args.push("--model", process.env.LIMEN_MODEL);
+	if (engine !== "claude-sdk" && process.env.LIMEN_MODEL) args.push("--model", process.env.LIMEN_MODEL);
 	if (engine === "pi") {
 		if (process.env.LIMEN_THINKING) args.push("--thinking", process.env.LIMEN_THINKING);
 		if (process.env.LIMEN_CONTINUE === "1") args.push("--continue", (await readFile(taskFile, "utf8")).trim());
@@ -167,11 +170,11 @@ export async function runInternalJob(): Promise<void> {
 		LIMEN_JOB_LABEL: label,
 	});
 	const privateEnvironment =
-		"LIMEN_INTERNAL_RUN LIMEN_JOB_DIR LIMEN_WORKTREE LIMEN_TASK_FILE LIMEN_PREAMBLE LIMEN_TIMEOUT_MS LIMEN_MODEL LIMEN_PROVIDER LIMEN_THINKING LIMEN_LABEL LIMEN_ENGINE LIMEN_CLAUDE PI_SESSION_ID PI_SESSION_FILE PI_PROVIDER PI_MODEL PI_REASONING_LEVEL";
+		"LIMEN_INTERNAL_RUN LIMEN_JOB_DIR LIMEN_WORKTREE LIMEN_TASK_FILE LIMEN_PREAMBLE LIMEN_TIMEOUT_MS LIMEN_MODEL LIMEN_PROVIDER LIMEN_THINKING LIMEN_LABEL LIMEN_ENGINE LIMEN_CLAUDE LIMEN_CLAUDE_SDK_MAX_TURNS LIMEN_CLAUDE_SDK_MAX_BUDGET_USD PI_SESSION_ID PI_SESSION_FILE PI_PROVIDER PI_MODEL PI_REASONING_LEVEL";
 	for (const name of privateEnvironment.split(" ")) if (!process.env.LIMEN_PROJECTS_CONFIG || !["LIMEN_JOB_DIR"].includes(name)) delete childEnvironment[name];
 	// A detached job must not inherit the coordinator's Herdr pane.
 	for (const name of Object.keys(childEnvironment)) if (name.startsWith("HERDR_")) delete childEnvironment[name];
-	const parser = engine === "claude" ? createClaudeStreamParser() : createStreamParser();
+	const parser = engine === "pi" ? createStreamParser() : createClaudeStreamParser();
 	const seen = { activity: "", assistant: "", stop: "" };
 	const failLog = (error: unknown) => appendLimenLog(jobDir, `log write failed: ${error instanceof Error ? error.message : String(error)}`).catch(() => {});
 	const apply = (events: readonly StreamEvent[]) => {
@@ -190,26 +193,43 @@ export async function runInternalJob(): Promise<void> {
 			)
 			.catch(failLog);
 	};
-	const child = spawn(engine === "claude" ? (process.env.LIMEN_CLAUDE ?? "claude") : (process.env.LIMEN_PI ?? "pi"), args, {
-		cwd: worktree,
-		stdio: ["ignore", "pipe", "pipe"],
-		env: childEnvironment,
-	});
-	child.stdout?.on("data", (chunk: Buffer | string) => apply(parser.push(chunk.toString())));
-	child.stderr?.on("data", (chunk: Buffer | string) => {
-		pending = pending.then(() => appendFile(`${jobDir}/log`, chunk.toString())).catch(failLog);
-	});
-	const outcome = new Promise<{
-		code: number | null;
-		signal: NodeJS.Signals | null;
-		error?: Error;
-	}>((resolve) => {
-		child.once("error", (error) => resolve({ code: null, signal: null, error }));
-		child.once("close", (code, signal) => resolve({ code, signal }));
-	});
+	type Outcome = { code: number | null; signal: NodeJS.Signals | null; error?: Error };
+	let outcome: Promise<Outcome>;
+	if (engine === "claude-sdk") {
+		sdkAbort = new AbortController();
+		const maxTurns = positiveEnvironmentNumber("LIMEN_CLAUDE_SDK_MAX_TURNS", true);
+		const maxBudgetUsd = optionalPositiveEnvironmentNumber("LIMEN_CLAUDE_SDK_MAX_BUDGET_USD", false);
+		outcome = runClaudeSdkSession({
+			prompt: (await readFile(taskFile, "utf8")).trim(),
+			cwd: worktree,
+			preamble,
+			model: requiredEnvironment("LIMEN_MODEL"),
+			maxTurns,
+			...(maxBudgetUsd === undefined ? {} : { maxBudgetUsd }),
+			abortController: sdkAbort,
+			environment: childEnvironment,
+			onMessage: (message) => apply(parser.push(`${JSON.stringify(message)}\n`)),
+		})
+			.then(() => ({ code: 0, signal: null }))
+			.catch((error: unknown) => ({ code: null, signal: null, error: error instanceof Error ? error : new Error(String(error)) }));
+	} else {
+		const child = spawn(engine === "claude" ? (process.env.LIMEN_CLAUDE ?? "claude") : (process.env.LIMEN_PI ?? "pi"), args, {
+			cwd: worktree,
+			stdio: ["ignore", "pipe", "pipe"],
+			env: childEnvironment,
+		});
+		child.stdout?.on("data", (chunk: Buffer | string) => apply(parser.push(chunk.toString())));
+		child.stderr?.on("data", (chunk: Buffer | string) => {
+			pending = pending.then(() => appendFile(`${jobDir}/log`, chunk.toString())).catch(failLog);
+		});
+		outcome = new Promise<Outcome>((resolve) => {
+			child.once("error", (error) => resolve({ code: null, signal: null, error }));
+			child.once("close", (code, signal) => resolve({ code, signal }));
+		});
+	}
 	await writeHandshake(jobDir);
 	await atomicWrite(`${jobDir}/state`, "running\n");
-	await appendLimenLog(jobDir, engine === "claude" ? "worker started (claude)" : "worker started");
+	await appendLimenLog(jobDir, engine === "pi" ? "worker started" : `worker started (${engine})`);
 	const timeout = setTimeout(() => exhaust(`timeout after ${timeoutMs}ms`), timeoutMs);
 	const result = await outcome;
 	clearTimeout(timeout);
@@ -243,10 +263,12 @@ export const requestedTerminal = (reason: string): "done" | "stopped" => (reason
 export async function finalizeJob(jobDir: string, state: "done" | "failed" | "stopped", detail: string, shutdownDeadline?: number): Promise<void> {
 	if (["done", "failed", "stopped"].includes(await textFile(`${jobDir}/state`))) return;
 	await recordCommits(jobDir).catch(() => {});
-	await atomicWrite(`${jobDir}/finished-at`, `${new Date().toISOString()}\n`);
-	// The terminal log line lands before the state flip; state is the commit point observers key on, and the story must already be durable when they see it.
+	const finishedAt = new Date().toISOString();
+	await atomicWrite(`${jobDir}/finished-at`, `${finishedAt}\n`);
+	// The terminal log line and SDK receipt land before the state flip; state is the commit point observers key on.
 	const inbox = await readdir(`${jobDir}/steer/inbox`).catch(() => []);
 	await appendLimenLog(jobDir, inbox.length ? `${state}: ${detail}; ${inbox.length} steer(s) never delivered` : `${state}: ${detail}`).catch(() => {});
+	await writeExecutionReceipt(jobDir, state, finishedAt);
 	await atomicWrite(`${jobDir}/state`, `${state}\n`);
 	let managedCompletionRejected = false;
 	if (state === "done") {
@@ -271,6 +293,30 @@ export async function finalizeJob(jobDir: string, state: "done" | "failed" | "st
 		);
 	await settleJobTab(jobDir);
 }
+export async function writeExecutionReceipt(jobDir: string, state: "done" | "failed" | "stopped", finishedAt: string): Promise<void> {
+	if ((await textFile(`${jobDir}/backend`)) !== "claude-agent-sdk") return;
+	const maxBudgetUsd = await textFile(`${jobDir}/max-budget-usd`);
+	const sessionId = await textFile(`${jobDir}/claude-session`);
+	const receipt = {
+		schema: "limen.execution.v1",
+		job_id: basename(jobDir),
+		backend: "claude-agent-sdk",
+		model: await textFile(`${jobDir}/model`),
+		attempt: Number(await textFile(`${jobDir}/attempt`)),
+		started_at: await textFile(`${jobDir}/started-at`),
+		finished_at: finishedAt,
+		state,
+		auth: await textFile(`${jobDir}/auth`),
+		limits: {
+			max_turns: Number(await textFile(`${jobDir}/max-turns`)),
+			timeout_ms: Number(await textFile(`${jobDir}/timeout-ms`)) || DEFAULT_TIMEOUT_MS,
+			...(maxBudgetUsd ? { max_budget_usd: Number(maxBudgetUsd) } : {}),
+		},
+		...(sessionId ? { sdk_session_id: sessionId } : {}),
+	};
+	await atomicWrite(`${jobDir}/execution.json`, `${JSON.stringify(receipt, null, 2)}\n`);
+}
+
 export async function recordCommits(jobDir: string): Promise<void> {
 	const [base, branch, worktree] = await Promise.all([textFile(`${jobDir}/base`), textFile(`${jobDir}/branch`), textFile(`${jobDir}/worktree`)]);
 	if (!base || !branch || !worktree) return;
@@ -323,4 +369,12 @@ function requiredEnvironment(name: string): string {
 	const value = process.env[name];
 	if (!value) throw new Error(`internal job wrapper is missing ${name}`);
 	return value;
+}
+function positiveEnvironmentNumber(name: string, integer: boolean): number {
+	const value = Number(requiredEnvironment(name));
+	if (!Number.isFinite(value) || value <= 0 || (integer && !Number.isSafeInteger(value))) throw new Error(`${name} must be a positive ${integer ? "integer" : "number"}`);
+	return value;
+}
+function optionalPositiveEnvironmentNumber(name: string, integer: boolean): number | undefined {
+	return process.env[name] ? positiveEnvironmentNumber(name, integer) : undefined;
 }

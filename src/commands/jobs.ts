@@ -116,7 +116,9 @@ async function renderJobDirectory(root: string, jobsRoot: string, id: string, de
 	if (!state) return { compact: `ORPHAN ${id} · no state`, record: { id, invalid: "orphan · no state" } };
 	const agent = await text(`${jobDir}/herdr/agent`);
 	const [commits, commitsStat] = await Promise.all([text(`${jobDir}/commits`), optionalStat(`${jobDir}/commits`)]);
-	const [result, stopReason, versions] = detailed ? await Promise.all([text(`${jobDir}/result`), text(`${jobDir}/stop-reason`), text(`${jobDir}/versions`)]) : ["", "", ""];
+	const [result, stopReason, versions, execution] = detailed
+		? await Promise.all([text(`${jobDir}/result`), text(`${jobDir}/stop-reason`), text(`${jobDir}/versions`), text(`${jobDir}/execution.json`)])
+		: ["", "", "", ""];
 	const [taskStat, logStat] = await Promise.all([optionalStat(`${jobDir}/task.md`), optionalStat(`${jobDir}/log`)]);
 	const cleanup = detailed ? await text(`${jobDir}/cleanup`) : "";
 	const finishWebhook = detailed ? await inspectFinishWebhook(jobDir) : "";
@@ -167,6 +169,7 @@ async function renderJobDirectory(root: string, jobsRoot: string, id: string, de
 		if (versions) blocks.push(indented("versions", versions));
 		if (detailed && commits) blocks.push(indented("commits", commits));
 		if (result) blocks.push(indented("result", result));
+		if (execution) blocks.push(indented("execution", execution));
 		if (finishWebhook) blocks.push(indented("finish-webhook", finishWebhook));
 		if (cleanup)
 			blocks.push(
