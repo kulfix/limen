@@ -203,6 +203,20 @@ Do Routera/Pawła eskaluj wyłącznie: (a) zielone i gotowe do merge, albo (b) r
 - Po utracie sesji przeczytaj notes i istniejący job w repo produktu; przy autoryzowanym przejęciu użyj `limen watch <id>`. Brak powiadomienia nie upoważnia do duplikatu.
 - Przed resume odczytaj ponownie źródło i obejrzyj zachowany worktree. Autoryzowany finish/repair na `spawn --branch <branch>` zachowuje właściwą bazę oraz jawne flagi **wybranego** modelu; nie restartuje całej sekwencji. Zmiana issue, planu lub SHA wymaga oceny zależnych dowodów.
 
+### Day-one: odzyskanie ukończonego `design.md` bez owner review
+
+Ta ręczna procedura dotyczy istniejącej pracy `design-write`, gdy job jest `done`, ale nie ma pełnego przekazania albo werdyktu właściciela. Jej celem jest ponowne przedstawienie **tej samej** rewizji do review i jawny STOP — nie plan, kod, retry ani live drill. To jednorazowa procedura day-one dla TOR2-H1; nie ustanawia automatycznego workflow.
+
+**Źródło prawdy day-one** to razem: cabinet joba `.limen/jobs/<job_id>/`, zachowany poza disposable worktree `design.md` wraz z pełnym SHA-256, ACK konsumpcji (`to-grok.md` i/lub osobny receiver receipt), `design-review.md` oraz STOP zapisany przez koordynatora w `notes.md`. Tożsamość odzyskania to `job_id + design.md digest`; gdy nowa próba została odrębnie autoryzowana, dopisz także jej `attempt`. `done` i `finished-at` dowodzą tylko ukończenia procesu. Sealed provenance ani `evaluateStageReadiness` **nie są** warunkiem wstępnym tych kontroli day-one.
+
+1. **Job done, brak zachowanego artefaktu.** Gdy cabinet wskazuje `done`, ale nie można znaleźć zachowanego `design.md` o oczekiwanym digescie SHA-256, zbadaj istniejący cabinet, worktree, result i logi, a lukę dowodową zapisz w `notes.md`. STOP: nie uznawaj designu, nie pisz planu i nie respawnuj.
+2. **Artefakt jest, brak ACK konsumpcji.** Gdy zachowany `design.md` hashuje się do `D`, lecz brak `to-grok.md` albo receiver ACK dla tego samego `job_id + D`, przedstaw ponownie dokładnie ten job i digest odbiorcy oraz czekaj na ACK. Zachowaj bajty artefaktu; nie wyprowadzaj zgody ownera i nie respawnuj.
+3. **ACK jest, brak decyzji ownera.** Gdy odbiorca potwierdził konsumpcję tego samego `job_id + D`, ale Paweł milczy albo minął timeout, zapisz oczekiwanie na tej samej tożsamości i utrzymaj STOP. Milczenie **nie jest** acceptem, zgodą na następny etap ani zgodą na resume/respawn; ACK nie jest decyzją ownera.
+4. **Jawny review dla dokładnej rewizji.** Gdy cabinet, artefakt i ACK wskazują ten sam `job_id + D`, zapisz w `design-review.md` jawny verdict Pawła (accept, reject albo request revision) oraz `D`; zapisz STOP w `notes.md`. Nawet ACCEPT w tym pakiecie nie uruchamia następnika. Reject lub request revision wymaga nowej zapisanej authority i budget przed nowym spawnem.
+5. **Niezgodny digest.** Gdy delivery albo review wskazuje `job_id + D1`, a zachowany `design.md` ma `D2`, stary verdict dla `D1` nie dotyczy `D2`. Zachowaj właściwe ścieżki dowodowe i poproś o jawny review zamierzonego digestu; nie nadpisuj artefaktu oczekującego na review i nie respawnuj jako „recovery”.
+
+Brak lub sprzeczność dowodu jest blockerem, nie przejściem stanu. Nowy spawn wymaga nowej zapisanej authority, nowego budgetu i własnej tożsamości próby; nie może być przedstawiany jako odzyskanie wcześniejszego joba.
+
 ### Recovery: mega-job / overflow / mixed scope = process FAIL
 
 Lekcja z incidentu mega-impl (np. Units 1–5 w jednym task-file → STOP przy ~47% context / mixed scope). **To jest FAIL procesu koordynatora**, nie „niech dokończy”.
