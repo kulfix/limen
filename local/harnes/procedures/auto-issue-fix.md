@@ -68,6 +68,7 @@ CI: required green; `ci:run-full` w granicach zgody. Flaky: max 1 diagnostyczny 
 - Osobny issue (istniejący) lub powiązanie z znanym CI issue; **nie** nowe issue bez wyjątku.
 - 1 heal/incydent; limit czasu jak w critique (~120 min łącznie z produktem w budżecie dnia — koordynator pilnuje).
 - PR heal: `limen` + `via:issue-fix` + jasny tytuł CI-heal; merge nadal ręczny.
+- **Night ritual (REPLACE manual Claude):** `procedures/nightly-ci-heal.md` + `scripts/nightly-ci-heal.sh` (cron 02:00 Europe/Warsaw). Shared lane 0–1 with fill: label `limen:auto-fix` + comment `limen:<job_id>:ci-heal-night` (day-one **no** separate `limen:ci-heal`). Cross-read `status.md` `active_ciheal` / skip if foreign lease or open heal PR. SoT: `research/nightly-ci-heal/`. Claude night heal for main tip is **retired** on this path.
 
 ## Labelki GH
 | Obiekt | Labelki |
