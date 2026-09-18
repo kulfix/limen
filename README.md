@@ -38,7 +38,7 @@ Full setup, multi-target notes, deliberate retry, and troubleshooting: [docs/fin
 
 ## Trust boundary
 
-A spawned job runs `pi --approve` as you — or `claude -p --permission-mode bypassPermissions` when it runs on the Claude engine. A worktree and process group provide separation, not a security sandbox. A worker can do anything your account can do. Look at the branch before you merge. See [SECURITY.md](SECURITY.md).
+A spawned job runs `pi --approve` as you, `claude -p --permission-mode bypassPermissions` on the Claude CLI engine, or a bypass-permissions Claude Agent SDK query on the opt-in SDK backend. A worktree and process group provide separation, not a security sandbox. A worker can do anything your account can do. Look at the branch before you merge. See [SECURITY.md](SECURITY.md).
 
 ## Install
 
@@ -142,7 +142,7 @@ limen spawn --tab --engine pi \
 
 Precedence is `--model`, then `LIMEN_WORKER_MODEL`, then the package default. A requested `--review` uses `LIMEN_REVIEWER_MODEL` instead of `LIMEN_WORKER_MODEL`, with the same package fallback; neither variable starts a review. Adam performs reviews for Alice/Limen work, so do not spawn an independent reviewer unless asked. If requested, its model can be explicit or set with `export LIMEN_REVIEWER_MODEL="openai-codex/gpt-6-astra:high"`.
 
-The `--engine claude` path keeps its own CLI default unless `--model` is supplied. Pi's `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` describe the current session; they do not configure a child Pi launch.
+The `--engine claude` path keeps its own CLI default unless `--model` is supplied. The separate `--engine claude-sdk` path requires an explicit model and `ANTHROPIC_API_KEY`; Claude Code and CCS login state is not accepted as SDK billing entitlement. See [Claude Agent SDK backend](docs/claude-sdk.md). Pi's `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` describe the current session; they do not configure a child Pi launch.
 
 ## Opt-in seat project slots
 
@@ -189,7 +189,7 @@ limen init
 limen init --drop-leftovers
 limen workspace init
 limen --slot ID spawn --repo R "instruction"       # only with LIMEN_PROJECTS_CONFIG; disabled by default
-limen spawn "instruction" [--label L] [--provider P] [--model M] [--thinking T] [--branch B] [--role NAME] [--engine pi|claude] [--timeout 20m] [--task-file F|-] [--prepare CMD]
+limen spawn "instruction" [--label L] [--provider P] [--model M] [--thinking T] [--branch B] [--role NAME] [--engine pi|claude|claude-sdk] [--timeout 20m] [--max-turns N] [--max-budget-usd N] [--task-file F|-] [--prepare CMD]
 limen spawn --repo R "instruction" [--label L] [--model M]
 limen spawn --review --branch B --label L "instruction"
 limen jobs [--running|--active|--all|<id|suffix|label>]

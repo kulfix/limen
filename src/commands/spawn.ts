@@ -4,6 +4,7 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, delimiter, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { admitClaudeSdk, DEFAULT_CLAUDE_SDK_MAX_TURNS } from "../claude-sdk.ts";
 import { signalProcessGroup, waitForProcessGroup } from "../contain.ts";
 import { finishWebhookEnv } from "../finish-webhook.ts";
 import {
@@ -45,6 +46,8 @@ export type SpawnOptions = {
 	detached: boolean;
 	role?: string;
 	engine?: string;
+	maxTurns?: number;
+	maxBudgetUsd?: number;
 	assignmentId?: string;
 	stage?: string;
 	outbox?: string;
@@ -87,7 +90,7 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	const artifacts = managed ? normalizeArtifactSpecs(parsed.artifacts) : [];
 	if (managed) {
 		if (!slot) throw new Error("managed launch requires an active project slot");
-		if (parsed.engine === "claude") throw new Error("managed launch requires the Pi engine");
+		if (parsed.engine === "claude" || parsed.engine === "claude-sdk") throw new Error("managed launch requires the Pi engine");
 		canonicalApprovedOutbox(slot, parsed.outbox!);
 	}
 	if (slot && parsed.engine === "claude") throw new Error("Claude project-slot workers are deferred until their complete input can be isolated");
@@ -97,7 +100,7 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	// Patch 2: default is hosted in Herdr. Detached only with an explicit --detached — never a silent fallback.
 	const tab = !parsed.detached;
 	if (tab && parsed.timeoutMs) throw new Error("hosted jobs have no timeout; omit --timeout or use --detached");
-	if (tab && parsed.engine === "claude") throw new Error("claude is not hosted in Herdr; pass --detached explicitly");
+	if (tab && (parsed.engine === "claude" || parsed.engine === "claude-sdk")) throw new Error(`${parsed.engine} is not hosted in Herdr; pass --detached explicitly`);
 	if (tab && !herdr) throw new Error("spawn defaults to hosted Herdr (HERDR_ENV=1); pass --detached for an ordinary background job");
 	const workspace = slot ? slot.project_root : workspaceRoot(cwd);
 	const root = slot ? slot.context_root : (workspace ?? repoRoot(cwd));
@@ -108,13 +111,22 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	const options = { ...parsed, tab, task: loaded.text, label: parsed.label ?? (loaded.text.trim().split(/\r?\n/, 1)[0]?.trim().slice(0, 80) || "job") };
 	const engine = options.engine ?? "pi";
 	const model =
-		options.model ?? (engine === "claude" ? undefined : process.env[options.review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
-	if (engine === "claude" && (options.provider || options.thinking)) throw new Error("--provider and --thinking are Pi options; omit them for --engine claude");
+		options.model ??
+		(engine === "claude" || engine === "claude-sdk"
+			? undefined
+			: process.env[options.review ? "LIMEN_REVIEWER_MODEL" : "LIMEN_WORKER_MODEL"]?.trim() || "openai-codex/gpt-6-astra:high");
+	if ((engine === "claude" || engine === "claude-sdk") && (options.provider || options.thinking)) {
+		throw new Error(`--provider and --thinking are Pi options; omit them for --engine ${engine}`);
+	}
+	if (engine !== "claude-sdk" && (options.maxTurns !== undefined || options.maxBudgetUsd !== undefined)) {
+		throw new Error("--max-turns and --max-budget-usd require --engine claude-sdk");
+	}
 	const task = loaded.raw ? loaded.text : workspace ? workspaceTask(options.task, root, options.repo ?? "") : options.task;
 	const role = options.review ? "reviewer" : (options.role ?? "worker");
 	const preamble = resolvePreamble(root, role);
+	const sdkAdmission = engine === "claude-sdk" ? admitClaudeSdk(model ? { model } : {}) : undefined;
 	if (engine === "claude") preflightClaude();
-	else preflightPi(model, options.provider);
+	else if (engine !== "claude-sdk") preflightPi(model, options.provider);
 	const notificationSession = currentNotificationSession();
 	const coordinatorTab = process.env.HERDR_TAB_ID?.trim();
 	const id = makeJobId(options.label);
@@ -184,6 +196,17 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 			writeFile(`${jobDir}/log`, "", { flag: "wx", flush: true }),
 			writeFile(`${jobDir}/role`, `${role}\n`, { flag: "wx", flush: true }),
 			writeFile(`${jobDir}/engine`, `${engine}\n`, { flag: "wx", flush: true }),
+			...(sdkAdmission
+				? [
+						writeFile(`${jobDir}/backend`, "claude-agent-sdk\n", { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/model`, `${sdkAdmission.model}\n`, { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/attempt`, "1\n", { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/auth`, `${sdkAdmission.auth}\n`, { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/max-turns`, `${options.maxTurns ?? DEFAULT_CLAUDE_SDK_MAX_TURNS}\n`, { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/timeout-ms`, `${options.timeoutMs ?? 90 * 60_000}\n`, { flag: "wx", flush: true }),
+						...(options.maxBudgetUsd === undefined ? [] : [writeFile(`${jobDir}/max-budget-usd`, `${options.maxBudgetUsd}\n`, { flag: "wx", flush: true })]),
+					]
+				: []),
 			...(options.tab
 				? [writeFile(`${jobDir}/hosted`, HOSTED_NOTE, { flag: "wx", flush: true }), writeFile(`${jobDir}/agent-name`, `${hostedAgentName(id)}\n`, { flag: "wx", flush: true })]
 				: []),
@@ -265,6 +288,10 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	environment.LIMEN_THINKING = options.thinking ?? "";
 	if (model) environment.LIMEN_MODEL = model;
 	if (options.timeoutMs) environment.LIMEN_TIMEOUT_MS = String(options.timeoutMs);
+	if (engine === "claude-sdk") {
+		environment.LIMEN_CLAUDE_SDK_MAX_TURNS = String(options.maxTurns ?? DEFAULT_CLAUDE_SDK_MAX_TURNS);
+		if (options.maxBudgetUsd !== undefined) environment.LIMEN_CLAUDE_SDK_MAX_BUDGET_USD = String(options.maxBudgetUsd);
+	}
 	let wrapperPid: number;
 	try {
 		wrapperPid = await launchWrapper(environment);
@@ -430,7 +457,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	let provider: string | undefined, thinking: string | undefined;
 	let assignmentId: string | undefined, stage: string | undefined, outbox: string | undefined;
 	const artifacts: string[] = [];
-	let timeoutMs: number | undefined, taskFile: string | undefined, prepare: string | undefined, role: string | undefined, engine: string | undefined;
+	let timeoutMs: number | undefined, maxTurns: number | undefined, maxBudgetUsd: number | undefined;
+	let taskFile: string | undefined, prepare: string | undefined, role: string | undefined, engine: string | undefined;
 	let review = false,
 		tab = false,
 		detached = false,
@@ -457,6 +485,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 					"--prepare",
 					"--role",
 					"--engine",
+					"--max-turns",
+					"--max-budget-usd",
 					"--assignment-id",
 					"--stage",
 					"--outbox",
@@ -484,7 +514,11 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 				if (!/^[a-z][a-z0-9-]*$/.test(role)) throw new Error("--role must be a lowercase name");
 			} else if (value === "--engine") {
 				engine = once(engine, value, optionValue.trim());
-				if (engine !== "pi" && engine !== "claude") throw new Error("--engine must be pi or claude");
+				if (engine !== "pi" && engine !== "claude" && engine !== "claude-sdk") throw new Error("--engine must be pi or claude, or claude-sdk");
+			} else if (value === "--max-turns") {
+				maxTurns = once(maxTurns, value, positiveNumber(optionValue, value, true));
+			} else if (value === "--max-budget-usd") {
+				maxBudgetUsd = once(maxBudgetUsd, value, positiveNumber(optionValue, value, false));
 			} else timeoutMs = once(timeoutMs, value, parseDuration(optionValue));
 		} else task.push(value);
 	}
@@ -516,6 +550,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	if (stage) out.stage = stage;
 	if (outbox) out.outbox = outbox;
 	if (timeoutMs) out.timeoutMs = timeoutMs;
+	if (maxTurns) out.maxTurns = maxTurns;
+	if (maxBudgetUsd) out.maxBudgetUsd = maxBudgetUsd;
 	return out;
 }
 async function readSpawnTask(task: string, taskFile: string | undefined, cwd: string): Promise<{ text: string; bytes: Buffer; raw: boolean }> {
@@ -566,6 +602,11 @@ const once = <T>(current: T | undefined, flag: string, value: T): T => {
 	if (current !== undefined) throw new Error(`${flag} may be supplied only once`);
 	return value;
 };
+function positiveNumber(value: string, flag: string, integer: boolean): number {
+	const parsed = Number(value);
+	if (!Number.isFinite(parsed) || parsed <= 0 || (integer && !Number.isSafeInteger(parsed))) throw new Error(`${flag} requires a positive ${integer ? "integer" : "number"}`);
+	return parsed;
+}
 export function normalizeLabel(value: string): string {
 	const label = value.trim();
 	if (!label || /[\r\n]/.test(label)) throw new Error("--label must be one non-empty line");
