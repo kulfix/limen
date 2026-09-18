@@ -23,6 +23,7 @@ Snapshot mostu z projektu badawczego harnes w forku silnika (`kulfix/limen`).
 | [HERDR.md](./HERDR.md) | Herdr-only default |
 | [MODELS.md](./MODELS.md) | Astra vs DeepSeek flash (tanio by default) |
 | [PLANE-GH.md](./PLANE-GH.md) | Plane GROK (orkiestracja) vs REZ (produkt); marker write-back |
+| [PROCEDURE-HOOKS.md](./PROCEDURE-HOOKS.md) | Sync Unit outbox/status oraz seat-only claim/release GitHub Issue |
 | [CCS.md](./CCS.md) | Multi-account Claude via CCS profiles (a1/a2/a3) |
 | [GROK.md](./GROK.md) | Wejście dla Grok Bota |
 | [procedures/research-start.md](./procedures/research-start.md) | Procedura koordynatora Pi |

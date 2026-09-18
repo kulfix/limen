@@ -133,6 +133,7 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 	}
 	const notificationSession = currentNotificationSession();
 	const coordinatorTab = process.env.HERDR_TAB_ID?.trim();
+	const research = await Promise.all(["research-root", "research-slug", "research-stage"].map((name) => text(`${parentDir}/${name}`)));
 	await Promise.all([
 		writeFile(`${jobDir}/task.md`, `${instruction}\n`, { flag: "wx", flush: true }),
 		writeFile(`${jobDir}/label`, `${finalLabel}\n`, { flag: "wx", flush: true }),
@@ -161,6 +162,9 @@ export async function continueCommand(args: readonly string[], cwd: string): Pro
 				]
 			: []),
 		...(coordinatorTab ? [writeFile(`${jobDir}/origin-tab`, `${coordinatorTab}\n`, { flag: "wx", flush: true })] : []),
+		...(research.every(Boolean)
+			? ["research-root", "research-slug", "research-stage"].map((name, index) => writeFile(`${jobDir}/${name}`, `${research[index]}\n`, { flag: "wx", flush: true }))
+			: []),
 	]);
 	if (parentAssignment && childAttempt) {
 		await writeContinuedManagedAssignment({ parent: parentAssignment, childJobDir: jobDir, childJobId: id, task: `${instruction}\n`, attempt: childAttempt });
