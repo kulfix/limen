@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { appendFile, open, readdir, readFile, rename, rm } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,6 +91,7 @@ export async function runInternalJob(): Promise<void> {
 	const preambleFile = requiredEnvironment("LIMEN_PREAMBLE");
 	const jobId = requiredEnvironment("LIMEN_JOB_ID");
 	const label = process.env.LIMEN_LABEL || jobId;
+	const engine = process.env.LIMEN_ENGINE === "claude" ? "claude" : process.env.LIMEN_ENGINE === "claude-sdk" ? "claude-sdk" : "pi";
 	const slot = activeProjectSlot();
 	if (slot) {
 		const routing = readRoutingRecord(jobDir, slot);
@@ -102,6 +104,7 @@ export async function runInternalJob(): Promise<void> {
 			assertSlotPath(slot, preambleFile, "context-input");
 		}
 	}
+	const executionOwner = engine === "claude-sdk" ? await claimClaudeSdkExecution(jobDir, jobId) : undefined;
 	const timeoutMs = process.env.LIMEN_TIMEOUT_MS ? Number(process.env.LIMEN_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
 	const preamble = await readFile(preambleFile, "utf8");
 	let stopRequested = false;
@@ -129,12 +132,11 @@ export async function runInternalJob(): Promise<void> {
 			graceTimer = setTimeout(() => signalProcessGroup(process.pid, "SIGKILL"), STOP_GRACE_MS);
 			graceTimer.unref();
 			void containEscapedDescendants(jobDir, escaped, "after exhaustion").catch(() => {});
-			await finalizeJob(jobDir, "failed", reason, shutdownDeadline);
+			await finalizeJob(jobDir, "failed", reason, shutdownDeadline, executionOwner?.owner_id);
 		})();
 	};
 	// A role names a preamble; an engine names a binary. Both agents get the same preamble, the same
 	// worktree, and the same trust the README states — pi takes --approve, claude takes bypassPermissions.
-	const engine = process.env.LIMEN_ENGINE === "claude" ? "claude" : process.env.LIMEN_ENGINE === "claude-sdk" ? "claude-sdk" : "pi";
 	const contextRoot = process.env.LIMEN_CONTEXT_ROOT ?? "";
 	const args: string[] = [];
 	if (engine === "claude") {
@@ -210,7 +212,16 @@ export async function runInternalJob(): Promise<void> {
 			environment: childEnvironment,
 			onMessage: (message) => apply(parser.push(`${JSON.stringify(message)}\n`)),
 		})
-			.then(() => ({ code: 0, signal: null }))
+			.then(async (run) => {
+				await Promise.all([
+					atomicWrite(`${jobDir}/claude-session`, `${run.sessionId}\n`),
+					atomicWrite(`${jobDir}/observed-model`, `${run.model}\n`),
+					atomicWrite(`${jobDir}/observed-cwd`, `${run.cwd}\n`),
+					atomicWrite(`${jobDir}/observed-auth`, `${run.auth}\n`),
+					atomicWrite(`${jobDir}/observed-permission-mode`, `${run.permissionMode}\n`),
+				]);
+				return { code: 0, signal: null };
+			})
 			.catch((error: unknown) => ({ code: null, signal: null, error: error instanceof Error ? error : new Error(String(error)) }));
 	} else {
 		const child = spawn(engine === "claude" ? (process.env.LIMEN_CLAUDE ?? "claude") : (process.env.LIMEN_PI ?? "pi"), args, {
@@ -243,25 +254,32 @@ export async function runInternalJob(): Promise<void> {
 	if (exhausted) {
 		await exhaustionTermination;
 	} else if (stopRequested || result.signal === "SIGTERM" || result.signal === "SIGKILL") {
-		await finalizeJob(jobDir, "stopped", "process group interrupted", shutdownDeadline);
-	} else if (result.error) await finalizeJob(jobDir, "failed", result.error.message);
+		await finalizeJob(jobDir, "stopped", "process group interrupted", shutdownDeadline, executionOwner?.owner_id);
+	} else if (result.error) await finalizeJob(jobDir, "failed", result.error.message, undefined, executionOwner?.owner_id);
 	else if (result.code === 0) {
 		if (seen.assistant) await atomicWrite(`${jobDir}/result`, `${seen.assistant}\n`).catch(() => {});
 		const failedReason = isFailedStopReason(seen.stop) ? seen.stop : "";
-		await finalizeJob(jobDir, failedReason ? "failed" : "done", failedReason || `${engine} exited 0`);
-	} else await finalizeJob(jobDir, "failed", `worker exited with code ${result.code ?? "unknown"}`);
+		await finalizeJob(jobDir, failedReason ? "failed" : "done", failedReason || `${engine} exited 0`, undefined, executionOwner?.owner_id);
+	} else await finalizeJob(jobDir, "failed", `worker exited with code ${result.code ?? "unknown"}`, undefined, executionOwner?.owner_id);
 }
 export async function failInternalJob(error: unknown): Promise<void> {
 	const jobDir = process.env.LIMEN_JOB_DIR;
 	if (!jobDir) return;
-	await finalizeJob(jobDir, "failed", error instanceof Error ? error.message : String(error));
+	const owner = await readExecutionOwner(jobDir);
+	if (owner && owner.pid !== process.pid) {
+		await appendLimenLog(jobDir, `refused competing wrapper ${process.pid}; execution is owned by ${owner.owner_id}`).catch(() => {});
+		return;
+	}
+	await finalizeJob(jobDir, "failed", error instanceof Error ? error.message : String(error), undefined, owner?.owner_id);
 }
 export function isFailedStopReason(reason: string): boolean {
 	return reason === "error" || reason.startsWith("error: ") || reason === "aborted" || reason.startsWith("aborted: ");
 }
 export const requestedTerminal = (reason: string): "done" | "stopped" => (reason.startsWith("done:") ? "done" : "stopped");
-export async function finalizeJob(jobDir: string, state: "done" | "failed" | "stopped", detail: string, shutdownDeadline?: number): Promise<void> {
+export async function finalizeJob(jobDir: string, state: "done" | "failed" | "stopped", detail: string, shutdownDeadline?: number, executionOwnerId?: string): Promise<void> {
 	if (["done", "failed", "stopped"].includes(await textFile(`${jobDir}/state`))) return;
+	const owner = await readExecutionOwner(jobDir);
+	if (executionOwnerId && owner?.owner_id !== executionOwnerId) throw new Error("Claude Agent SDK finalizer does not own this execution attempt");
 	await recordCommits(jobDir).catch(() => {});
 	const finishedAt = new Date().toISOString();
 	await atomicWrite(`${jobDir}/finished-at`, `${finishedAt}\n`);
@@ -297,16 +315,20 @@ export async function writeExecutionReceipt(jobDir: string, state: "done" | "fai
 	if ((await textFile(`${jobDir}/backend`)) !== "claude-agent-sdk") return;
 	const maxBudgetUsd = await textFile(`${jobDir}/max-budget-usd`);
 	const sessionId = await textFile(`${jobDir}/claude-session`);
+	const owner = await readExecutionOwner(jobDir);
 	const receipt = {
 		schema: "limen.execution.v1",
 		job_id: basename(jobDir),
 		backend: "claude-agent-sdk",
-		model: await textFile(`${jobDir}/model`),
+		model: (await textFile(`${jobDir}/observed-model`)) || (await textFile(`${jobDir}/model`)),
 		attempt: Number(await textFile(`${jobDir}/attempt`)),
 		started_at: await textFile(`${jobDir}/started-at`),
 		finished_at: finishedAt,
 		state,
-		auth: await textFile(`${jobDir}/auth`),
+		auth: (await textFile(`${jobDir}/observed-auth`)) || (await textFile(`${jobDir}/auth`)),
+		...((await textFile(`${jobDir}/observed-cwd`)) ? { cwd: await textFile(`${jobDir}/observed-cwd`) } : {}),
+		...((await textFile(`${jobDir}/observed-permission-mode`)) ? { permission_mode: await textFile(`${jobDir}/observed-permission-mode`) } : {}),
+		...(owner ? { execution_owner: owner } : {}),
 		limits: {
 			max_turns: Number(await textFile(`${jobDir}/max-turns`)),
 			timeout_ms: Number(await textFile(`${jobDir}/timeout-ms`)) || DEFAULT_TIMEOUT_MS,
@@ -356,6 +378,52 @@ export async function textFile(path: string): Promise<string> {
 		() => "",
 	);
 }
+type ClaudeSdkExecutionOwner = {
+	readonly owner_id: string;
+	readonly job_id: string;
+	readonly attempt: number;
+	readonly pid: number;
+	readonly claimed_at: string;
+};
+
+export async function claimClaudeSdkExecution(jobDir: string, jobId: string): Promise<ClaudeSdkExecutionOwner> {
+	const claim: ClaudeSdkExecutionOwner = {
+		owner_id: randomUUID(),
+		job_id: jobId,
+		attempt: Number(await textFile(`${jobDir}/attempt`)),
+		pid: process.pid,
+		claimed_at: new Date().toISOString(),
+	};
+	if (!Number.isSafeInteger(claim.attempt) || claim.attempt < 1) throw new Error("Claude Agent SDK execution attempt is missing or invalid");
+	const path = `${jobDir}/execution-owner.json`;
+	let handle;
+	try {
+		handle = await open(path, "wx", 0o600);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new Error(`Claude Agent SDK execution attempt ${claim.attempt} already has an owner`);
+		throw error;
+	}
+	try {
+		await handle.writeFile(`${JSON.stringify(claim, null, 2)}\n`);
+		await handle.sync();
+	} finally {
+		await handle.close();
+	}
+	return claim;
+}
+
+async function readExecutionOwner(jobDir: string): Promise<ClaudeSdkExecutionOwner | undefined> {
+	const content = await textFile(`${jobDir}/execution-owner.json`);
+	if (!content) return undefined;
+	try {
+		const owner = JSON.parse(content) as ClaudeSdkExecutionOwner;
+		if (typeof owner.owner_id === "string" && Number.isSafeInteger(owner.attempt) && Number.isSafeInteger(owner.pid)) return owner;
+	} catch {
+		// A malformed durable claim is still a refusal, never permission to launch a second execution.
+	}
+	throw new Error("Claude Agent SDK execution ownership claim is malformed");
+}
+
 export async function writeHandshake(jobDir: string): Promise<void> {
 	await atomicWrite(`${jobDir}/pid`, `${process.pid}\n`);
 	void recordBorn(jobDir);
