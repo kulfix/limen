@@ -20,6 +20,8 @@ limen inbound accept --wake local/harnes/research/<slug>/to-limen.md
 # potem: czytaj to-grok.md (in_reply_to), zamknij tab Herdr
 ```
 
+**GO → spawn:** consent/GO is incomplete until seat `limen spawn-go` writes `job_id` into topic `status.md` (no Ops-chat hop; see `procedures/auto-issue-fix.md` + `research/go-spawn-immediate/outbox/rezavo-spawn-runbook.md`).
+
 **Zakazane jako kanał handoffu:** `BRIDGE:`, `herdr agent prompt`, Cursor Cloud Agents. Praca: **seat + gh** (`kulfix/limen`).
 
 Temat próbny: [research/grok-limen/](./research/grok-limen/).

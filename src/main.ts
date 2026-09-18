@@ -11,6 +11,7 @@ import { openCommand } from "./commands/open.ts";
 import { provenanceCommand } from "./commands/provenance-ops.ts";
 import { pruneCommand } from "./commands/prune.ts";
 import { spawnCommand } from "./commands/spawn.ts";
+import { spawnGoCommand } from "./commands/spawn-go.ts";
 import { steerCommand } from "./commands/steer.ts";
 import { stopCommand } from "./commands/stop.ts";
 import { sweepCommand } from "./commands/sweep.ts";
@@ -27,6 +28,8 @@ const COMMANDS = {
 	workspace: workspaceCommand,
 	inbound: inboundCommand,
 	spawn: spawnCommand,
+	"spawn-go": spawnGoCommand,
+	"go-spawn": spawnGoCommand,
 	continue: continueCommand,
 	diff: diffCommand,
 	steer: steerCommand,
@@ -49,6 +52,8 @@ const COMMANDS = {
 	| "workspace"
 	| "inbound"
 	| "spawn"
+	| "spawn-go"
+	| "go-spawn"
 	| "continue"
 	| "diff"
 	| "steer"
@@ -82,6 +87,10 @@ usage:
                                                               # Pi default = hosted Herdr; declared research Units sync worktree/outbox on done/failed
   limen spawn --tab "…"                            # hosted (default; requires Herdr; no --timeout)
   limen spawn --detached "…"                       # explicit escape: background worker + log-tail tab
+  limen spawn-go --status PATH --stage NAME --model M [--provider P] [--thinking T] [--label L] [--task-file F|TASK] [--detached] [--research-slug S] [--repo R]
+                                  # GO→spawn+receipt: writes job_id/stage/verdict=RUNNING into status.md (alias: go-spawn)
+                                  # legacy rezavo: unset LIMEN_PROJECTS_CONFIG; cwd=/srv/limen/projects/rezavo
+                                  # slot: LIMEN_PROJECTS_CONFIG + limen --slot limen-engine spawn-go … --repo code
   limen spawn --repo R "Implement FNNN: <outcome>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X]
   limen spawn --review --branch B --label L "Review the FNNN candidate against spec/features/active/FNNN-slug/ticket.md"
   limen continue <id|suffix|label> "follow-up instruction" [--review] [--label L] [--provider P] [--model X] [--thinking T] [--tab|--detached]

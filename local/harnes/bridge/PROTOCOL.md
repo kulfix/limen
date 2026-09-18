@@ -113,3 +113,6 @@ Modele: [MODELS.md](../MODELS.md) — research tanio (DeepSeek flash); Astra tyl
 3. Po `result` / `blocked` Grok **zamyka** sesję. Seat zostaje; czat Pi nie.
 
 Wyjątek (jawny w handoffie): krótki follow-up **tego samego** id przed resultem — ta sama sesja. Nowy id = zawsze nowe wake.
+
+## GO → spawn receipt
+A Router/Rezavo GO or consent file is **not** terminal until seat runs `limen spawn-go` (or documented legacy `limen spawn`) and writes `job_id` into the topic `status.md`. Shipping an OPS.md spawn brief is **not** success. Ops only on infra FAIL.
