@@ -300,6 +300,12 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 	if (engine === "claude-sdk") {
 		environment.LIMEN_CLAUDE_SDK_MAX_TURNS = String(options.maxTurns ?? DEFAULT_CLAUDE_SDK_MAX_TURNS);
 		if (options.maxBudgetUsd !== undefined) environment.LIMEN_CLAUDE_SDK_MAX_BUDGET_USD = String(options.maxBudgetUsd);
+		if (sdkAdmission?.auth === "ccs-subscription") {
+			if (sdkAdmission.claudeConfigDir) environment.CLAUDE_CONFIG_DIR = sdkAdmission.claudeConfigDir;
+			if (sdkAdmission.ccsProfile) environment.LIMEN_CCS_PROFILE = sdkAdmission.ccsProfile;
+		}
+		if (process.env.LIMEN_CLAUDE?.trim()) environment.LIMEN_CLAUDE = process.env.LIMEN_CLAUDE.trim();
+		if (process.env.LIMEN_CCS_PROFILE?.trim()) environment.LIMEN_CCS_PROFILE = process.env.LIMEN_CCS_PROFILE.trim();
 	}
 	let wrapperPid: number;
 	try {

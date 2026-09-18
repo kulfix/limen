@@ -77,7 +77,7 @@ usage:
   limen inbound <path-to-to-limen.md> | accept [--wake] <path> | wake <path>  # accept handoff; wake = fresh Herdr Pi with @/abs/to-limen.md
   limen spawn "Implement FNNN: <outcome>. Start by writing <slice>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X] [--branch B] [--role NAME] [--timeout 20m; default 90m] [--task-file F|-] [--prepare CMD]
   limen spawn --role advisor --engine claude --detached "…"   # Claude CLI: requires explicit --detached; never merges
-  ANTHROPIC_API_KEY=… limen spawn --engine claude-sdk --detached --model M [--max-turns N] [--max-budget-usd N] "…"
+  LIMEN_CLAUDE=claude-a2 limen spawn --engine claude-sdk --detached --model M [--max-turns N] [--max-budget-usd N] "…"
   limen spawn "…" [--label L] [--provider P] [--model X] [--thinking T] [--research-slug S --research-stage S]
                                                               # Pi default = hosted Herdr; declared research Units sync worktree/outbox on done/failed
   limen spawn --tab "…"                            # hosted (default; requires Herdr; no --timeout)
