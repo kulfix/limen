@@ -20,6 +20,23 @@ export type ClaudeSdkAdmission = {
 	readonly environment: NodeJS.ProcessEnv;
 };
 
+export const LOCALE_ENVIRONMENT = new Set([
+	"LANG",
+	"LANGUAGE",
+	"LC_ALL",
+	"LC_ADDRESS",
+	"LC_COLLATE",
+	"LC_CTYPE",
+	"LC_IDENTIFICATION",
+	"LC_MEASUREMENT",
+	"LC_MESSAGES",
+	"LC_MONETARY",
+	"LC_NAME",
+	"LC_NUMERIC",
+	"LC_PAPER",
+	"LC_TELEPHONE",
+	"LC_TIME",
+]);
 const SDK_RUNTIME_ENVIRONMENT = new Set([
 	"PATH",
 	"HOME",
@@ -29,7 +46,6 @@ const SDK_RUNTIME_ENVIRONMENT = new Set([
 	"TMPDIR",
 	"TMP",
 	"TEMP",
-	"LANG",
 	"TERM",
 	"COLORTERM",
 	"XDG_CONFIG_HOME",
@@ -62,7 +78,7 @@ export function admitClaudeSdk(input: { readonly model?: string; readonly enviro
 	if (conflict) throw new Error(`Claude Agent SDK jobs reject conflicting auth or billing setting ${conflict}`);
 	const environment: NodeJS.ProcessEnv = {};
 	for (const [name, value] of Object.entries(source)) {
-		if (value !== undefined && (SDK_RUNTIME_ENVIRONMENT.has(name) || name.startsWith("LC_"))) environment[name] = value;
+		if (value !== undefined && (SDK_RUNTIME_ENVIRONMENT.has(name) || LOCALE_ENVIRONMENT.has(name))) environment[name] = value;
 	}
 	environment.ANTHROPIC_API_KEY = source.ANTHROPIC_API_KEY;
 	environment.CLAUDE_AGENT_SDK_CLIENT_APP = "limen/0.1.0";
@@ -136,6 +152,7 @@ export async function runClaudeSdkSession(input: {
 		return { ...observed, result };
 	} finally {
 		if (!completed) {
+			input.abortController.abort();
 			try {
 				stream.close();
 			} catch {

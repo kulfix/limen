@@ -31,6 +31,8 @@ test("Claude SDK admission requires one explicit API billing route and builds a 
 		environment: {
 			PATH: "/bin",
 			LANG: "C",
+			LC_ALL: "C.UTF-8",
+			LC_TENANT_SECRET: "leaked-via-prefix",
 			ANTHROPIC_API_KEY: "paid-route",
 			OPENAI_API_KEY: "other-provider",
 			TENANT_DATABASE_PASSWORD: "tenant-secret",
@@ -41,6 +43,7 @@ test("Claude SDK admission requires one explicit API billing route and builds a 
 	assert.deepEqual(admission.environment, {
 		PATH: "/bin",
 		LANG: "C",
+		LC_ALL: "C.UTF-8",
 		ANTHROPIC_API_KEY: "paid-route",
 		CLAUDE_AGENT_SDK_CLIENT_APP: "limen/0.1.0",
 		CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
@@ -169,6 +172,7 @@ test("pre-init, malformed init, callback failure, and session mismatch close wit
 	}
 
 	let callbackClosed = 0;
+	const callbackController = new AbortController();
 	await assert.rejects(
 		runClaudeSdkSession({
 			prompt: "callback fails",
@@ -176,7 +180,7 @@ test("pre-init, malformed init, callback failure, and session mismatch close wit
 			preamble: "system",
 			model: MODEL,
 			maxTurns: 1,
-			abortController: new AbortController(),
+			abortController: callbackController,
 			environment: { ANTHROPIC_API_KEY: "paid-route" },
 			onMessage: () => {
 				throw new Error("consumer failed");
@@ -185,6 +189,7 @@ test("pre-init, malformed init, callback failure, and session mismatch close wit
 		}),
 		/consumer failed/,
 	);
+	assert.equal(callbackController.signal.aborted, true);
 	assert.equal(callbackClosed, 1);
 
 	let mismatchClosed = 0;
@@ -269,6 +274,7 @@ test("competing wrapper processes launch one SDK query and the receipt names its
 	const environment: NodeJS.ProcessEnv = {
 		PATH: process.env.PATH,
 		HOME: root,
+		LIMEN_INTERNAL_RUN: "1",
 		LIMEN_JOB_DIR: job,
 		LIMEN_WORKTREE: root,
 		LIMEN_TASK_FILE: join(job, "task.md"),
@@ -297,6 +303,56 @@ test("competing wrapper processes launch one SDK query and the receipt names its
 	const receipt = JSON.parse(await readFile(join(job, "execution.json"), "utf8"));
 	assert.equal(receipt.execution_owner.pid, Number(launches[0]));
 	assert.equal(receipt.sdk_session_id, `child-${launches[0]}`);
+});
+
+test("production wrapper refuses failure finalization while an execution claim is incomplete", async (context) => {
+	const root = await mkdtemp(join(tmpdir(), "limen-sdk-owner-refusal-"));
+	context.after(() => rm(root, { recursive: true, force: true }));
+	const { job, environment } = await wrapperFixture(root, "claim-in-flight");
+	await writeFile(join(job, "execution-owner.json"), "");
+	const wrapper = await runWrapperFixture(environment);
+	assert.equal(wrapper.code, 1, wrapper.stderr);
+	assert.equal(await readFile(join(job, "state"), "utf8"), "running\n");
+	await assert.rejects(readFile(join(job, "execution.json"), "utf8"), /ENOENT/);
+	await assert.rejects(readFile(join(job, "launches"), "utf8"), /ENOENT/);
+	assert.match(await readFile(join(job, "log"), "utf8"), /failure finalization; no execution owner was established/);
+});
+
+test("production SDK event-storage failure aborts and closes the query, then fails the owned job", async (context) => {
+	const root = await mkdtemp(join(tmpdir(), "limen-sdk-storage-failure-"));
+	context.after(() => rm(root, { recursive: true, force: true }));
+	const { job, environment } = await wrapperFixture(root, "storage-failure");
+	const wrapper = await runWrapperFixture({ ...environment, LIMEN_TEST_STORAGE_FAILURE: "1" });
+	assert.equal(wrapper.code, 0, wrapper.stderr);
+	assert.equal(await readFile(join(job, "state"), "utf8"), "failed\n");
+	assert.equal((await readFile(join(job, "query-aborted"), "utf8")).trim().split("\n").length, 1);
+	assert.equal((await readFile(join(job, "query-closed"), "utf8")).trim().split("\n").length, 1);
+	const receipt = JSON.parse(await readFile(join(job, "execution.json"), "utf8"));
+	assert.equal(receipt.state, "failed");
+	assert.equal(typeof receipt.execution_owner.owner_id, "string");
+	assert.equal("model" in receipt, false);
+	assert.equal("auth" in receipt, false);
+});
+
+test("failed pre-init receipt omits requested model and auth from observed provenance", async (context) => {
+	const root = await mkdtemp(join(tmpdir(), "limen-sdk-pre-init-receipt-"));
+	context.after(() => rm(root, { recursive: true, force: true }));
+	await Promise.all([
+		writeFile(join(root, "backend"), "claude-agent-sdk\n"),
+		writeFile(join(root, "model"), "requested-unverified\n"),
+		writeFile(join(root, "auth"), "anthropic-api-key\n"),
+		writeFile(join(root, "attempt"), "1\n"),
+		writeFile(join(root, "started-at"), "2026-09-17T10:00:00.000Z\n"),
+		writeFile(join(root, "max-turns"), "1\n"),
+		writeFile(join(root, "timeout-ms"), "60000\n"),
+	]);
+	await claimClaudeSdkExecution(root, "pre-init");
+	await writeExecutionReceipt(root, "failed", "2026-09-17T10:00:01.000Z");
+	const receipt = JSON.parse(await readFile(join(root, "execution.json"), "utf8"));
+	assert.equal("model" in receipt, false);
+	assert.equal("auth" in receipt, false);
+	assert.equal(receipt.state, "failed");
+	assert.equal(typeof receipt.execution_owner.owner_id, "string");
 });
 
 test("terminal SDK receipt contains validated execution provenance and owner, not agent text", async (context) => {
@@ -340,6 +396,57 @@ test("terminal SDK receipt contains validated execution provenance and owner, no
 	});
 	assert.equal(JSON.stringify(receipt).includes("untrusted claim"), false);
 });
+
+async function wrapperFixture(root: string, name: string): Promise<{ job: string; environment: NodeJS.ProcessEnv }> {
+	const job = join(root, name);
+	await mkdir(job);
+	await Promise.all(
+		Object.entries({
+			state: "running",
+			backend: "claude-agent-sdk",
+			engine: "claude-sdk",
+			model: MODEL,
+			attempt: "1",
+			auth: "anthropic-api-key",
+			"max-turns": "1",
+			"timeout-ms": "10000",
+			"started-at": "2026-09-17T10:00:00.000Z",
+			"task.md": "Do not launch a real model",
+			preamble: "Test fake",
+			log: "",
+		}).map(([file, content]) => writeFile(join(job, file), `${content}${content ? "\n" : ""}`)),
+	);
+	return {
+		job,
+		environment: {
+			PATH: process.env.PATH,
+			HOME: root,
+			LIMEN_INTERNAL_RUN: "1",
+			LIMEN_JOB_DIR: job,
+			LIMEN_WORKTREE: root,
+			LIMEN_TASK_FILE: join(job, "task.md"),
+			LIMEN_PREAMBLE: join(job, "preamble"),
+			LIMEN_JOB_ID: name,
+			LIMEN_ENGINE: "claude-sdk",
+			LIMEN_MODEL: MODEL,
+			LIMEN_CLAUDE_SDK_MAX_TURNS: "1",
+			LIMEN_TIMEOUT_MS: "10000",
+			ANTHROPIC_API_KEY: "fake-api-key",
+		},
+	};
+}
+
+function runWrapperFixture(environment: NodeJS.ProcessEnv): Promise<{ code: number | null; stderr: string }> {
+	const fixture = new URL("./fixtures/claude-sdk-wrapper-child.ts", import.meta.url);
+	return new Promise((resolve, reject) => {
+		const child = spawn(process.execPath, ["--experimental-test-module-mocks", fixture.pathname], { env: environment, stdio: ["ignore", "ignore", "pipe"] });
+		let stderr = "";
+		child.stderr.setEncoding("utf8");
+		child.stderr.on("data", (chunk: string) => (stderr += chunk));
+		child.on("error", reject);
+		child.on("close", (code) => resolve({ code, stderr }));
+	});
+}
 
 function validInit(): ClaudeSdkMessage {
 	return {

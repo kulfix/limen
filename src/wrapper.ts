@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { appendFile, open, readdir, readFile, rename, rm } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runClaudeSdkSession } from "./claude-sdk.ts";
+import { LOCALE_ENVIRONMENT, runClaudeSdkSession } from "./claude-sdk.ts";
 import { containEscapedDescendants, discoverEscapedDescendants, processAlive, processInfo, signalProcessGroup } from "./contain.ts";
 import { deliverFinishWebhook } from "./finish-webhook.ts";
 import { changedFileCount, commitList } from "./git.ts";
@@ -66,7 +66,7 @@ const SLOT_ENVIRONMENT = new Set([
 export function sanitizedSlotEnvironment(extra: Readonly<Record<string, string>>, source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
 	if (!source.LIMEN_PROJECTS_CONFIG && !extra.LIMEN_PROJECTS_CONFIG) return { ...source, ...extra };
 	const environment: NodeJS.ProcessEnv = {};
-	for (const [name, value] of Object.entries(source)) if (value !== undefined && (SLOT_ENVIRONMENT.has(name) || name.startsWith("LC_"))) environment[name] = value;
+	for (const [name, value] of Object.entries(source)) if (value !== undefined && (SLOT_ENVIRONMENT.has(name) || LOCALE_ENVIRONMENT.has(name))) environment[name] = value;
 	return { ...environment, ...extra };
 }
 async function launchDetached(environment: Readonly<Record<string, string>>): Promise<number> {
@@ -210,7 +210,17 @@ export async function runInternalJob(): Promise<void> {
 			...(maxBudgetUsd === undefined ? {} : { maxBudgetUsd }),
 			abortController: sdkAbort,
 			environment: childEnvironment,
-			onMessage: (message) => apply(parser.push(`${JSON.stringify(message)}\n`)),
+			onMessage: (message) =>
+				recordEvents(
+					jobDir,
+					parser.push(`${JSON.stringify(message)}\n`),
+					() => {
+						tools += 1;
+						if (tools >= toolCallCap()) exhaust(`tool-call cap reached after ${tools} calls`);
+						return tools;
+					},
+					seen,
+				),
 		})
 			.then(async (run) => {
 				await Promise.all([
@@ -265,7 +275,18 @@ export async function runInternalJob(): Promise<void> {
 export async function failInternalJob(error: unknown): Promise<void> {
 	const jobDir = process.env.LIMEN_JOB_DIR;
 	if (!jobDir) return;
-	const owner = await readExecutionOwner(jobDir);
+	let owner: ClaudeSdkExecutionOwner | undefined;
+	try {
+		owner = await readExecutionOwner(jobDir);
+	} catch {
+		await appendLimenLog(jobDir, `refused wrapper ${process.pid} failure finalization; execution ownership is unreadable`).catch(() => {});
+		return;
+	}
+	if ((await textFile(`${jobDir}/backend`)) === "claude-agent-sdk" && owner?.pid !== process.pid) {
+		const detail = owner ? `execution is owned by ${owner.owner_id}` : "no execution owner was established";
+		await appendLimenLog(jobDir, `refused wrapper ${process.pid} failure finalization; ${detail}`).catch(() => {});
+		return;
+	}
 	if (owner && owner.pid !== process.pid) {
 		await appendLimenLog(jobDir, `refused competing wrapper ${process.pid}; execution is owned by ${owner.owner_id}`).catch(() => {});
 		return;
@@ -313,22 +334,25 @@ export async function finalizeJob(jobDir: string, state: "done" | "failed" | "st
 }
 export async function writeExecutionReceipt(jobDir: string, state: "done" | "failed" | "stopped", finishedAt: string): Promise<void> {
 	if ((await textFile(`${jobDir}/backend`)) !== "claude-agent-sdk") return;
+	const owner = await readExecutionOwner(jobDir);
+	if (!owner) return;
 	const maxBudgetUsd = await textFile(`${jobDir}/max-budget-usd`);
 	const sessionId = await textFile(`${jobDir}/claude-session`);
-	const owner = await readExecutionOwner(jobDir);
+	const observedModel = await textFile(`${jobDir}/observed-model`);
+	const observedAuth = await textFile(`${jobDir}/observed-auth`);
 	const receipt = {
 		schema: "limen.execution.v1",
 		job_id: basename(jobDir),
 		backend: "claude-agent-sdk",
-		model: (await textFile(`${jobDir}/observed-model`)) || (await textFile(`${jobDir}/model`)),
+		...(observedModel ? { model: observedModel } : {}),
 		attempt: Number(await textFile(`${jobDir}/attempt`)),
 		started_at: await textFile(`${jobDir}/started-at`),
 		finished_at: finishedAt,
 		state,
-		auth: (await textFile(`${jobDir}/observed-auth`)) || (await textFile(`${jobDir}/auth`)),
+		...(observedAuth ? { auth: observedAuth } : {}),
 		...((await textFile(`${jobDir}/observed-cwd`)) ? { cwd: await textFile(`${jobDir}/observed-cwd`) } : {}),
 		...((await textFile(`${jobDir}/observed-permission-mode`)) ? { permission_mode: await textFile(`${jobDir}/observed-permission-mode`) } : {}),
-		...(owner ? { execution_owner: owner } : {}),
+		execution_owner: owner,
 		limits: {
 			max_turns: Number(await textFile(`${jobDir}/max-turns`)),
 			timeout_ms: Number(await textFile(`${jobDir}/timeout-ms`)) || DEFAULT_TIMEOUT_MS,
