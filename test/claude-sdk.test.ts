@@ -20,8 +20,8 @@ const CONFLICTS = [
 	"ANTHROPIC_BASE_URL",
 ] as const;
 
-test("Claude SDK admission requires one explicit API billing route and builds a narrow environment", () => {
-	assert.throws(() => admitClaudeSdk({ model: MODEL, environment: {} }), /ANTHROPIC_API_KEY/);
+test("Claude SDK admission prefers CCS subscription and keeps API-key as an alternate lane", async (context) => {
+	assert.throws(() => admitClaudeSdk({ model: MODEL, environment: {} }), /CCS subscription|ANTHROPIC_API_KEY/);
 	assert.throws(() => admitClaudeSdk({ model: "", environment: { ANTHROPIC_API_KEY: "paid-route" } }), /--model/);
 	for (const name of CONFLICTS) {
 		assert.throws(() => admitClaudeSdk({ model: MODEL, environment: { ANTHROPIC_API_KEY: "paid-route", [name]: "conflict" } }), new RegExp(name));
@@ -48,6 +48,33 @@ test("Claude SDK admission requires one explicit API billing route and builds a 
 		CLAUDE_AGENT_SDK_CLIENT_APP: "limen/0.1.0",
 		CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
 	});
+
+	const ccsRoot = await mkdtemp(join(tmpdir(), "limen-ccs-"));
+	context.after(() => rm(ccsRoot, { recursive: true, force: true }));
+	await writeFile(join(ccsRoot, ".credentials.json"), JSON.stringify({ claudeAiOauth: { accessToken: "tok", refreshToken: "ref" } }));
+	const ccs = admitClaudeSdk({
+		model: MODEL,
+		environment: {
+			PATH: "/bin",
+			LIMEN_CLAUDE: "claude-a2",
+			CLAUDE_CONFIG_DIR: ccsRoot,
+			ANTHROPIC_API_KEY: "",
+			OPENAI_API_KEY: "other-provider",
+		},
+	});
+	assert.equal(ccs.auth, "ccs-subscription");
+	assert.equal(ccs.ccsProfile, "a2");
+	assert.equal(ccs.claudeConfigDir, ccsRoot);
+	assert.deepEqual(ccs.environment, {
+		PATH: "/bin",
+		CLAUDE_AGENT_SDK_CLIENT_APP: "limen/0.1.0",
+		CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
+		CLAUDE_CONFIG_DIR: ccsRoot,
+	});
+	assert.throws(
+		() => admitClaudeSdk({ model: MODEL, environment: { LIMEN_CLAUDE: "claude-a2", CLAUDE_CONFIG_DIR: ccsRoot, ANTHROPIC_API_KEY: "paid-route" } }),
+		/ANTHROPIC_API_KEY/,
+	);
 });
 
 test("Claude SDK spawn is explicit and records finite SDK limits", () => {
@@ -61,7 +88,10 @@ test("Claude SDK spawn is explicit and records finite SDK limits", () => {
 test("SDK admission conflicts fail before a worktree, job, or query launch", async (context) => {
 	const scratch = await scratchRepo();
 	context.after(scratch.cleanup);
-	assert.equal(limen(scratch, "init").status, 0);
+	assert.equal(
+		limenWithEnv(scratch, { LIMEN_PROJECTS_CONFIG: "", LIMEN_SLOT_ID: "", LIMEN_ROUTING_FINGERPRINT: "" }, "init").status,
+		0,
+	);
 	for (const conflict of CONFLICTS) {
 		const environment: NodeJS.ProcessEnv = {
 			ANTHROPIC_API_KEY: "paid-route",
@@ -123,7 +153,7 @@ test("one validated init owns the session and only the purpose-built environment
 		sessionId: "sdk-child",
 		model: MODEL,
 		cwd: CWD,
-		auth: "ANTHROPIC_API_KEY",
+		auth: "anthropic-api-key",
 		permissionMode: "bypassPermissions",
 		result: messages[1],
 	});
@@ -139,6 +169,38 @@ test("one validated init owns the session and only the purpose-built environment
 		CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
 	});
 	assert.equal(closed, 0);
+});
+
+test("CCS subscription init accepts apiKeySource none and records ccs-subscription", async (context) => {
+	const ccsRoot = await mkdtemp(join(tmpdir(), "limen-ccs-run-"));
+	context.after(() => rm(ccsRoot, { recursive: true, force: true }));
+	await writeFile(join(ccsRoot, ".credentials.json"), JSON.stringify({ claudeAiOauth: { accessToken: "tok", refreshToken: "ref" } }));
+	let options: Record<string, unknown> | undefined;
+	const messages: ClaudeSdkMessage[] = [
+		{ ...validInit(), apiKeySource: "none" },
+		{ type: "result", subtype: "success", session_id: "sdk-child", result: "done" },
+	];
+	const run = await runClaudeSdkSession({
+		prompt: "ccs job",
+		cwd: CWD,
+		preamble: "system",
+		model: MODEL,
+		maxTurns: 1,
+		abortController: new AbortController(),
+		environment: { PATH: "/bin", LIMEN_CCS_PROFILE: "a2", CLAUDE_CONFIG_DIR: ccsRoot },
+		onMessage: () => {},
+		queryFactory: (input) => {
+			options = input.options;
+			return fakeQuery(messages);
+		},
+	});
+	assert.equal(run.auth, "ccs-subscription");
+	assert.deepEqual(options?.env, {
+		PATH: "/bin",
+		CLAUDE_AGENT_SDK_CLIENT_APP: "limen/0.1.0",
+		CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
+		CLAUDE_CONFIG_DIR: ccsRoot,
+	});
 });
 
 test("pre-init, malformed init, callback failure, and session mismatch close without forwarding invalid events", async () => {
@@ -365,7 +427,7 @@ test("terminal SDK receipt contains validated execution provenance and owner, no
 		writeFile(join(job, "model"), `${MODEL}\n`),
 		writeFile(join(job, "observed-model"), `${MODEL}\n`),
 		writeFile(join(job, "observed-cwd"), "/worktree\n"),
-		writeFile(join(job, "observed-auth"), "ANTHROPIC_API_KEY\n"),
+		writeFile(join(job, "observed-auth"), "anthropic-api-key\n"),
 		writeFile(join(job, "observed-permission-mode"), "bypassPermissions\n"),
 		writeFile(join(job, "attempt"), "1\n"),
 		writeFile(join(job, "started-at"), "2026-09-17T10:00:00.000Z\n"),
@@ -387,7 +449,7 @@ test("terminal SDK receipt contains validated execution provenance and owner, no
 		started_at: "2026-09-17T10:00:00.000Z",
 		finished_at: "2026-09-17T10:01:00.000Z",
 		state: "done",
-		auth: "ANTHROPIC_API_KEY",
+		auth: "anthropic-api-key",
 		cwd: "/worktree",
 		permission_mode: "bypassPermissions",
 		execution_owner: owner,
