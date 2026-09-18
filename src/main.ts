@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import { closeCommand } from "./commands/close.ts";
 import { continueCommand } from "./commands/continue.ts";
 import { diffCommand } from "./commands/diff.ts";
+import { ghIssueClaimCommand, ghIssueReleaseCommand } from "./commands/gh-issue.ts";
 import { inboundCommand } from "./commands/inbound.ts";
 import { initCommand, workspaceCommand } from "./commands/init.ts";
 import { jobsCommand } from "./commands/jobs.ts";
@@ -40,6 +41,8 @@ const COMMANDS = {
 	close: closeCommand,
 	sweep: sweepCommand,
 	linear: linearCommand,
+	"gh-issue-claim": ghIssueClaimCommand,
+	"gh-issue-release": ghIssueReleaseCommand,
 	"ticket-author": ticketAuthorCommand,
 } as const satisfies Record<
 	| "init"
@@ -60,6 +63,8 @@ const COMMANDS = {
 	| "close"
 	| "sweep"
 	| "linear"
+	| "gh-issue-claim"
+	| "gh-issue-release"
 	| "ticket-author",
 	Command
 >;
@@ -73,7 +78,8 @@ usage:
   limen spawn "Implement FNNN: <outcome>. Start by writing <slice>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X] [--branch B] [--role NAME] [--timeout 20m; default 90m] [--task-file F|-] [--prepare CMD]
   limen spawn --role advisor --engine claude --detached "…"   # Claude CLI: requires explicit --detached; never merges
   ANTHROPIC_API_KEY=… limen spawn --engine claude-sdk --detached --model M [--max-turns N] [--max-budget-usd N] "…"
-  limen spawn "…" [--label L] [--provider P] [--model X] [--thinking T]  # Pi flags; default = hosted Herdr (no silent detached)
+  limen spawn "…" [--label L] [--provider P] [--model X] [--thinking T] [--research-slug S --research-stage S]
+                                                              # Pi default = hosted Herdr; declared research Units sync worktree/outbox on done/failed
   limen spawn --tab "…"                            # hosted (default; requires Herdr; no --timeout)
   limen spawn --detached "…"                       # explicit escape: background worker + log-tail tab
   limen spawn --repo R "Implement FNNN: <outcome>. Ticket: spec/features/active/FNNN-slug/ticket.md" [--label L] [--model X]
@@ -94,6 +100,8 @@ usage:
   limen ticket-author <ticket-path>                 # creation-commit author, following Git renames
   limen sweep [--install|--uninstall]
   limen linear [on [--team T --project P]|off|status]   # Linear mirror toggle — renames spec/linear.md ↔ .off; --team/--project write a fresh config
+  limen gh-issue-claim <issue> --job <id> [--ttl 2h]
+  limen gh-issue-release <issue> --job <id> [--reason STOP|abandon]
 Pass a short coordinator instruction, not $(cat ticket.md). The ticket is a pointer, not the prompt.`;
 export async function main(args: readonly string[], cwd = process.cwd()): Promise<void> {
 	let internalRoutingValidated = !process.env.LIMEN_PROJECTS_CONFIG;

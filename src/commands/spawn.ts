@@ -52,6 +52,8 @@ export type SpawnOptions = {
 	stage?: string;
 	outbox?: string;
 	artifacts: readonly string[];
+	researchSlug?: string;
+	researchStage?: string;
 };
 const PACKAGE_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 export function resolvePreamble(root: string, role: string): string {
@@ -217,6 +219,13 @@ export async function spawnCommand(args: readonly string[], cwd: string): Promis
 					]
 				: []),
 			...(coordinatorTab ? [writeFile(`${jobDir}/origin-tab`, `${coordinatorTab}\n`, { flag: "wx", flush: true })] : []),
+			...(options.researchSlug
+				? [
+						writeFile(`${jobDir}/research-root`, `${slot?.app_root ?? root}\n`, { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/research-slug`, `${options.researchSlug}\n`, { flag: "wx", flush: true }),
+						writeFile(`${jobDir}/research-stage`, `${options.researchStage}\n`, { flag: "wx", flush: true }),
+					]
+				: []),
 		]);
 		if (managed && slot) {
 			await writeManagedAssignment({
@@ -456,6 +465,7 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	let branch: string | undefined, repo: string | undefined, label: string | undefined, model: string | undefined;
 	let provider: string | undefined, thinking: string | undefined;
 	let assignmentId: string | undefined, stage: string | undefined, outbox: string | undefined;
+	let researchSlug: string | undefined, researchStage: string | undefined;
 	const artifacts: string[] = [];
 	let timeoutMs: number | undefined, maxTurns: number | undefined, maxBudgetUsd: number | undefined;
 	let taskFile: string | undefined, prepare: string | undefined, role: string | undefined, engine: string | undefined;
@@ -491,6 +501,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 					"--stage",
 					"--outbox",
 					"--artifact",
+					"--research-slug",
+					"--research-stage",
 				].includes(value)
 			)
 				throw new Error(`unknown spawn option ${value}`);
@@ -509,6 +521,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 			else if (value === "--stage") stage = once(stage, value, optionValue);
 			else if (value === "--outbox") outbox = once(outbox, value, optionValue);
 			else if (value === "--artifact") artifacts.push(optionValue);
+			else if (value === "--research-slug") researchSlug = once(researchSlug, value, optionValue);
+			else if (value === "--research-stage") researchStage = once(researchStage, value, optionValue);
 			else if (value === "--role") {
 				role = once(role, value, optionValue.trim());
 				if (!/^[a-z][a-z0-9-]*$/.test(role)) throw new Error("--role must be a lowercase name");
@@ -527,6 +541,9 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	if (managed && ([assignmentId, stage, outbox, provider, model, thinking].some((value) => value === undefined) || artifacts.length === 0))
 		throw new Error("managed launch requires --assignment-id, --stage, --outbox, --artifact, --provider, --model, and --thinking together");
 	if (managed && review) throw new Error("managed launch cannot be combined with --review");
+	if ((researchSlug === undefined) !== (researchStage === undefined)) throw new Error("--research-slug and --research-stage must be supplied together");
+	if (researchSlug && !/^[a-z0-9][a-z0-9-]{0,79}$/.test(researchSlug)) throw new Error("--research-slug must be a lowercase safe slug");
+	if (researchStage && !/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(researchStage)) throw new Error("--research-stage must be one safe name");
 	if (taskFile && task.length) throw new Error("spawn accepts a positional task or --task-file, not both");
 	if (!taskFile && (task.length === 0 || !task.join(" ").trim())) throw new Error("spawn requires task text");
 	const out: SpawnOptions = {
@@ -549,6 +566,8 @@ export function parseSpawnArgs(args: readonly string[]): SpawnOptions {
 	if (assignmentId) out.assignmentId = assignmentId;
 	if (stage) out.stage = stage;
 	if (outbox) out.outbox = outbox;
+	if (researchSlug) out.researchSlug = researchSlug;
+	if (researchStage) out.researchStage = researchStage;
 	if (timeoutMs) out.timeoutMs = timeoutMs;
 	if (maxTurns) out.maxTurns = maxTurns;
 	if (maxBudgetUsd) out.maxBudgetUsd = maxBudgetUsd;

@@ -8,6 +8,7 @@ import { containEscapedDescendants, discoverEscapedDescendants, processAlive, pr
 import { deliverFinishWebhook } from "./finish-webhook.ts";
 import { changedFileCount, commitList } from "./git.ts";
 import { settleJobTab } from "./herdr.ts";
+import { syncProcedureArtifacts } from "./procedure-sync.ts";
 import { activeProjectSlot, assertSlotPath, readRoutingRecord } from "./project-slot.ts";
 import { retryManagedFinalization } from "./provenance-finalize.ts";
 import { createClaudeStreamParser, createStreamParser, type StreamEvent } from "./stream.ts";
@@ -309,6 +310,14 @@ export async function finalizeJob(jobDir: string, state: "done" | "failed" | "st
 	await appendLimenLog(jobDir, inbox.length ? `${state}: ${detail}; ${inbox.length} steer(s) never delivered` : `${state}: ${detail}`).catch(() => {});
 	await writeExecutionReceipt(jobDir, state, finishedAt);
 	await atomicWrite(`${jobDir}/state`, `${state}\n`);
+	if (state === "done" || state === "failed") {
+		const synced = await syncProcedureArtifacts(jobDir, state).catch(async (error) => {
+			await appendLimenLog(jobDir, `procedure sync failed: ${error instanceof Error ? error.message : String(error)}`).catch(() => {});
+			return undefined;
+		});
+		if (synced?.status === "synced") await appendLimenLog(jobDir, `procedure sync: ${synced.slug} ${synced.verdict} (${synced.files} outbox entries)`);
+		else if (synced?.status === "skipped") await appendLimenLog(jobDir, `procedure sync skipped: ${synced.reason}`);
+	}
 	let managedCompletionRejected = false;
 	if (state === "done") {
 		const provenance = await retryManagedFinalization(jobDir);
