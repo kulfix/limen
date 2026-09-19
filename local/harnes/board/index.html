@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LIMEN — THE BOARD</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #141821;
+      --ink: #e8ecf1;
+      --muted: #8b95a5;
+      --now: #3d8bfd;
+      --next: #f0a202;
+      --proven: #2ec4b6;
+      --warn: #ff6b6b;
+      --line: #243041;
+      --card: #1a2230;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg); color: var(--ink); min-height: 100vh;
+    }
+    header {
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: baseline;
+      justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #12161e, var(--bg));
+    }
+    h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .glance { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; color: var(--muted); font-size: 0.9rem; }
+    .glance strong { color: var(--ink); font-weight: 600; }
+    .err { color: var(--warn); font-size: 0.85rem; }
+    .inbox {
+      margin: 1rem 1.5rem; padding: 1rem 1.1rem; background: var(--panel);
+      border: 1px solid var(--line); border-radius: 10px;
+    }
+    .inbox h2 { margin: 0 0 0.6rem; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--warn); }
+    .inbox ul { margin: 0; padding-left: 1.1rem; }
+    .inbox li { margin: 0.35rem 0; }
+    .inbox a { color: var(--now); }
+    .lanes {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+      padding: 0 1.5rem 2rem; margin-top: 0.5rem;
+    }
+    @media (max-width: 900px) { .lanes { grid-template-columns: 1fr; } }
+    .lane {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      min-height: 12rem; display: flex; flex-direction: column;
+    }
+    .lane > h2 {
+      margin: 0; padding: 0.75rem 1rem; font-size: 0.8rem; letter-spacing: 0.12em;
+      text-transform: uppercase; border-bottom: 1px solid var(--line);
+    }
+    .lane.now > h2 { color: var(--now); }
+    .lane.next > h2 { color: var(--next); }
+    .lane.proven > h2 { color: var(--proven); }
+    .cards { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem; flex: 1; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.7rem 0.8rem; font-size: 0.88rem;
+    }
+    .card.stale { opacity: 0.65; border-style: dashed; }
+    .card .title { font-weight: 600; margin-bottom: 0.35rem; }
+    .meta { color: var(--muted); font-size: 0.78rem; display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; }
+    .badge {
+      display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px;
+      background: #243041; color: var(--ink); font-size: 0.72rem; text-transform: uppercase;
+    }
+    .badge.merge { background: #1a3a36; color: var(--proven); }
+    .badge.merged { background: #1e2a1e; color: #8fd19e; }
+    .empty { color: var(--muted); font-size: 0.85rem; padding: 0.5rem; }
+    footer { padding: 0 1.5rem 1.5rem; color: var(--muted); font-size: 0.75rem; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>THE BOARD</h1>
+    <div class="glance" id="glance">
+      <span><strong id="slots">—/—</strong> zajętych</span>
+      <span><strong id="for-you">—</strong> sprawy dla Ciebie</span>
+      <span>źródła: <strong id="src-age">—</strong></span>
+      <span id="load-err" class="err" hidden></span>
+    </div>
+  </header>
+
+  <section class="inbox" id="inbox" hidden>
+    <h2>Dla Pawła — decyzje / merge</h2>
+    <ul id="inbox-list"></ul>
+  </section>
+
+  <div class="lanes">
+    <section class="lane now">
+      <h2>NOW — running</h2>
+      <div class="cards" id="lane-now"></div>
+    </section>
+    <section class="lane next">
+      <h2>NEXT — queued / waiting</h2>
+      <div class="cards" id="lane-next"></div>
+    </section>
+    <section class="lane proven">
+      <h2>PROVEN — merge-ready / done</h2>
+      <div class="cards" id="lane-proven"></div>
+    </section>
+  </div>
+
+  <footer>
+    Read-only · <code>status.json</code> · odświeżanie 30s · writer: seat-board-aggregator only
+    <!-- smoke keys: slots active waits_on_pawel merge_ready -->
+    <span id="board-contract-keys">slots · active · waits_on_pawel · merge_ready</span>
+  </footer>
+
+  <script>
+    const STALE_MS = 4 * 60 * 1000;
+    const REFRESH_MS = 30 * 1000;
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+      });
+    }
+    function ageLabel(iso) {
+      if (!iso) return "nieznane";
+      var t = Date.parse(iso);
+      if (Number.isNaN(t)) return "nieznane";
+      var sec = Math.max(0, Math.floor((Date.now() - t) / 1000));
+      if (sec < 60) return sec + "s temu";
+      if (sec < 3600) return Math.floor(sec / 60) + "m temu";
+      return Math.floor(sec / 3600) + "h temu";
+    }
+    function isStale(hb) {
+      if (!hb) return false;
+      var t = Date.parse(hb);
+      return !Number.isNaN(t) && (Date.now() - t) > STALE_MS;
+    }
+    function byId(active, id) {
+      return (active || []).find(function (j) { return j.job_id === id; }) || null;
+    }
+    function cardHtml(job) {
+      var stale = job.state === "running" && isStale(job.heartbeat);
+      var stage = job.stage || "?";
+      var provenLabel = "";
+      if (job.lane === "proven" || stage === "merge_ready") {
+        provenLabel = stage === "merged"
+          ? '<span class="badge merged">Merged</span>'
+          : '<span class="badge merge">Gotowe do merge</span>';
+      }
+      var pr = job.pr_url
+        ? '<a href="' + esc(job.pr_url) + '" target="_blank" rel="noopener">PR</a>'
+        : "";
+      return (
+        '<article class="card' + (stale ? " stale" : "") + '" data-job="' + esc(job.job_id) + '">' +
+        '<div class="title">' + esc(job.title || job.job_id) + "</div>" +
+        '<div class="meta">' +
+          '<span class="badge">' + esc(stage) + "</span>" +
+          '<span class="badge">' + esc(job.state || "?") + "</span>" +
+          provenLabel +
+          (job.workflow ? "<span>" + esc(job.workflow) + "</span>" : "") +
+          (job.model ? "<span>" + esc(job.model) + "</span>" : "") +
+          (job.branch ? "<span><code>" + esc(job.branch) + "</code></span>" : "") +
+          (job.sha ? "<span><code>" + esc(String(job.sha).slice(0, 7)) + "</code></span>" : "") +
+          pr +
+          (job.heartbeat ? "<span>hb " + esc(ageLabel(job.heartbeat)) + (stale ? " · STALE" : "") + "</span>" : "") +
+          (job.blocker ? '<span style="color:var(--warn)">' + esc(job.blocker) + "</span>" : "") +
+        "</div></article>"
+      );
+    }
+    function fillLane(el, jobs) {
+      if (!jobs.length) {
+        el.innerHTML = '<div class="empty">pusto</div>';
+        return;
+      }
+      el.innerHTML = jobs.map(cardHtml).join("");
+    }
+    function render(data) {
+      var slots = data.slots || {};
+      var n = slots.N != null ? slots.N : "?";
+      var max = slots.max != null ? slots.max : "?";
+      document.getElementById("slots").textContent = n + "/" + max;
+      var waits = data.waits_on_pawel || [];
+      document.getElementById("for-you").textContent = String(waits.length);
+
+      var src = data.sources || {};
+      var times = Object.keys(src).map(function (k) {
+        return src[k] && src[k].observed_at;
+      }).filter(Boolean).map(Date.parse).filter(function (t) { return !Number.isNaN(t); });
+      var newest = times.length ? new Date(Math.max.apply(null, times)).toISOString() : (data.updated_at || null);
+      document.getElementById("src-age").textContent = ageLabel(newest);
+
+      var inbox = document.getElementById("inbox");
+      var list = document.getElementById("inbox-list");
+      if (waits.length) {
+        inbox.hidden = false;
+        var active = data.active || [];
+        list.innerHTML = waits.map(function (w) {
+          var job = byId(active, w.job_id);
+          var link = job && job.pr_url
+            ? ' <a href="' + esc(job.pr_url) + '" target="_blank" rel="noopener">otwórz</a>'
+            : "";
+          return "<li><strong>" + esc(w.kind || "ask") + "</strong>: " + esc(w.ask || w.job_id) +
+            " <code>" + esc(w.job_id) + "</code>" + link +
+            (w.since ? ' <span style="color:var(--muted)">od ' + esc(ageLabel(w.since)) + "</span>" : "") +
+            "</li>";
+        }).join("");
+      } else {
+        inbox.hidden = true;
+        list.innerHTML = "";
+      }
+
+      var active = data.active || [];
+      fillLane(document.getElementById("lane-now"), active.filter(function (j) { return (j.lane || "") === "now"; }));
+      fillLane(document.getElementById("lane-next"), active.filter(function (j) { return (j.lane || "") === "next"; }));
+      fillLane(document.getElementById("lane-proven"), active.filter(function (j) { return (j.lane || "") === "proven"; }));
+    }
+
+    async function load() {
+      var errEl = document.getElementById("load-err");
+      try {
+        var res = await fetch("status.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var data = await res.json();
+        errEl.hidden = true;
+        render(data);
+      } catch (e) {
+        errEl.hidden = false;
+        errEl.textContent = "błąd odczytu status.json: " + (e && e.message ? e.message : e);
+      }
+    }
+    load();
+    setInterval(load, REFRESH_MS);
+  </script>
+</body>
+</html>

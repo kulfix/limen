@@ -370,6 +370,19 @@ finish() {
     write_status "blocked" "investigate $reason" "$reason"
   fi
   echo "nightly-ci-heal verdict=$verdict reason=$reason sha=$sha job_id=$job_id pr=$pr"
+  # wake-loop: notify on heal-pr | stopped needing human (zakaz ciszy)
+  local notify="${LIMEN_TOOLS_ROOT:-/srv/limen/tools/limen}/local/harnes/scripts/unit-done-notify.sh"
+  [[ -x "$notify" ]] || notify="$(cd "$(dirname "$0")" && pwd)/unit-done-notify.sh"
+  if [[ -x "$notify" ]]; then
+    local kind=""
+    case "$verdict" in
+      heal-pr) kind="heal_pr" ;;
+      stopped) kind="stopped" ;;
+    esac
+    if [[ -n "$kind" ]]; then
+      "$notify" "${job_id:-nightly-ci-heal}" "$verdict" "$kind"         "reason=${reason}" "pr_url=${pr}" "branch=main"         "message=nightly-ci-heal ${verdict}: ${reason}" || true
+    fi
+  fi
 }
 
 record_fingerprint() {

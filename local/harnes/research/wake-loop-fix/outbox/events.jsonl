@@ -1,0 +1,1 @@
+{"ts": "2026-09-19T06:49:51Z", "job_id": "smoke-wake-001", "verdict": "FAIL", "kind": "plan_verdict", "wake": "YES", "priority": true, "message": "SMOKE plan_verdict FAIL — need STOP or replan (Router decision)", "extra": {"issue": "4213", "reason": "plan_verdict_FAIL", "board_aggregate": "ok"}}
