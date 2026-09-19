@@ -79,3 +79,15 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory /srv/limen/board &
 curl -sS http://127.0.0.1:8765/ | grep -E 'slots|waits_on_pawel|merge_ready|active|NOW|NEXT|PROVEN'
 curl -sS http://127.0.0.1:8765/status.json | python3 -m json.tool | head
 ```
+
+## After aggregate → wake (wake-loop)
+
+`board-aggregate.sh` updates the HTML board only. It does **not** wake Router.
+
+After Unit done, prefer:
+
+```bash
+local/harnes/scripts/unit-done-notify.sh <job_id> <verdict> <kind>
+```
+
+which runs aggregate atomically, appends `events.jsonl`, heartbeats wake-loop `status.md`, and emits `EVENT` / optional finish-webhook. Matrix + zakaz ciszy: `procedures/wake-loop.md`.

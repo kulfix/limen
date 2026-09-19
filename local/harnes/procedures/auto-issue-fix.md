@@ -190,3 +190,32 @@ limen --slot limen-engine spawn-go --repo code   --status local/harnes/research/
 - **Proof default:** Docker **lokalny na seat** (nie remote 232/233), dopóki brak `id_ed25519_dev`.
 - Remote hosts opcjonalnie gdy klucz SSH jest na seat.
 
+
+
+## Board (limen day-one)
+
+Po Unit done / stage change / fill pulse:
+1. Zaktualizuj SoT `research/auto-issue-fix/status.md` (pola: `slots`, `active[]`, `merge_ready[]`, `waits_on_pawel[]`, `updated`/`updated_at`, `writer`).
+2. **Nie** zapisuj `/srv/limen/board/status.json` ręcznie.
+3. W ≤2 min uruchom agregator **albo** `unit-done-notify.sh` (preferowane — robi aggregate + EVENT):
+
+```bash
+/srv/limen/tools/limen/local/harnes/scripts/unit-done-notify.sh \
+  <job_id> <verdict> <kind>
+# kind: plan_verdict|pr_opened|pr_mergeable|astra_fail|daybreak_fail|infra_blocker|…
+```
+
+Procedura board: `local/harnes/procedures/limen-board.md`. Procedura wake: `local/harnes/procedures/wake-loop.md`.
+
+## Wake Router (obowiązek) — zakaz ciszy po DONE
+
+Po **każdym** Unit terminalnym — jeśli macierz w `wake-loop.md` mówi YES — **priority wake Router** (`SendToAgent` priority:true). `status.md` + board-aggregate **nie zastępują** tego wake.
+
+Macierz (skrót):
+- PR opened / mergeable+green
+- `plan_verdict` FAIL (decyzja STOP/replan)
+- infra blocker >15 min
+- Astra / Daybreak FAIL needing direction
+- nightly `heal-pr` / `stopped` needing human
+
+**Wire:** fill/Unit chain woła `unit-done-notify.sh` po done (ten sam krok co sync artefaktu). Cisza po DONE = ta sama klasa błędu co GO≠spawn.

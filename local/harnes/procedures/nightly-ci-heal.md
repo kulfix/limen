@@ -69,3 +69,7 @@ Pola w `last-run.md` / status:
 - piggyback na fill issue-fix slotach
 - równoległy ręczny Claude na ten sam tip fail
 - nowe product features w tym torze (STOP no later features)
+
+## Wake Router on heal-pr | stopped (human)
+
+On `finish()` with `heal-pr` or human-needed `stopped`, runner calls `unit-done-notify.sh` (board-aggregate + EVENT). Morning receipt alone is not enough — **zakaz ciszy** (see `wake-loop.md`). Quiet skips (`foreign-lease`, `green-on-entry`, `dry-run`, `open-heal-pr`) do not priority-wake.
