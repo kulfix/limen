@@ -1,0 +1,11 @@
+[Unit]
+Description=Limen board static server (loopback)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m http.server 8765 --bind 127.0.0.1 --directory /srv/limen/board
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

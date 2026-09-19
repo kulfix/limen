@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "updated_at": "2026-09-19T06:30:00Z",
+  "writer": "seat-board-aggregator",
+  "slots": { "N": 0, "max": 6 },
+  "sources": {
+    "rezavo": { "observed_at": null, "error": null },
+    "nightly-ci-heal": { "observed_at": null, "error": null },
+    "auto-issue-fix": { "observed_at": null, "error": null }
+  },
+  "active": [],
+  "merge_ready": [],
+  "waits_on_pawel": [],
+  "completed": []
+}
