@@ -3,7 +3,7 @@
 # Day-one: kulfix/pytek main tip required push checks; max 1 heal PR; no auto-merge.
 set -euo pipefail
 
-export PATH="${PATH:-}:/home/limen/.local/opt/node-v24.21.0-linux-x64/bin:/home/limen/.local/bin:/usr/local/bin"
+export PATH="/home/limen/.local/opt/node-v24.21.0-linux-x64/bin:/home/limen/.local/bin:/usr/local/bin:${PATH:-}"
 
 REPO="${NIGHTLY_CI_HEAL_REPO:-kulfix/pytek}"
 LIMEN_ROOT="${NIGHTLY_CI_HEAL_LIMEN_ROOT:-/srv/limen/tools/limen}"
@@ -351,10 +351,13 @@ EOF
         --model "$model" \
         --thinking "$thinking" \
         --task-file "$task_file" \
-        "Execute task-file. Fix tip CI; open one heal PR; never merge." \
         2>&1 || true
     )"
     job_id="$(echo "$out" | grep -Eo "202[0-9]-[0-9]{2}-[0-9]{2}-[a-z0-9-]+" | head -1 || true)"
+  fi
+  if [[ -z "$job_id" ]]; then
+    echo "nightly-ci-heal spawn failed: empty job_id; full spawn stdout/stderr follows:" >&2
+    echo "$out" >&2
   fi
   echo "${job_id:-}"
 }
@@ -462,17 +465,23 @@ main() {
   job_id="$(spawn_heal "$sha" "$fp" "$issue")"
   attempts=$((attempts + 1))
   write_anti_loop_fields "attempts=$attempts" "sha=$sha" "fingerprint=$fp" "job_id=${job_id:-}"
-  set_autofix_ciheal "night:${job_id:-pending}"
-  if [[ -n "$issue" && -n "$job_id" ]]; then
+  if [[ -z "$job_id" ]]; then
+    set_autofix_ciheal ""
+    finish "spawn-failed" "spawn-no-job-id" "$sha" "$fp" "" "" "$attempts"
+    exit 0
+  fi
+  set_autofix_ciheal "night:${job_id}"
+  if [[ -n "$issue" ]]; then
     claim_issue "$issue" "$job_id"
   fi
 
   pr_url="$(gh pr list --repo "$REPO" --state open --search "CI-heal" --json url --jq ".[0].url // empty" 2>/dev/null || true)"
   if [[ -n "$pr_url" ]]; then
     write_anti_loop_fields "heal_pr_url=$pr_url"
-    finish "heal-pr" "heal-pr-opened" "$sha" "$fp" "${job_id:-}" "$pr_url" "$attempts"
+    finish "heal-pr" "heal-pr-opened" "$sha" "$fp" "${job_id}" "$pr_url" "$attempts"
   else
-    finish "stopped" "heal-spawned-await-morning" "$sha" "$fp" "${job_id:-}" "" "$attempts"
+    # heal-spawned-await-morning only if job_id non-empty (checked above) and no PR yet
+    finish "stopped" "heal-spawned-await-morning" "$sha" "$fp" "${job_id}" "" "$attempts"
   fi
 }
 
