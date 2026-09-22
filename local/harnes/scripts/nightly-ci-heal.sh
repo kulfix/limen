@@ -3,7 +3,7 @@
 # Day-one: kulfix/pytek main tip required push checks; max 1 heal PR; no auto-merge.
 set -euo pipefail
 
-export PATH="${PATH:-}:/home/limen/.local/opt/node-v24.21.0-linux-x64/bin:/home/limen/.local/bin:/usr/local/bin"
+export PATH="/home/limen/.local/opt/node-v24.21.0-linux-x64/bin:/home/limen/.local/bin:/usr/local/bin:${PATH:-}"
 
 REPO="${NIGHTLY_CI_HEAL_REPO:-kulfix/pytek}"
 LIMEN_ROOT="${NIGHTLY_CI_HEAL_LIMEN_ROOT:-/srv/limen/tools/limen}"
