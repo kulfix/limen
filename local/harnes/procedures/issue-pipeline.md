@@ -178,7 +178,7 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
    - Tor **brainstorm:** oddaje `design.md` wg [kontraktu treści](#kontrakt-designmd-day-one) (mapa RR → Limen poniżej). Bez kodu. Aim day-one: skrót „szersze możliwości” + „luki w scope” w tym samym jobie (**kolejność rr-codex: 15→10**); pełne aim / tech design review = osobne joby tylko za zgodą.
    Koordynator czyta i zachowuje wynik poza worktree.
 3. **Owner review — właściciel przez Groka.** Zapisz wybór, autora decyzji i rewizję `fix.md` albo `design.md` w `notes.md`; zewnętrzny werdykt zachowaj jako `fix-review.md` lub `design-review.md`. Bez zgody właściciela nie przechodź do planu/kodu; nie udawaj decyzji produktowej.
-4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` (rewizja + werdykt design-review) i aktualnego checkoutu oddaje `plan.md` wg [kontraktu](#kontrakt-planmd-day-one): self-contained jednostki (pliki/symbole, mechanizm, ordered steps, acceptance, komenda weryfikacji + oczekiwany wynik), **zero** TBD/placeholder, bez ciał funkcji. Mapa RR writing-plans poniżej. Bez kodu. Worker nie spawnuje execute.
+4. **Plan — job dokumentacyjny.** Z zaakceptowanego `fix.md` / `design.md` (rewizja + werdykt design-review) i aktualnego checkoutu oddaje `plan.md` wg [kontraktu](#kontrakt-planmd-day-one): self-contained jednostki (pliki/symbole, mechanizm, ordered steps, acceptance, komenda weryfikacji + oczekiwany wynik), **zero** TBD/placeholder, bez ciał funkcji; plus **Tip vs main** i źródło inwariantu gdy dotyczy. Mapa RR writing-plans poniżej. Bez kodu. Worker nie spawnuje execute.
 5. **Plan-review — bramka (osobno od zgody na kod).** Koordynator/właściciel (opc. tech job za zgodą) sprawdza plan względem zaakceptowanego designu: coverage acceptance→steps, ścieżki/symbole, założenia, ryzyka/rollback. Zapisuje przyjętą rewizję i werdykt w `notes.md` (oraz opc. `plan-review.md`). One-shot MUST fix — bez pętli recheck na ten sam tekst. Brak PASS ≠ execute.
 6. **Consent to code — osobna bramka.** Zgoda na design **i** PASS plan-review **nie** są zgodą na kod. W `notes.md` zapisz jawny zakres zgody na kod, wymagane dowody, review owner i limit. Dopiero potem execute. Za duży zakres wraca do decyzji, nie do epic runnera. Dla wąskiego issue-fix decision może zezwolić na execute bez osobnego plan joba — tylko gdy jawnie zapisane.
 7. **Execute — Unit-job chain (nie jeden job na cały plan).** Domyślnie **jeden Unit = jeden świeży hosted job + mały task-file**. Wyjątek tylko gdy plan/Architekt jawnie deklaruje `ship_package:` (lista Unitów) — wtedy **jeden `ship_package` = jeden job**. Task-file **nie** jest całym `plan.md`. Koordynator spawnuje wyłącznie wskazany Unit albo wpis z `ship_packages`; nie zleca „Units 1–N” w jednym briefie bez deklaracji package. Każdy job dostaje: `unit_or_package_id`, skrót/digest planu, **excerpt tylko tego Unit/package**, bazowy SHA; oddaje commit (lub brak zmian) oraz `implementation.md` z dowodami i brakami. Bez merge/deploy, trackerów, zmiany acceptance i `notes.md`. Koordynator czyta rzeczywisty diff i wyniki, nie tylko końcową wiadomość. Gdy decision zezwala na PR: otwarcie PR **nie** kończy execute — patrz [Kryteria sukcesu](#kryteria-sukcesu-issue-fix--pr). **Hard-check spawn w TypeScript (odrzucanie mega-task-file w kodzie) = later, nie day-one** — day-one egzekwuje procedura + koordynator.
@@ -189,6 +189,8 @@ Błędny tor (np. brainstorm na oczywistym bug) zatrzymaj i popraw w intake; nie
 ## Kryteria sukcesu (issue-fix → PR)
 
 **issue-fix jest skończony dopiero gdy PR jest mergeable i wymagane checks są zielone** — nie wtedy, gdy jest RED Summary (np. skip / brak pełnego profilu). Otwarcie PR albo czerwone Summary z powodu pominiętych jobów **nie** kończy etapu ani pipeline'u.
+
+**Quality gates (tip-fix, 2026-09-23):** plan z sekcją Tip vs main; inwariant = naprawa źródła nie call-sites; branch bez transliteracji gościa i bez unrelated hunks. Brak → plan/review FAIL (szczegóły: `auto-issue-fix.md` § Quality gates).
 
 Po otwarciu PR koordynator/worker **sami** monitorują CI. Jeśli Summary pada przez skip / brak full (w pytek: zdarzenie dodania `ci:run-full`; w innym repo — równoważny label/event wg zasad produktu): **sami** dodają ten label/event i czekają na zielone required checks. Nie eskaluj do Pawła z prośbą o label ani „odpal full”.
 
@@ -383,6 +385,8 @@ Worker **nigdy** nie spawnuje następnego etapu. Brak plan-review PASS albo brak
 8. Jak weryfikować łącznie + co wolno na GH
 9. Plan-review: rewizja + werdykt (uzupełnia koordynator po bramce)
 10. Pytania tylko product/authority
+11. **Tip vs main** (anti-dupe #4451 / anti-drift np. #4510): wynik checku — merged fix? równoległy open PR? SKIP/join/STOP z uzasadnieniem
+12. Gdy issue wymaga **inwariantu / jednego źródła**: jawne źródło naprawy (helper/writer/constant/schema); sam call-site plaster → `plan_verdict=FAIL` (lekcje #4527/#4493/#4487)
 
 **Execute mapping:** koordynator spawnuje **tylko** jeden `unit_id` albo jeden wpis z `ship_packages`. Nie spawnuje całego planu. Task-file = excerpt Unit/package + digest planu — **ban** `task-file = plan.md`. Hard-check w kodzie spawn = later.
 
