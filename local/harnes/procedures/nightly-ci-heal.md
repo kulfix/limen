@@ -63,6 +63,18 @@ Pola w `last-run.md` / status:
 
 **Nie ma auto-merge** — rano Paweł dostaje URL PR (lub powód STOP).
 
+## Reconcile heal_pr_url (after job DONE)
+
+`finish()` after spawn only checks `gh` for ~seconds — usually empty. Heal job later writes `outbox/heal-result.md` and opens the PR.
+
+- Function: `reconcile_heal_pr` in `nightly-ci-heal.sh` — if `job_id` set and `heal_pr_url` empty, read `outbox/heal-result.md` (or `gh pr list --search CI-heal`), then `write_anti_loop` + rewrite `last-run` (`verdict=heal-pr`) + `status.md`.
+- Morning / Router / cron end:
+  ```bash
+  /home/limen/.local/bin/nightly-ci-heal --reconcile
+  ```
+- `unit-done-notify` when `job_id` / label matches `nightly-ci-heal-*` should invoke the same `--reconcile` (so last-run is correct without waiting for morning).
+- Morning reader may also use `outbox/heal-result.md` directly if last-run still lags.
+
 ## Zakazy
 - auto-merge / deploy
 - >1 heal PR / noc
