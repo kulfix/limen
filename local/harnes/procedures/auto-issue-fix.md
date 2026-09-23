@@ -54,10 +54,10 @@ Koordynator bramkuje; `done` **nie** auto-chain; worker nie spawnuje następnika
 | --- | --- | --- | --- |
 | 0 | claim (seat `gh` / fill script) | — | label + komentarz |
 | 1 | `fix-intake` (opcjonalnie) | DeepSeek flash/low | `source.md` / reuse seer triage |
-| 2 | `fix-plan` **wymagany** | **Astra high** (proste: **Sol** jeśli w MODELS) | `plan.md` + acceptance — osobny Unit |
+| 2 | `fix-plan` **wymagany** | **Astra high** (proste: **Sol** jeśli w MODELS) | `plan.md` + acceptance + sekcja **Tip vs main** (anti-dupe/anti-drift) + źródło inwariantu gdy issue tego wymaga — osobny Unit |
 | 3 | `fix-execute` | tańszy/średni np. `openai-codex` / `gpt-5.6-terra` / **medium** | branch + commits + `implementation.md` — **tylko wg planu** |
-| 4 | `fix-review-astra` | **Astra high** | `review-astra.md` — PASS/FAIL |
-| 5 | `fix-review-daybreak` | **Daybreak** `gpt-daybreak-blue-latest` (jawny provider wg seat) | `review-daybreak.md` — PASS/FAIL |
+| 4 | `fix-review-astra` | **Astra high** | `review-astra.md` — PASS/FAIL (źródło>plaster, Tip vs main, czysta gałąź) |
+| 5 | `fix-review-daybreak` | **Daybreak** `gpt-daybreak-blue-latest` (jawny provider wg seat) | `review-daybreak.md` — PASS/FAIL (te same 3 bramki jakości) |
 | 6 | PR open **dopiero po** Astra PASS **i** Daybreak PASS | seat `gh` | labels `limen` + `via:issue-fix`; body: issue + job ids planu/execute/reviews; **bez** merge |
 | 7 | CI green / mergeable | koordynator | mid-CI nie raportować; potem lista dla Pawła |
 
@@ -101,6 +101,9 @@ Po każdym Unit `done` (plan/exec/review):
 - fan-out > N, mega-job, cicha zmiana modelu
 - nowe GH issues (poza torem seer)
 - limen-dev / fork limen
+- **tip-fix:** transliteracja / „poprawianie” tekstu gościa (guest-facing copy) **bez** jawnego acceptance
+- **tip-fix:** unrelated hunks / scope creep poza acceptance/`plan.md` (osobny issue albo STOP)
+- plan tylko lokalne call-sites gdy issue wymaga **inwariantu / jednego źródła** (→ `plan_verdict=FAIL`, replan)
 
 ## Smoke day-one
 Claim **1** najprostszego z puli → chain do PR lub jasny bloker. Nie wypełniaj 6 slotów.
@@ -113,6 +116,28 @@ Claim **1** najprostszego z puli → chain do PR lub jasny bloker. Nie wypełnia
 - **tip** = `origin/main` (SHA) przez **git** w worktree (`fetch`/`show`/`rg`). **Zakaz** CLI o nazwie `tip` / `tip-research` w PATH; FAIL na `command not found tip` = błąd handoffu, nie produktu.
 - **Preflight przed spawnem planu:** worktree ma checkout + `git fetch origin main` + pliki repo czytelne; inaczej **nie claim / nie spawn** Astra.
 - Szablon: `handoffs/fix-plan.template.md`.
+
+## Quality gates tip-fix (2026-09-23 Paweł/Claude critique) — TWARDE
+
+Trzy bramki obowiązkowe w `fix-plan`, preflight execute i review Astra/Daybreak:
+
+### 1) Invariant / jedno źródło (źródło > plaster)
+Gdy issue chce **inwariant** albo „jedno źródło prawdy”, plan (`fix-plan` / `plan.md`) **MUSI** naprawić **źródło** (definicja, kanoniczny helper, jeden writer, shared constant, schema) — nie tylko „wskazane miejsca” z body.
+- Wzorcowe fail-wzorce: pytek **#4527**, **#4493**, **#4487**.
+- Jeśli plan tylko patches lokalne call-sites bez źródła → `plan_verdict=FAIL` / STOP replan.
+- Review: diff tylko call-sites przy wymaganym inwariancie → **FAIL** (Astra/Daybreak).
+
+### 2) Tip vs main (anti-dupe / anti-drift) — przed spawnem planu i w `plan.md`
+Obowiązkowy check **przed** spawnem `fix-plan` **i** w samym planie; wynik w krótkiej sekcji **Tip vs main** w `plan.md`:
+- **anti-dupe (#4451):** czy tip/`main` już ma naprawę (merged PR / commit / istniejący kod) dla tego samego symptomu — jeśli tak → SKIP / `plan_verdict=FAIL` (already-fixed), nie execute.
+- **anti-drift (np. #4510 CI-heal):** czy równoległy open PR / branch już adresuje ten sam obszar — nie dubluj; SKIP / join / STOP z uzasadnieniem.
+Brak sekcji Tip vs main w `plan.md` → review **FAIL**.
+
+### 3) Zakazy tip-fix / czysta gałąź
+- Zakaz transliteracji / „poprawiania” tekstu gościa (guest-facing copy) bez jawnego acceptance.
+- Zakaz unrelated hunks w branchu tip-fix (scope creep poza acceptance/plan).
+- **Preflight przed execute:** dirty/unrelated/transliteracja gościa → **FAIL**, nie spawn Terra.
+- Review: taka gałąź → **FAIL** (Astra/Daybreak).
 
 ## Gate po plan done — consent (TWARDE, Paweł 2026-09-18)
 Po `fix-plan` job `done` + `plan.md` z `plan_verdict`:
