@@ -18,11 +18,14 @@ BUDGET_SEC="${NIGHTLY_CI_HEAL_BUDGET_SEC:-2700}"
 MAX_ATTEMPTS="${NIGHTLY_CI_HEAL_MAX_ATTEMPTS:-2}"
 REQUIRED_WORKFLOWS="${NIGHTLY_CI_HEAL_REQUIRED:-Static Gates|Type Check|CI (Post-Merge Integration)}"
 DRY=0
+RECONCILE=0
 
 usage() {
   cat <<USAGE
-Usage: nightly-ci-heal.sh [--dry-run] [--help]
-  --dry-run   Check tip CI + anti-loop parse; write receipt; no claim/spawn/PR
+Usage: nightly-ci-heal.sh [--dry-run] [--reconcile] [--help]
+  --dry-run     Check tip CI + anti-loop parse; write receipt; no claim/spawn/PR
+  --reconcile   After heal job DONE: fill last-run/anti-loop heal_pr_url from
+                outbox/heal-result.md or gh CI-heal search; set verdict=heal-pr
 Env: NIGHTLY_CI_HEAL_REPO, NIGHTLY_CI_HEAL_ROOT, NIGHTLY_CI_HEAL_DRY=1
 USAGE
 }
@@ -30,11 +33,13 @@ USAGE
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY=1; shift ;;
+    --reconcile) RECONCILE=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) echo "unknown arg: $1" >&2; usage; exit 2 ;;
   esac
 done
 [[ "${NIGHTLY_CI_HEAL_DRY:-0}" == "1" ]] && DRY=1
+[[ "${NIGHTLY_CI_HEAL_RECONCILE:-0}" == "1" ]] && RECONCILE=1
 
 mkdir -p "$OUTBOX"
 STARTED_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -362,6 +367,76 @@ EOF
   echo "${job_id:-}"
 }
 
+
+parse_heal_pr_url() {
+  # Prefer heal-result.md (written by heal job); fall back to open CI-heal PR search.
+  local url=""
+  if [[ -f "$OUTBOX/heal-result.md" ]]; then
+    url="$(grep -Eo "https://github.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[0-9]+" "$OUTBOX/heal-result.md" 2>/dev/null | head -1 || true)"
+  fi
+  if [[ -z "$url" ]]; then
+    url="$(gh pr list --repo "$REPO" --state open --search "CI-heal" --json url --jq ".[0].url // empty" 2>/dev/null || true)"
+  fi
+  echo "${url:-}"
+}
+
+last_run_field() {
+  local key="$1"
+  [[ -f "$LAST_RUN" ]] || { echo ""; return 0; }
+  sed -n "s/^${key}:[[:space:]]*//p" "$LAST_RUN" | head -1 | sed "s/[[:space:]]*$//"
+}
+
+reconcile_heal_pr() {
+  # Fill heal_pr_url after spawn-time race: finish() only saw gh seconds after spawn.
+  # Safe to call from cron end, morning report, or unit-done-notify when label matches.
+  ensure_anti_loop
+  local job_id heal_pr attempts sha fp started_lr pr_url v
+  job_id="$(json_get "$ANTI_LOOP" job_id)"
+  heal_pr="$(json_get "$ANTI_LOOP" heal_pr_url)"
+  [[ -z "$job_id" ]] && job_id="$(last_run_field job_id)"
+  [[ -z "$heal_pr" ]] && heal_pr="$(last_run_field heal_pr_url)"
+
+  if [[ -z "$job_id" ]]; then
+    echo "reconcile: no job_id — nothing to do" >&2
+    return 0
+  fi
+  if [[ -n "$heal_pr" ]]; then
+    v="$(last_run_field verdict)"
+    if [[ "$v" != "heal-pr" ]]; then
+      attempts="$(json_get "$ANTI_LOOP" attempts)"; [[ -z "$attempts" ]] && attempts="$(last_run_field attempts)"
+      sha="$(json_get "$ANTI_LOOP" sha)"; [[ -z "$sha" ]] && sha="$(last_run_field sha)"
+      fp="$(json_get "$ANTI_LOOP" fingerprint)"; [[ -z "$fp" ]] && fp="$(last_run_field fingerprint)"
+      started_lr="$(last_run_field started)"
+      [[ -n "$started_lr" ]] && STARTED_UTC="$started_lr"
+      [[ -z "$attempts" ]] && attempts=0
+      write_anti_loop_fields "heal_pr_url=$heal_pr" "job_id=$job_id"
+      finish "heal-pr" "heal-pr-reconciled" "$sha" "$fp" "$job_id" "$heal_pr" "$attempts"
+      echo "reconcile: aligned verdict=heal-pr url=$heal_pr" >&2
+    else
+      echo "reconcile: heal_pr_url already set ($heal_pr)" >&2
+    fi
+    return 0
+  fi
+
+  pr_url="$(parse_heal_pr_url)"
+  if [[ -z "$pr_url" ]]; then
+    echo "reconcile: no PR in heal-result.md / gh yet (job_id=$job_id)" >&2
+    return 0
+  fi
+
+  attempts="$(json_get "$ANTI_LOOP" attempts)"; [[ -z "$attempts" ]] && attempts="$(last_run_field attempts)"
+  sha="$(json_get "$ANTI_LOOP" sha)"; [[ -z "$sha" ]] && sha="$(last_run_field sha)"
+  fp="$(json_get "$ANTI_LOOP" fingerprint)"; [[ -z "$fp" ]] && fp="$(last_run_field fingerprint)"
+  started_lr="$(last_run_field started)"
+  [[ -n "$started_lr" ]] && STARTED_UTC="$started_lr"
+  [[ -z "$attempts" ]] && attempts=0
+
+  write_anti_loop_fields "heal_pr_url=$pr_url" "job_id=$job_id"
+  finish "heal-pr" "heal-pr-reconciled" "$sha" "$fp" "$job_id" "$pr_url" "$attempts"
+  echo "reconcile: wrote heal_pr_url=$pr_url verdict=heal-pr" >&2
+}
+
+
 finish() {
   local verdict="$1" reason="$2" sha="${3:-}" fp="${4:-}" job_id="${5:-}" pr="${6:-}" attempts="${7:-0}"
   write_last_run "$verdict" "$reason" "$sha" "$fp" "$job_id" "$pr" "$attempts"
@@ -482,7 +557,16 @@ main() {
   else
     # heal-spawned-await-morning only if job_id non-empty (checked above) and no PR yet
     finish "stopped" "heal-spawned-await-morning" "$sha" "$fp" "${job_id}" "" "$attempts"
+    # Best-effort: PR may already exist / heal-result written (usually still empty at spawn+seconds).
+    # Morning / unit-done should call --reconcile after job DONE.
+    reconcile_heal_pr || true
   fi
 }
+
+if [[ "$RECONCILE" == "1" ]]; then
+  mkdir -p "$OUTBOX"
+  reconcile_heal_pr
+  exit 0
+fi
 
 main "$@"
